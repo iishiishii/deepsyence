@@ -46,14 +46,8 @@ export default function NiiVue(props) {
   const [orientCube, setOrientCube] = React.useState(nv.opts.isOrientCube)
   const [ruler, setRuler] = React.useState(nv.opts.isRuler)
   const [multiplanarPadPixels, setMultiplanarPadPixels] = React.useState(nv.opts.multiplanarPadPixels)
-  const [maxDrawUndoBitmaps, setMaxDrawUndoBitmaps] = React.useState(nv.opts.maxDrawUndoBitmaps)
-  const [sagittalNoseLeft, setSagittalNoseLeft] = React.useState(nv.opts.sagittalNoseLeft)
-  const [rulerWidth, setRulerWidth] = React.useState(nv.opts.rulerWidth)
-  const [longTouchTimeout, setLongTouchTimeout] = React.useState(nv.opts.longTouchTimeout)
-  const [doubleTouchTimeout, setDoubleTouchTimeout] = React.useState(nv.opts.doubleTouchTimeout)
   const [dragToMeasure, setDragToMeasure] = React.useState(nv.opts.isDragShowsMeasurementTool)
   const [rulerColor, setRulerColor] = React.useState(nv.opts.rulerColor)
-  const [rulerOpacity, setRulerOpacity] = React.useState(nv.opts.rulerColor[3])
   const [highDPI, setHighDPI] = React.useState(false)
 
   // only run this when the component is mounted on the page
@@ -131,53 +125,13 @@ export default function NiiVue(props) {
     nv.drawScene()
   }
 
-  function nvUpdateRuler(){
-    nv.opts.isRuler = !ruler
-    setRuler(!ruler)
-    nv.drawScene()
-  }
 
-  function nvUpdateSagittalNoseLeft(){
-    nv.opts.sagittalNoseLeft = !sagittalNoseLeft
-    setSagittalNoseLeft(!sagittalNoseLeft)
-    nv.drawScene()
-  }
 
-  function nvUpdateRulerWidth(v){
-    nv.opts.rulerWidth = v
-    setRulerWidth(v)
-    nv.drawScene()
-  }
 
-  function nvUpdateRulerOpacity(a){
-    nv.opts.rulerColor = [
-      rulerColor[0],
-      rulerColor[1],
-      rulerColor[2],
-      a
-    ]
-    setRulerOpacity(a)
-    nv.drawScene()
-  }
-
-  function nvUpdateLongTouchTimeout(v){
-    nv.opts.longTouchTimeout = v
-    setLongTouchTimeout(v)
-  }
-
-  function nvUpdateDoubleTouchTimeout(v){
-    nv.opts.doubleTouchTimeout = v
-    setDoubleTouchTimeout(v)
-  }
 
   function nvUpdateDragToMeasure(){
     nv.opts.isDragShowsMeasurementTool = !dragToMeasure
     setDragToMeasure(!dragToMeasure)
-  }
-
-  function nvUpdateMaxDrawUndoBitmaps(v){
-    nv.opts.maxDrawUndoBitmaps = v
-    setMaxDrawUndoBitmaps(v)
   }
 
   function nvUpdateBackColor(rgb01, a=1){
@@ -186,15 +140,6 @@ export default function NiiVue(props) {
     nv.drawScene()
   }
 
-  function nvUpdateRulerColor(rgb01, a=1){
-    setRulerColor([...rgb01, a])
-    nv.opts.rulerColor = [...rgb01, a]
-    if (!ruler){
-      nv.opts.isRuler = !ruler
-      setRuler(!ruler)
-    }
-    nv.drawScene()
-  }
 
   function nvUpdateClipPlaneColor(rgb01, a=1){
     setClipPlaneColor([...rgb01, a])
@@ -228,17 +173,6 @@ export default function NiiVue(props) {
 
   function updateDecimalPrecision(v){
     setDecimalPrecision(v)
-  }
-
-  function nvUpdateWorldSpace(){
-    nvUpdateCrosshair3D(!worldSpace)
-    setWorldSpace(!worldSpace)
-    nv.setSliceMM(!worldSpace)
-  }
-
-  function nvUpdateCornerText(){
-    nv.setCornerOrientationText(!cornerText)
-    setCornerText(!cornerText)
   }
 
   function nvUpdateCrosshair3D(){
@@ -384,30 +318,7 @@ export default function NiiVue(props) {
           step={0.01}
         >
         </NumberPicker>
-        <ColorPicker
-          colorRGB01={rulerColor}
-          onSetColor={nvUpdateRulerColor}
-          title={'Ruler color'}
-        >
-        </ColorPicker>
-        <NumberPicker
-          value={rulerWidth}
-          onChange={nvUpdateRulerWidth}
-          title={'Ruler thickness'}
-          min={0}
-          max={10}
-          step={1}
-        >
-        </NumberPicker>
-        <NumberPicker
-          value={rulerOpacity}
-          onChange={nvUpdateRulerOpacity}
-          title={'Ruler opacity'}
-          min={0}
-          max={1}
-          step={0.1}
-        >
-        </NumberPicker>
+
         <NVSwitch
           checked={locationTableVisible}
           title={'Location table'}
@@ -415,27 +326,9 @@ export default function NiiVue(props) {
         >
         </NVSwitch>
         <NVSwitch
-          checked={orientCube}
-          title={'Orientation cube'}
-          onChange={nvUpdateOrientCube}
-        >
-        </NVSwitch>
-        <NVSwitch
-          checked={ruler}
-          title={'Ruler'}
-          onChange={nvUpdateRuler}
-        >
-        </NVSwitch>
-        <NVSwitch
           checked={clipPlane}
           title={'Clip plane'}
           onChange={nvUpdateClipPlane}
-        >
-        </NVSwitch>
-        <NVSwitch
-          checked={cornerText}
-          title={'Corner text'}
-          onChange={nvUpdateCornerText}
         >
         </NVSwitch>
         <NVSwitch
@@ -456,28 +349,11 @@ export default function NiiVue(props) {
           onChange={nvUpdateColorBar}
         >
         </NVSwitch>
-        <NVSwitch
-          checked={worldSpace}
-          title={'World space'}
-          onChange={nvUpdateWorldSpace}
-        >
-        </NVSwitch>
-        <NVSwitch
-          checked={sagittalNoseLeft}
-          title={'Nose left'}
-          onChange={nvUpdateSagittalNoseLeft}
-        >
-        </NVSwitch>
+
         <NVSwitch
           checked={dragToMeasure}
           title={'Drag to measure'}
           onChange={nvUpdateDragToMeasure}
-        >
-        </NVSwitch>
-        <NVSwitch
-          checked={highDPI}
-          title={'High DPI'}
-          onChange={nvUpdateHighDPI}
         >
         </NVSwitch>
         <NumberPicker
@@ -498,33 +374,7 @@ export default function NiiVue(props) {
           step={2}
         >
         </NumberPicker>
-        <NumberPicker
-          value={maxDrawUndoBitmaps}
-          onChange={nvUpdateMaxDrawUndoBitmaps}
-          title={'Max Draw Undos'}
-          min={8}
-          max={28}
-          step={1}
-        >
-        </NumberPicker>
-        <NumberPicker
-          value={longTouchTimeout}
-          onChange={nvUpdateLongTouchTimeout}
-          title={'Long touch timeout msec'}
-          min={1000}
-          max={5000}
-          step={100}
-        >
-        </NumberPicker>
-        <NumberPicker
-          value={doubleTouchTimeout}
-          onChange={nvUpdateDoubleTouchTimeout}
-          title={'Double touch timeout msec'}
-          min={500}
-          max={999}
-          step={25}
-        >
-        </NumberPicker>
+
       </SettingsPanel>
       <LayersPanel
         open={openLayers}

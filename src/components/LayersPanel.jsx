@@ -52,13 +52,6 @@ export function LayersPanel(props){
           >
             <LayersIcon color='primary' />
           </IconButton>
-          <IconButton
-            style={{
-              marginTop: '8px'
-            }}
-          >
-            <GestureIcon />
-          </IconButton>
         </Box>
         <Box sx={{
           width:props.width,
