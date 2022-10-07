@@ -12,27 +12,28 @@ export function LayersPanel(props){
   function handleAddLayer(){
     let input = document.createElement('input')
     input.type = 'file'
+    input.multiple="multiple"
+
     input.onchange = async function (){
-      props.onAddLayer(input.files[0])
+      for(var i=0;i<input.files.length;i++){
+        props.onAddLayer(input.files[i])
+      }
     }
+
     input.click()
   }
 
+
 	return (
-		<Drawer
-      open={props.open}
-			variant="temporary"
-      anchor="left"
-      sx={{
-        width: props.width,
-      }}
-    >
       <Box
         sx={{
           width: props.width,
-          display: 'flex',
-          flexDirection: 'row',
-          height: '100%'
+          bottom: 0,
+          display: "flex",
+          flexDirection: "row",
+          height: 150,
+          overflow: "hidden",
+          overflowY: "scroll",
         }}
       >
         <Box
@@ -40,18 +41,18 @@ export function LayersPanel(props){
             width: 48,
             display: 'flex',
             flexDirection: 'column',
-            backgroundColor: '#F8F8F8',
-            height: '100%',
+            // backgroundColor: '#F8F8F8',
+            height: 150,
             alignItems: 'center'
           }}
         >
-          <IconButton
-            style={{
-              marginTop: '36px'
-            }}
-          >
-            <LayersIcon color='primary' />
-          </IconButton>
+            <Button
+              onClick={handleAddLayer}
+              endIcon={<AddIcon />}
+              size='big'
+            >
+              {/* Add Layer */}
+            </Button>
         </Box>
         <Box sx={{
           width:props.width,
@@ -80,13 +81,7 @@ export function LayersPanel(props){
               display:'flex',
             }}   
           >
-            <Button
-              onClick={handleAddLayer}
-              endIcon={<AddIcon />}
-              size='small'
-            >
-              Add Layer
-            </Button>
+
           </Box>
           {props.children}
         </Box>
@@ -94,9 +89,8 @@ export function LayersPanel(props){
       </Box>
 
       
-    </Drawer>
+ 
 	)
 }
-
 
 

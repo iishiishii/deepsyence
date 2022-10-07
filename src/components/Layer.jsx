@@ -20,9 +20,9 @@ export default function Layer(props){
     return (<MenuItem value={colorName} key={colorName}>{colorName}</MenuItem>)
   })
   
-  function handleDetails(){
-    setDetailsOpen(!detailsOpen)
-  }
+  // function handleDetails(){
+  //   setDetailsOpen(!detailsOpen)
+  // }
 
   function handleColorChange(event){
     let clr = event.target.value
@@ -40,7 +40,7 @@ export default function Layer(props){
     <Box
       sx={{
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
       }}
     >
       <Paper 
@@ -58,19 +58,19 @@ export default function Layer(props){
             alignItems: 'center'
           }}
         >
-          <Typography>
+          <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {image.name}
           </Typography>
-          <IconButton 
+          {/* <IconButton 
             onClick={handleDetails}
             style={{marginLeft:'auto'}}
           >
             {ArrowIcon}
-          </IconButton>
+          </IconButton> */}
         </Box>
         <Box
           sx={{
-            display: detailsOpen ? 'flex' : 'none'
+            display: 'flex'
           }}>
           <Box
             sx={{

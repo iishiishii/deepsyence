@@ -28,9 +28,9 @@ function ImageListItem({image, setImageList, crosshairValue=null, precision=4}) 
 
 	function handleSliderChange (event, newValue) {
 		setMinMax(newValue); 
-		//nv.volumes[nv.getVolumeIndexByID(image.id)].cal_min = newValue[0]; 
-		//nv.volumes[nv.getVolumeIndexByID(image.id)].cal_max = newValue[1]; 
-		//nv.updateGLVolume()
+		nv.volumes[nv.getVolumeIndexByID(image.id)].cal_min = newValue[0]; 
+		nv.volumes[nv.getVolumeIndexByID(image.id)].cal_max = newValue[1]; 
+		nv.updateGLVolume()
 	}
 
 	function handleSliderCommitted (event, newValue) {
@@ -81,7 +81,7 @@ function ImageListItem({image, setImageList, crosshairValue=null, precision=4}) 
 					<ListItemText>
 						{image.name}
 					</ListItemText>
-					<Typography style={{marginLeft:'auto'}}>
+					<Typography style={{marginLeft:'auto'}} >
 						{crosshairValue === null ? '' : crosshairValue.toFixed(precision)}
 					</Typography>
 					{openMore ? <ExpandLess onClick={handleOpenMore}/> : <ExpandMore onClick={handleOpenMore} />}
@@ -130,7 +130,7 @@ function ImageListItem({image, setImageList, crosshairValue=null, precision=4}) 
 						>
 						</Input>
 						<IconButton style={{marginRight: '0px', marginLeft:'auto'}} onClick={handleIntensityReset}>
-							<Replay />
+							
 						</IconButton>
 					</ListItem>
 					<ListItem>	

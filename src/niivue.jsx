@@ -30,12 +30,10 @@ export default function NiiVue(props) {
   const [backColor, setBackColor] = React.useState(nv.opts.backColor)
   const [clipPlaneColor, setClipPlaneColor] = React.useState(nv.opts.clipPlaneColor)
   const [layers, setLayers] = React.useState(nv.volumes)
-  const [cornerText, setCornerText] = React.useState(false)
   const [radiological, setRadiological] = React.useState(false)
   const [crosshair3D, setCrosshair3D] = React.useState(false)
   const [textSize, setTextSize] = React.useState(nv.opts.textHeight)
   const [colorBar, setColorBar] = React.useState(nv.opts.isColorbar)
-  const [worldSpace, setWorldSpace] = React.useState(nv.opts.isSliceMM)
   const [clipPlane, setClipPlane] = React.useState(nv.currentClipPlaneIndex > 0 ? true : false)
   // TODO: add crosshair size state and setter
   const [crosshairOpacity, setCrosshairOpacity] = React.useState(nv.opts.crosshairColor[3])
@@ -44,10 +42,8 @@ export default function NiiVue(props) {
   const [locationData, setLocationData] = React.useState([])
   const [decimalPrecision, setDecimalPrecision] = React.useState(2)
   const [orientCube, setOrientCube] = React.useState(nv.opts.isOrientCube)
-  const [ruler, setRuler] = React.useState(nv.opts.isRuler)
   const [multiplanarPadPixels, setMultiplanarPadPixels] = React.useState(nv.opts.multiplanarPadPixels)
   const [dragToMeasure, setDragToMeasure] = React.useState(nv.opts.isDragShowsMeasurementTool)
-  const [rulerColor, setRulerColor] = React.useState(nv.opts.rulerColor)
   const [highDPI, setHighDPI] = React.useState(false)
 
   // only run this when the component is mounted on the page
@@ -378,7 +374,7 @@ export default function NiiVue(props) {
       </SettingsPanel>
       <LayersPanel
         open={openLayers}
-        width={320}
+        // width={320}
         onToggleMenu={toggleLayers}
         onAddLayer={addLayer}
       >
