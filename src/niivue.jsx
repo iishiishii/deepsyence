@@ -17,7 +17,7 @@ import Layer from './components/Layer'
 import './index.css'
 
 const nv = new Niivue({
-  loadingText: 'loading...'
+  loadingText: 'Drag drop'
 })
 
 // The NiiVue component wraps all other components in the UI. 
@@ -38,27 +38,10 @@ export default function NiiVue(props) {
   // TODO: add crosshair size state and setter
   const [crosshairOpacity, setCrosshairOpacity] = React.useState(nv.opts.crosshairColor[3])
   const [clipPlaneOpacity, setClipPlaneOpacity] = React.useState(nv.opts.clipPlaneColor[3])
-  const [locationTableVisible, setLocationTableVisible] = React.useState(false)
   const [locationData, setLocationData] = React.useState([])
   const [decimalPrecision, setDecimalPrecision] = React.useState(2)
-  const [orientCube, setOrientCube] = React.useState(nv.opts.isOrientCube)
   const [multiplanarPadPixels, setMultiplanarPadPixels] = React.useState(nv.opts.multiplanarPadPixels)
-  const [dragToMeasure, setDragToMeasure] = React.useState(nv.opts.isDragShowsMeasurementTool)
-  const [highDPI, setHighDPI] = React.useState(false)
 
-  // only run this when the component is mounted on the page
-  // or else it will be recursive and continuously add all
-  // initial images supplied to the NiiVue component
-  //
-  // All subsequent imgaes should be added via a
-  // button or drag and drop
-  React.useEffect(()=>{
-    props.volumes.map(async (vol)=>{
-      let image = await NVImage.loadFromUrl({url:vol.url})
-      nv.addVolume(image)
-      setLayers([...nv.volumes])
-    })
-  }, [])
 
   nv.opts.onImageLoaded = ()=>{
     setLayers([...nv.volumes])
@@ -96,25 +79,11 @@ export default function NiiVue(props) {
     setOpenLayers(!openLayers)
   }
 
-  function toggleLocationTable(){
-    setLocationTableVisible(!locationTableVisible)
-  }
-
   function nvUpdateCrosshairColor(rgb01, a=1){
     setCrosshairColor([...rgb01, a])
     nv.setCrosshairColor([...rgb01, a])
   }
 
-  function nvUpdateOrientCube(){
-    nv.opts.isOrientCube = !orientCube
-    setOrientCube(!orientCube)
-    nv.drawScene()
-  }
-
-  function nvUpdateHighDPI(){
-    nv.setHighResolutionCapable(!highDPI)
-    setHighDPI(!highDPI)
-  }
 
   function nvUpdateMultiplanarPadPixels(v){
     nv.opts.multiplanarPadPixels = v
@@ -122,14 +91,6 @@ export default function NiiVue(props) {
     nv.drawScene()
   }
 
-
-
-
-
-  function nvUpdateDragToMeasure(){
-    nv.opts.isDragShowsMeasurementTool = !dragToMeasure
-    setDragToMeasure(!dragToMeasure)
-  }
 
   function nvUpdateBackColor(rgb01, a=1){
     setBackColor([...rgb01, a])
@@ -244,14 +205,15 @@ export default function NiiVue(props) {
     nv.updateGLVolume()
   }
 
-	nv.on('intensityRange', (nvimage) => {
-		//setIntensityRange(nvimage)
-	})
+	// nv.on('intensityRange', (nvimage) => {
+	// 	//setIntensityRange(nvimage)
+	// })
 
   return (
     <Box sx={{
       display: 'flex',
       flexDirection: 'column',
+      alignItems:'stretch',
       height: '100vh',
       backgroundColor: 'black'
       }}
@@ -321,13 +283,6 @@ export default function NiiVue(props) {
           step={0.01}
         >
         </NumberPicker>
-
-        <NVSwitch
-          checked={locationTableVisible}
-          title={'Location table'}
-          onChange={toggleLocationTable}
-        >
-        </NVSwitch>
         <NVSwitch
           checked={clipPlane}
           title={'Clip plane'}
@@ -353,12 +308,6 @@ export default function NiiVue(props) {
         >
         </NVSwitch>
 
-        <NVSwitch
-          checked={dragToMeasure}
-          title={'Drag to measure'}
-          onChange={nvUpdateDragToMeasure}
-        >
-        </NVSwitch>
         <NumberPicker
           value={decimalPrecision}
           onChange={updateDecimalPrecision}
@@ -391,19 +340,27 @@ export default function NiiVue(props) {
         volumes={layers}
       >
       </NiivuePanel>
-      <LocationTable 
-        tableData={locationData} 
-        isVisible={locationTableVisible}
-        decimalPrecision={decimalPrecision}
-      />
-      <LayersPanel
-        open={openLayers}
-        // width={320}
-        onToggleMenu={toggleLayers}
-        onAddLayer={addLayer}
-      >
-        {layerList} 
-      </LayersPanel>
+        <Box
+          sx={{
+            width: props.width,
+            display: "flex",
+            flexDirection: "row",
+            height: "20%"
+          }}
+        >
+          <LayersPanel
+            open={openLayers}
+            // width={320}
+            onToggleMenu={toggleLayers}
+            onAddLayer={addLayer}
+          >
+            {layerList} 
+          </LayersPanel>
+          <LocationTable 
+            tableData={locationData} 
+            decimalPrecision={decimalPrecision}
+          />
+      </Box>
     </Box>
   )
 }

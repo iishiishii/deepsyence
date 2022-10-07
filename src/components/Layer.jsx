@@ -61,13 +61,13 @@ export default function Layer(props){
       sx={{
         display: 'flex',
         flexDirection: 'row',
+        
       }}
     >
       <Paper 
         elevation={2}
         sx={{
-          marginTop: 0.5,
-          marginBottom: 0.5
+          m:1
         }}
       >
         <Box 
@@ -76,7 +76,8 @@ export default function Layer(props){
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            width:'100%'
+            width:600,
+            height: 20
           }}
         >
           <ListItemIcon onClick={(e) => { e.stopPropagation(); visibilityToggle(image); handleOpacity(image.opacity)}}>

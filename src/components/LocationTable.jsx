@@ -8,19 +8,12 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
 export default function LocationTable(props) {
-  let display = 'none'
-  if (props.isVisible){
-    display = ''
-  } else {
-    display = 'none'
-  }
   return (
     <TableContainer 
       sx={{
-        display: display,
-        marginTop: 'auto',
-        maxHeight: '30%',
-        flexGrow: 1
+        m:2,
+        flexGrow: 1,
+        width: 600
       }}
       component={Paper}
     >

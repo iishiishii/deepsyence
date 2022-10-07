@@ -27,13 +27,13 @@ export function LayersPanel(props){
 	return (
       <Box
         sx={{
-          width: props.width,
-          bottom: 0,
+          width: 700,
+          // bottom: 0,
           display: "flex",
           flexDirection: "row",
-          height: 150,
           overflow: "hidden",
           overflowY: "scroll",
+          m:1
         }}
       >
         <Box
@@ -42,14 +42,14 @@ export function LayersPanel(props){
             display: 'flex',
             flexDirection: 'column',
             // backgroundColor: '#F8F8F8',
-            height: 150,
+            m: 1,
             alignItems: 'center'
           }}
         >
             <Button
               onClick={handleAddLayer}
               endIcon={<AddIcon />}
-              size='big'
+              size='large'
             >
               {/* Add Layer */}
             </Button>
