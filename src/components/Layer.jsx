@@ -1,6 +1,8 @@
 import { Box, Divider, MenuItem } from "@mui/material";
 import { Typography } from "@mui/material";
-import { Button } from "@mui/material";
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { ListItemIcon } from "@mui/material";
 import { Select } from "@mui/material";
 import { InputLabel } from "@mui/material";
 import { FormControl } from "@mui/material";
@@ -15,14 +17,17 @@ export default function Layer(props){
   const image = props.image
   const [detailsOpen, setDetailsOpen] = React.useState(false)
   const [color, setColor] = React.useState(image.colorMap)
+  const [visibilityIcon, setVisibilityIcon] = React.useState(true)
+  const [opacity, setOpacity] = React.useState(image.opacity)
+  let Visibility = visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />
   let ArrowIcon = detailsOpen ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon /> 
   let allColors = image.colorMaps().map((colorName) => {
     return (<MenuItem value={colorName} key={colorName}>{colorName}</MenuItem>)
   })
   
-  // function handleDetails(){
-  //   setDetailsOpen(!detailsOpen)
-  // }
+  function handleDetails(){
+    setDetailsOpen(!detailsOpen)
+  }
 
   function handleColorChange(event){
     let clr = event.target.value
@@ -35,6 +40,21 @@ export default function Layer(props){
   function handleDelete(){
     props.onRemoveLayer(image)
   }
+
+  function handleOpacity(){
+    let idx = image.id
+    // console.log(idx)
+		let currentOpacity = opacity
+    // console.log(currentOpacity)
+		const newOpacity = currentOpacity > 0 ? 0 : 1
+    console.log(newOpacity)
+		props.onSetOpacity(idx, newOpacity)
+    setOpacity(newOpacity)
+  }
+
+  function visibilityToggle() {
+    setVisibilityIcon(!visibilityIcon)
+	}
 
   return (
     <Box
@@ -55,22 +75,26 @@ export default function Layer(props){
             margin: 1,
             display: 'flex',
             flexDirection: 'row',
-            alignItems: 'center'
+            alignItems: 'center',
+            width:'100%'
           }}
         >
+          <ListItemIcon onClick={(e) => { e.stopPropagation(); visibilityToggle(image); handleOpacity(image.opacity)}}>
+						{Visibility}
+					</ListItemIcon>
           <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {image.name}
           </Typography>
-          {/* <IconButton 
+          <IconButton 
             onClick={handleDetails}
             style={{marginLeft:'auto'}}
           >
             {ArrowIcon}
-          </IconButton> */}
+          </IconButton>
         </Box>
         <Box
           sx={{
-            display: 'flex'
+            display: detailsOpen ? 'flex' : 'none'
           }}>
           <Box
             sx={{

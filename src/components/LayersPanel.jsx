@@ -54,6 +54,7 @@ export function LayersPanel(props){
               {/* Add Layer */}
             </Button>
         </Box>
+
         <Box sx={{
           width:props.width,
           role: 'presentation',
@@ -65,24 +66,6 @@ export function LayersPanel(props){
           mr: 1
           }}
         >
-          <Box
-            sx={{
-              display:'flex'
-            }}>
-            <IconButton 
-              onClick={props.onToggleMenu}
-              style={{marginLeft:'auto'}}
-            >
-              <ArrowBackIcon />
-            </IconButton>
-          </Box>
-          <Box
-            sx={{
-              display:'flex',
-            }}   
-          >
-
-          </Box>
           {props.children}
         </Box>
 

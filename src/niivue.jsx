@@ -75,6 +75,7 @@ export default function NiiVue(props) {
         image={layer}
         onColorMapChange={nvUpdateColorMap}
         onRemoveLayer={nvRemoveLayer}
+        onSetOpacity={nvUpdateOpacity}
       />
     )
   })
@@ -237,6 +238,12 @@ export default function NiiVue(props) {
     setLayers([...nv.volumes])
   }
 
+  function nvUpdateOpacity(id, opacity){
+    console.log(nv.getVolumeIndexByID(id))
+    nv.setOpacity(nv.getVolumeIndexByID(id),opacity)
+    nv.updateGLVolume()
+  }
+
 	nv.on('intensityRange', (nvimage) => {
 		//setIntensityRange(nvimage)
 	})
@@ -372,14 +379,7 @@ export default function NiiVue(props) {
         </NumberPicker>
 
       </SettingsPanel>
-      <LayersPanel
-        open={openLayers}
-        // width={320}
-        onToggleMenu={toggleLayers}
-        onAddLayer={addLayer}
-      >
-        {layerList} 
-      </LayersPanel>
+
       <Toolbar
         nvUpdateSliceType={nvUpdateSliceType}
         toggleSettings={toggleSettings}
@@ -396,6 +396,14 @@ export default function NiiVue(props) {
         isVisible={locationTableVisible}
         decimalPrecision={decimalPrecision}
       />
+      <LayersPanel
+        open={openLayers}
+        // width={320}
+        onToggleMenu={toggleLayers}
+        onAddLayer={addLayer}
+      >
+        {layerList} 
+      </LayersPanel>
     </Box>
   )
 }
