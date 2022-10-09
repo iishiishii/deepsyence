@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Menu } from "@mui/material"
+import { Box, Menu, Typography } from "@mui/material"
 import { IconButton } from "@mui/material"
 import {FormControl} from "@mui/material"
 import {Select} from "@mui/material"
@@ -9,7 +9,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import MenuIcon from '@mui/icons-material/Menu'
 import LayersIcon from '@mui/icons-material/Layers'
 
-export default function Toolbar(props){
+export default function NavBar(props){
   const [sliceType, setSliceType] = React.useState('multi')
   
   function handleSliceTypeChange(e){
@@ -18,7 +18,7 @@ export default function Toolbar(props){
     setSliceType(newSliceType)
     nvUpdateSliceType(newSliceType)
   }
-
+  
   return (
     <Box 
       sx={{
@@ -31,9 +31,9 @@ export default function Toolbar(props){
         backgroundColor: 'white',
       }}
     >
-      
-
-  
+      <Typography sx={{fontWeight: 'bold', m:2}}>
+          DEEPSYENCE
+      </Typography>
       <FormControl 
         size='small'
         sx={{
@@ -54,16 +54,10 @@ export default function Toolbar(props){
           <MenuItem value={'multi'}>Multi</MenuItem>
           <MenuItem value={'3d'}>3D</MenuItem>
         </Select>
-</FormControl>
+      </FormControl>
 
-      <IconButton 
-        onClick={props.toggleSettings}
-        style={{
-          marginLeft:'auto'
-        }}
-      >
-        <SettingsIcon />
-      </IconButton>
+
+      {props.children}
     </Box>
   )
 }

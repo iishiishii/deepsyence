@@ -26,19 +26,19 @@ export function NumberPicker(props){
 		sx={{
 			display:'flex'
 		}}
-    m={1}
+    m={2}
   >
       <Typography
         style={{
-          marginRight: 'auto'
+          margin:2
         }}
       >
         {props.title}
       </Typography>
       <Input 
-        disableUnderline={true}
+        disableUnderline={false}
         type='number'
-        style={{width:'50px', height:'20px'}}
+        style={{width:'50px', height:'20px', margin:2, padding:4}}
         onInput={handleNumberInput}
         value={value}
         inputProps={{
