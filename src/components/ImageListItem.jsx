@@ -130,7 +130,7 @@ function ImageListItem({image, setImageList, crosshairValue=null, precision=4}) 
 						>
 						</Input>
 						<IconButton style={{marginRight: '0px', marginLeft:'auto'}} onClick={handleIntensityReset}>
-							
+							<Replay />
 						</IconButton>
 					</ListItem>
 					<ListItem>	

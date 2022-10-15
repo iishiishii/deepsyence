@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "fs": "^0.0.1-security",
+    "lodash": "^4.17.21",
+    "ndarray": "^1.0.19",
+    "ndarray-ops": "^1.2.2",
+    "onnxruntime-node": "^1.9.0",
+    "biswebnode": "latest",
     "@niivue/niivue": "^0.29.1",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
