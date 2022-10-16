@@ -8,13 +8,16 @@ import { InputLabel } from "@mui/material";
 import { FormControl } from "@mui/material";
 import { Paper } from "@mui/material";
 import { IconButton } from "@mui/material";
+import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import DeleteIcon from '@mui/icons-material/Delete';
 import React from 'react'
+import { inferenceSqueezenet } from "../utils/onnx";
 
 export default function Layer(props){
   const image = props.image
+  const [processedImage, setImage] = React.useState(image.img)
   const [detailsOpen, setDetailsOpen] = React.useState(false)
   const [color, setColor] = React.useState(image.colorMap)
   const [visibilityIcon, setVisibilityIcon] = React.useState(true)
@@ -27,6 +30,14 @@ export default function Layer(props){
   
   function handleDetails(){
     setDetailsOpen(!detailsOpen)
+  }
+
+  async function handleInference() {
+    let currentImage = processedImage
+    let id = image.id
+    var [inferenceResult,inferenceTime] = await inferenceSqueezenet(currentImage);
+    console.log(inferenceTime)
+    props.onSetProcess(id, inferenceResult.data)
   }
 
   function handleColorChange(event){
@@ -43,11 +54,9 @@ export default function Layer(props){
 
   function handleOpacity(){
     let idx = image.id
-    // console.log(idx)
 		let currentOpacity = opacity
-    // console.log(currentOpacity)
 		const newOpacity = currentOpacity > 0 ? 0 : 1
-    console.log(newOpacity)
+    console.log(image.img)
 		props.onSetOpacity(idx, newOpacity)
     setOpacity(newOpacity)
   }
@@ -118,6 +127,11 @@ export default function Layer(props){
                 {allColors}
               </Select>
             </FormControl>
+            <IconButton
+              onClick={handleInference}
+            >
+              <PlayCircleFilledWhiteIcon />
+            </IconButton>
             <IconButton
               onClick={handleDelete}
             >

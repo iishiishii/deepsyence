@@ -37,7 +37,7 @@ export default function NiiVue(props) {
   const [locationData, setLocationData] = React.useState([])
   const [decimalPrecision, setDecimalPrecision] = React.useState(2)
   const [multiplanarPadPixels, setMultiplanarPadPixels] = React.useState(nv.opts.multiplanarPadPixels)
-
+  const [array, handleArray] = React.useState()
 
   nv.opts.onImageLoaded = ()=>{
     setLayers([...nv.volumes])
@@ -55,6 +55,7 @@ export default function NiiVue(props) {
         onColorMapChange={nvUpdateColorMap}
         onRemoveLayer={nvRemoveLayer}
         onSetOpacity={nvUpdateOpacity}
+        onSetProcess={nvProcess}
       />
     )
   })
@@ -63,6 +64,8 @@ export default function NiiVue(props) {
     const nvimage = await NVImage.loadFromFile({
       file: file
     })
+    console.log(nvimage.img)
+    
     nv.addVolume(nvimage)
     setLayers([...nv.volumes])
   }
@@ -136,8 +139,14 @@ export default function NiiVue(props) {
   }
 
   function nvUpdateOpacity(id, opacity){
-    console.log(nv.getVolumeIndexByID(id))
+    // console.log(nv.getVolumeIndexByID(id))
     nv.setOpacity(nv.getVolumeIndexByID(id),opacity)
+    nv.updateGLVolume()
+  }
+
+  function nvProcess(id, array){
+    console.log(id)
+    nv.volumes[nv.getVolumeIndexByID(id)].img.splice(0, array.length, ...array)
     nv.updateGLVolume()
   }
 
