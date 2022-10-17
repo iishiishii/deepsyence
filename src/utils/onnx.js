@@ -5,6 +5,7 @@ export async function inferenceSqueezenet(nvimage) {
   // 1. Convert image to tensor
   const imageTensor = await getImageTensor(nvimage);
   // 2. Run model
+  console.log(imageTensor)
   const [processedImage, inferenceTime] = await runSqueezenetModel(imageTensor);
   // 3. Return predictions and the amount of time it took to inference.
   return [processedImage, inferenceTime];
