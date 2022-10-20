@@ -35,9 +35,10 @@ export default function Layer(props){
   async function handleInference() {
     let currentImage = processedImage
     let id = image.id
+    
     var [inferenceResult,inferenceTime] = await inferenceSqueezenet(currentImage);
-    console.log(inferenceTime)
     props.onSetProcess(id, inferenceResult.data)
+    setImage(inferenceResult.data)
   }
 
   function handleColorChange(event){
@@ -56,7 +57,6 @@ export default function Layer(props){
     let idx = image.id
 		let currentOpacity = opacity
 		const newOpacity = currentOpacity > 0 ? 0 : 1
-    console.log(image.img)
 		props.onSetOpacity(idx, newOpacity)
     setOpacity(newOpacity)
   }
@@ -128,7 +128,7 @@ export default function Layer(props){
               </Select>
             </FormControl>
             <IconButton
-              onClick={handleInference}
+              onClick={(e) => { e.stopPropagation(); handleInference(image.img)}}
             >
               <PlayCircleFilledWhiteIcon />
             </IconButton>
