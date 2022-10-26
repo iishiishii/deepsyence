@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "typeRoots": ["./node_modules/@types"],
+    "target": "ESNext",
+    "module": "commonjs",
+    "lib": ["dom", "es2015", "ESNext"],
+    "outDir": "dist",
+    //"jsx": "react",
+    "jsx": "react-jsx",
+    "baseUrl": "./src",
+    "paths": {
+      "@sections/*": ["app/sections/*"],
+      "@app/*": ["app/*"]
+    },
+    "strict": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "allowJs": true
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "src/index.js",
+    "dist",
+  ]
+}

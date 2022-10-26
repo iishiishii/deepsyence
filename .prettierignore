@@ -1,0 +1,7 @@
+node_modules/**
+
+# Ignore all JS files:
+**/*.js
+node_modules
+dist
+/src/main/preload/**
