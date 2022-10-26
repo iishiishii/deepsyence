@@ -14,6 +14,8 @@ import { NiivuePanel } from './components/NiivuePanel'
 import NVSwitch from './components/Switch'
 import LocationTable from './components/LocationTable'
 import Layer from './components/Layer'
+import { uuid } from 'uuidv4';
+
 // import './index.css'
 
 const nv = new Niivue({
@@ -145,9 +147,57 @@ export default function NiiVue(props) {
   }
 
   function nvProcess(id, array){
-    console.log(id)
-    nv.volumes[nv.getVolumeIndexByID(id)].img.splice(0, array.length, ...array)
-    nv.updateGLVolume()
+    // find our processed image
+
+    let processedImage = nv.getVolumeIndexByID(id);
+    console.log(processedImage)
+    if (!processedImage) {
+      console.log("image not found");
+      return;
+    }
+
+    const isNewLayer = true;
+    if (isNewLayer) {
+      processedImage = processedImage.clone();
+      processedImage.id = uuid();
+    }
+
+    let imageBytes = array;
+
+    switch (processedImage.hdr.datatypeCode) {
+      case processedImage.DT_UNSIGNED_CHAR:
+        processedImage.img = new Uint8Array(imageBytes);
+        break;
+      case processedImage.DT_SIGNED_SHORT:
+        processedImage.img = new Int16Array(imageBytes);
+        break;
+      case processedImage.DT_FLOAT:
+        processedImage.img = new Float32Array(imageBytes);
+        break;
+      case processedImage.DT_DOUBLE:
+        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+      case processedImage.DT_RGB:
+        processedImage.img = new Uint8Array(imageBytes);
+        break;
+      case processedImage.DT_UINT16:
+        processedImage.img = new Uint16Array(imageBytes);
+        break;
+      case processedImage.DT_RGBA32:
+        processedImage.img = new Uint8Array(imageBytes);
+        break;
+      default:
+        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+    }
+
+    let imageIndex = nv.volumes.length;
+    console.log(imageIndex)
+    if (isNewLayer) {
+      nv.setVolume(processedImage, nv.volumes.length);
+    } else {
+      imageIndex = nv.volumes.indexOf(processedImage);
+    }
+    console.log('image processed');
+  
   }
 
 	// nv.on('intensityRange', (nvimage) => {

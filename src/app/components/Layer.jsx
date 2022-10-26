@@ -17,7 +17,7 @@ import * as ort from 'onnxruntime-web'
 
 export default function Layer(props){
   const image = props.image
-  const [processedImage, setImage] = React.useState(image.img)
+  // const [processedImage, setImage] = React.useState(image.img)
   const [detailsOpen, setDetailsOpen] = React.useState(false)
   const [color, setColor] = React.useState(image.colorMap)
   const [visibilityIcon, setVisibilityIcon] = React.useState(true)
@@ -65,8 +65,8 @@ export default function Layer(props){
       // read from results
       //const dataC = results.c.data
       //console.log(`data of result rensor 'c': ${dataC}`)
-      // props.onSetProcess(id, newImage)
-      setImage(newImage)
+      props.onSetProcess(id, newImage)
+      // setImage(newImage)
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `)
     }
