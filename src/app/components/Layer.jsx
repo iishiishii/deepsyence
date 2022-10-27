@@ -36,6 +36,7 @@ export default function Layer(props){
       // the model in this example contains a single MatMul node
       // it has 2 inputs: 'a'(float32, 3x4) and 'b'(float32, 4x3)
       // it has 1 output: 'c'(float32, 3x3)
+      console.log(image.img.length)
       ort.env.wasm.wasmPaths = new URL('./assets/onnxruntime-web/', document.baseURI).href
       // @ts-ignore
       let session = await ort.InferenceSession.create('./assets/model/model_dynamic.onnx');
@@ -58,13 +59,9 @@ export default function Layer(props){
 
       // read from results
       const newImage = results['conv2d_transpose_9'].data;
-      // console.log(`data of result tensor 'c': ${newImage}`);
-      // feed inputs and run
-      //const results = await session.run(feeds)
+      console.log(newImage)
+      console.log(`data of result tensor 'c': ${newImage.reduce((partialSum, a) => partialSum + a, 0)}`);
 
-      // read from results
-      //const dataC = results.c.data
-      //console.log(`data of result rensor 'c': ${dataC}`)
       props.onSetProcess(id, newImage)
       // setImage(newImage)
     } catch (e) {
@@ -72,13 +69,13 @@ export default function Layer(props){
     }
   }
 
-  React.useEffect(() => {
+  // React.useEffect(() => {
 
-    onnxFunct()    
+  //   onnxFunct()    
 
-    // return () => { // clean-up function
-    // }
-  }, [])
+  //   // return () => { // clean-up function
+  //   // }
+  // }, [])
   
   function handleDetails(){
     setDetailsOpen(!detailsOpen)

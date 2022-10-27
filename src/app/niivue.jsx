@@ -14,7 +14,7 @@ import { NiivuePanel } from './components/NiivuePanel'
 import NVSwitch from './components/Switch'
 import LocationTable from './components/LocationTable'
 import Layer from './components/Layer'
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 // import './index.css'
 
@@ -66,7 +66,7 @@ export default function NiiVue(props) {
     const nvimage = await NVImage.loadFromFile({
       file: file
     })
-    console.log(nvimage.img)
+    console.log(nvimage)
     
     nv.addVolume(nvimage)
     setLayers([...nv.volumes])
@@ -148,54 +148,58 @@ export default function NiiVue(props) {
 
   function nvProcess(id, array){
     // find our processed image
-
-    let processedImage = nv.getVolumeIndexByID(id);
-    console.log(processedImage)
+    console.log(array.reduce((partialSum, a) => partialSum + a, 0))
+    
+    let processedImage = nv.volumes[nv.getVolumeIndexByID(id)];
+    // console.log(processedImage)
     if (!processedImage) {
       console.log("image not found");
       return;
     }
 
-    const isNewLayer = true;
-    if (isNewLayer) {
-      processedImage = processedImage.clone();
-      processedImage.id = uuid();
-    }
+    console.log(processedImage.img.reduce((partialSum, a) => partialSum + a, 0))
+    processedImage = processedImage.clone();
+    processedImage.id = uuidv4();
+    console.log(processedImage.img.length, array.length)
 
-    let imageBytes = array;
-
-    switch (processedImage.hdr.datatypeCode) {
-      case processedImage.DT_UNSIGNED_CHAR:
-        processedImage.img = new Uint8Array(imageBytes);
-        break;
-      case processedImage.DT_SIGNED_SHORT:
-        processedImage.img = new Int16Array(imageBytes);
-        break;
-      case processedImage.DT_FLOAT:
-        processedImage.img = new Float32Array(imageBytes);
-        break;
-      case processedImage.DT_DOUBLE:
-        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
-      case processedImage.DT_RGB:
-        processedImage.img = new Uint8Array(imageBytes);
-        break;
-      case processedImage.DT_UINT16:
-        processedImage.img = new Uint16Array(imageBytes);
-        break;
-      case processedImage.DT_RGBA32:
-        processedImage.img = new Uint8Array(imageBytes);
-        break;
-      default:
-        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+    let imageBytes = array.buffer;
+    if (processedImage.img.length == array.length) 
+    {
+      switch (processedImage.hdr.datatypeCode) {
+        case processedImage.DT_UNSIGNED_CHAR:
+          processedImage.img = new Uint8Array(imageBytes);
+          break;
+        case processedImage.DT_SIGNED_SHORT:
+          processedImage.img = new Int16Array(imageBytes);
+          break;
+        case processedImage.DT_FLOAT:
+          processedImage.img = new Float32Array(imageBytes);
+          break;
+        case processedImage.DT_DOUBLE:
+          throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+        case processedImage.DT_RGB:
+          processedImage.img = new Uint8Array(imageBytes);
+          break;
+        case processedImage.DT_UINT16:
+          processedImage.img = new Uint16Array(imageBytes);
+          break;
+        case processedImage.DT_RGBA32:
+          processedImage.img = new Uint8Array(imageBytes);
+          break;
+        default:
+          throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+      }
     }
-
-    let imageIndex = nv.volumes.length;
-    console.log(imageIndex)
-    if (isNewLayer) {
-      nv.setVolume(processedImage, nv.volumes.length);
-    } else {
-      imageIndex = nv.volumes.indexOf(processedImage);
+    else {
+      console.log("different array length")
+      return;
     }
+    processedImage.trustCalMinMax = false;
+    processedImage.calMinMax();
+    console.log(processedImage.img.reduce((partialSum, a) => partialSum + a, 0))
+    nv.addVolume(processedImage)
+    setLayers([...nv.volumes])
+
     console.log('image processed');
   
   }

@@ -163,7 +163,7 @@
     "redux-thunk": "^2.3.0",
     "rimraf": "^3.0.2",
     "ts-node": "^10.3.0",
-    "uuidv4": "^6.2.13",
+    "uuid": "^9.0.0",
     "yarn": "^1.22.10"
   },
   "browserslist": [
