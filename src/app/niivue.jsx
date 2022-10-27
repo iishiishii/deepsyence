@@ -161,39 +161,41 @@ export default function NiiVue(props) {
     processedImage = processedImage.clone();
     processedImage.id = uuidv4();
     console.log(processedImage.img.length, array.length)
-
-    let imageBytes = array.buffer;
-    if (processedImage.img.length == array.length) 
-    {
-      switch (processedImage.hdr.datatypeCode) {
-        case processedImage.DT_UNSIGNED_CHAR:
-          processedImage.img = new Uint8Array(imageBytes);
-          break;
-        case processedImage.DT_SIGNED_SHORT:
-          processedImage.img = new Int16Array(imageBytes);
-          break;
-        case processedImage.DT_FLOAT:
-          processedImage.img = new Float32Array(imageBytes);
-          break;
-        case processedImage.DT_DOUBLE:
-          throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
-        case processedImage.DT_RGB:
-          processedImage.img = new Uint8Array(imageBytes);
-          break;
-        case processedImage.DT_UINT16:
-          processedImage.img = new Uint16Array(imageBytes);
-          break;
-        case processedImage.DT_RGBA32:
-          processedImage.img = new Uint8Array(imageBytes);
-          break;
-        default:
-          throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
-      }
-    }
-    else {
-      console.log("different array length")
-      return;
-    }
+    processedImage.hdr.datatypeCode = processedImage.DT_FLOAT
+    processedImage.img = array
+    // let imageBytes = array;
+    // if (processedImage.img.length == array.length) 
+    // {
+    //   switch (processedImage.hdr.datatypeCode) {
+    //     case processedImage.DT_UNSIGNED_CHAR:
+    //       processedImage.img = Uint8Array.from(imageBytes);
+    //       break;
+    //     case processedImage.DT_SIGNED_SHORT:
+    //       processedImage.img = Int16Array.from(imageBytes);
+    //       break;
+    //     case processedImage.DT_FLOAT:
+    //       processedImage.img = Float32Array.from(imageBytes);
+    //       break;
+    //     case processedImage.DT_DOUBLE:
+    //       throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+    //     case processedImage.DT_RGB:
+    //       processedImage.img = Uint8Array.from(imageBytes);
+    //       break;
+    //     case processedImage.DT_UINT16:
+    //       processedImage.img = Uint16Array.from(imageBytes);
+    //       break;
+    //     case processedImage.DT_RGBA32:
+    //       processedImage.img = Uint8Array.from(imageBytes);
+    //       break;
+    //     default:
+    //       throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+    //   }
+    // }
+    // else {
+    //   console.log("different array length")
+    //   return;
+    // }
+    console.log(processedImage.img.reduce((partialSum, a) => partialSum + a, 0))
     processedImage.trustCalMinMax = false;
     processedImage.calMinMax();
     console.log(processedImage.img.reduce((partialSum, a) => partialSum + a, 0))

@@ -31,23 +31,46 @@ export default function Layer(props){
   const onnxFunct = async () => {
     try {
       let id = image.id
-      // create a new session and load the specific model
-
-      // the model in this example contains a single MatMul node
-      // it has 2 inputs: 'a'(float32, 3x4) and 'b'(float32, 4x3)
-      // it has 1 output: 'c'(float32, 3x3)
-      console.log(image.img.length)
+      // let processImage
+      // let tensorType
       ort.env.wasm.wasmPaths = new URL('./assets/onnxruntime-web/', document.baseURI).href
+      // switch (image.hdr.datatypeCode) {
+      //   case image.DT_UNSIGNED_CHAR:
+      //     processImage = Uint8Array.from(image.img);
+      //     tensorType = "uint8"
+      //     break;
+      //   case image.DT_SIGNED_SHORT:
+      //     processImage = Int16Array.from(image.img);
+      //     tensorType = "int16"
+      //     break;
+      //   case image.DT_FLOAT:
+      //     processImage = Float32Array.from(image.img);
+      //     tensorType = "float32"
+      //     break;
+      //   case image.DT_DOUBLE:
+      //     throw "datatype " + image.hdr.datatypeCode + " not supported";
+      //   case image.DT_RGB:
+      //     processImage = Uint8Array.from(image.img);
+      //     tensorType = "uint8"
+      //     break;
+      //   case image.DT_UINT16:
+      //     processImage = Uint16Array.from(image.img);
+      //     tensorType = "uint16"
+      //     break;
+      //   case image.DT_RGBA32:
+      //     processImage = Uint8Array.from(image.img);
+      //     tensorType = "uint8"
+      //     break;
+      //   default:
+      //     throw "datatype " + image.hdr.datatypeCode + " not supported";
+      // }
+
+      
       // @ts-ignore
       let session = await ort.InferenceSession.create('./assets/model/model_dynamic.onnx');
       const float32Data = Float32Array.from(image.img)
       console.log(image.dims.slice(1).concat([1]))
       const inputTensor = new ort.Tensor("float32", float32Data, image.dims.slice(1).concat([1]));
-      // const inputTensor = new ort.Tensor("float32", float32Data, [211,224,224,1]);
-      //const dataA =  Float32Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-      //const dataB = Float32Array.from([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120])
-      //const tensorA = new ort.Tensor('float32', dataA, [3, 4])
-      //const tensorB = new ort.Tensor('float32', dataB, [4, 3])
 
       // prepare feeds. use model input names as keys
       //const feeds = { a: tensorA, b: tensorB }
