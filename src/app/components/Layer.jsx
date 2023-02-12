@@ -28,48 +28,53 @@ export default function Layer(props){
     return (<MenuItem value={colorName} key={colorName}>{colorName}</MenuItem>)
   })
 
+  function colToRow(colArray) {
+    let dims = image.dimsRAS
+    // let colArray = image.img
+    let rowArray = new Float32Array(dims[1] * dims[2] * dims[3])
+    console.log(dims)
+    for (var i = 0; i < dims[1]; i++) {
+      for (var j = 0; j < dims[2]; j++) {
+        for (var k = 0; k < dims[3]; k++) {
+          let indexCol = i + j * dims[1] + k * dims[1] * dims[2]
+          let indexRow = i * dims[2] * dims[3] + j * dims[3] + k
+          rowArray[indexRow] = colArray[indexCol]
+        }
+      }
+    }
+    return rowArray;
+  }
+
+  function rowToCol(rowArray) {
+    let dims = image.dimsRAS
+    // let colArray = image.img
+    let colArray = new Float32Array(dims[1] * dims[2] * dims[3])
+    console.log(dims)
+    for (var i = 0; i < dims[1]; i++) {
+      for (var j = 0; j < dims[2]; j++) {
+        for (var k = 0; k < dims[3]; k++) {
+          let indexCol = i + j * dims[1] + k * dims[1] * dims[2]
+          let indexRow = i * dims[2] * dims[3] + j * dims[3] + k
+          colArray[indexCol] = rowArray[indexRow]
+        }
+      }
+    }
+    return colArray;
+  }
+
   const onnxFunct = async () => {
     try {
       let id = image.id
-      // let processImage
-      // let tensorType
+
       ort.env.wasm.wasmPaths = new URL('./assets/onnxruntime-web/', document.baseURI).href
-      // switch (image.hdr.datatypeCode) {
-      //   case image.DT_UNSIGNED_CHAR:
-      //     processImage = Uint8Array.from(image.img);
-      //     tensorType = "uint8"
-      //     break;
-      //   case image.DT_SIGNED_SHORT:
-      //     processImage = Int16Array.from(image.img);
-      //     tensorType = "int16"
-      //     break;
-      //   case image.DT_FLOAT:
-      //     processImage = Float32Array.from(image.img);
-      //     tensorType = "float32"
-      //     break;
-      //   case image.DT_DOUBLE:
-      //     throw "datatype " + image.hdr.datatypeCode + " not supported";
-      //   case image.DT_RGB:
-      //     processImage = Uint8Array.from(image.img);
-      //     tensorType = "uint8"
-      //     break;
-      //   case image.DT_UINT16:
-      //     processImage = Uint16Array.from(image.img);
-      //     tensorType = "uint16"
-      //     break;
-      //   case image.DT_RGBA32:
-      //     processImage = Uint8Array.from(image.img);
-      //     tensorType = "uint8"
-      //     break;
-      //   default:
-      //     throw "datatype " + image.hdr.datatypeCode + " not supported";
-      // }
+
 
       
       // @ts-ignore
       let session = await ort.InferenceSession.create('./assets/model/model_dynamic.onnx');
-      const float32Data = Float32Array.from(image.img)
+      const float32Data = colToRow(image.img)
       console.log(image.dims.slice(1).concat([1]))
+      console.log(`${float32Data.reduce((partialSum, a) => partialSum + a, 0)}`)
       const inputTensor = new ort.Tensor("float32", float32Data, image.dims.slice(1).concat([1]));
 
       // prepare feeds. use model input names as keys
@@ -84,21 +89,15 @@ export default function Layer(props){
       const newImage = results['conv2d_transpose_9'].data;
       console.log(newImage)
       console.log(`data of result tensor 'c': ${newImage.reduce((partialSum, a) => partialSum + a, 0)}`);
+      const rasImage = rowToCol(newImage)
+      props.onSetProcess(id, rasImage)
 
-      props.onSetProcess(id, newImage)
-      // setImage(newImage)
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `)
     }
   }
 
-  // React.useEffect(() => {
 
-  //   onnxFunct()    
-
-  //   // return () => { // clean-up function
-  //   // }
-  // }, [])
   
   function handleDetails(){
     setDetailsOpen(!detailsOpen)
