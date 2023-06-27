@@ -1,32 +1,25 @@
 {
   "compilerOptions": {
-    "typeRoots": ["./node_modules/@types"],
-    "target": "ESNext",
-    "module": "commonjs",
-    "lib": ["dom", "es2015", "ESNext"],
-    "outDir": "dist",
-    //"jsx": "react",
-    "jsx": "react-jsx",
-    "baseUrl": "./src",
-    "paths": {
-      "@sections/*": ["app/sections/*"],
-      "@app/*": ["app/*"]
-    },
-    "strict": true,
-    "sourceMap": true,
-    "skipLibCheck": true,
-    "noImplicitAny": false,
+    "allowJs": true,
+    "declaration": false,
     "noImplicitThis": false,
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "noUnusedLocals": true,
+    "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "target": "es2020",
+    "lib": ["es2020", "dom"],
+    "baseUrl": ".",
+    "outDir": "./build",
+    "skipLibCheck": true,
+    "strict": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "allowJs": true
+    "sourceMap": true
   },
-  "include": ["src/**/*"],
-  "exclude": [
-    "src/index.js",
-    "dist",
-  ]
+  "include": ["./src/**/*.*"]
 }

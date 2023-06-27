@@ -1,20 +1,20 @@
 'use strict'
 
 import * as path from 'path';
-import * as url from 'url';
+// import * as url from 'url';
 
 import {
   app,
   BrowserWindow,
-  ipcMain,
-  MessageChannelMain,
-  Menu,
-  dialog,
-  BrowserView,
-  webContents,
-  clipboard,
-  Tray,
-  ipcRenderer,
+  // ipcMain,
+  // MessageChannelMain,
+  // Menu,
+  // dialog,
+  // BrowserView,
+  // webContents,
+  // clipboard,
+  // Tray,
+  // ipcRenderer,
 } from 'electron';
 
 
@@ -62,6 +62,7 @@ function createMainWindow () {
     height: 600,
     webPreferences: {
       nodeIntegration: false,
+      devTools: true,
       //enableRemoteModule: false,
       contextIsolation: true,
       nodeIntegrationInWorker: false,
@@ -74,7 +75,7 @@ function createMainWindow () {
 
   enforceInheritance(mainWindow.webContents)
 
-  const ses = mainWindow.webContents.session;
+  // const ses = mainWindow.webContents.session;
 
   let mainFilePath = path.join(__dirname, '../index.html');
 
@@ -84,7 +85,7 @@ function createMainWindow () {
 
   // Open the DevTools only once DOM is ready
   mainWindow.webContents.once("dom-ready", async() => {
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
   });
 
   // Emitted when the window is closed.

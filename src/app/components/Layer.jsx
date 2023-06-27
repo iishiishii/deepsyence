@@ -160,7 +160,7 @@ export default function Layer(props){
           </Typography>
           <IconButton 
             onClick={handleDetails}
-            style={{marginLeft:'auto'}}
+            style={{marginRight:'auto'}}
           >
             {ArrowIcon}
           </IconButton>
@@ -173,7 +173,7 @@ export default function Layer(props){
             sx={{
               display: 'flex',
               flexDirection:'row',
-              justifyContent: 'space-between',
+              justifyContent: 'left',
               width: '100%'
             }}
             m={1}
