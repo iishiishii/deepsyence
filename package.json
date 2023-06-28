@@ -4,6 +4,7 @@
   "description": "Neurodesk App",
   "main": "./build//main/main.js",
   "scripts": {
+    "react-start": "react-scripts start",
     "start": "electron .",
     "dev": "yarn build && yarn start",
     "start:windows": "electron . --windows-ui",
@@ -154,17 +155,22 @@
   "homepage": "https://github.com/NeuroDesk/neurodesk-app#readme",
   "repository": "https://github.com/NeuroDesk/neurodesk-app",
   "license": "BSD-3-Clause",
+  "resolutions": {
+    "@types/react": "^18.2.14"
+  },
   "devDependencies": {
+    "@babel/preset-react": "^7.22.5",
     "@types/ejs": "^3.1.0",
     "@types/js-yaml": "^4.0.3",
     "@types/node": "^14.14.31",
     "@types/node-fetch": "~2.5.12",
-    "@types/react": "~17.0.2",
-    "@types/react-dom": "^17.0.1",
+    "@types/react": "^18.2.14",
+    "@types/react-dom": "^18.2.6",
     "@types/semver": "^7.3.4",
     "@types/yargs": "^17.0.18",
     "@typescript-eslint/eslint-plugin": "~5.28.0",
     "@typescript-eslint/parser": "~5.28.0",
+    "babel-loader": "^9.1.2",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "~5.1.1",
     "electron": "^24.1.2",

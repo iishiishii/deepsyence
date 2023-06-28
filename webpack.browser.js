@@ -130,6 +130,9 @@ function createShared(packageData) {
 module.exports = {
   entry: './build/browser/index.js',
   target: 'web',
+  resolve: {
+    extensions: ['.jsx', '.js']
+},
   output: {
     path: buildDir,
     library: {
@@ -150,6 +153,16 @@ module.exports = {
       { test: /\.txt$/, use: 'raw-loader' },
       { test: /\.(jpg|png|gif)$/, use: 'file-loader' },
       { test: /\.js.map$/, use: 'file-loader' },
+      {
+        test: /\.jsx?$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            exclude: /node_modules/,
+            presets: ['@babel/preset-react']
+          }
+        }
+      },
       {
         test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
         use: 'url-loader?limit=10000&mimetype=application/font-woff'
