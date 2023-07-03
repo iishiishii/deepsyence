@@ -1,228 +1,43 @@
 {
-  "name": "neurodeskapp",
-  "version": "1.0.0",
-  "description": "Neurodesk App",
-  "main": "./build//main/main.js",
-  "scripts": {
-    "react-start": "react-scripts start",
-    "start": "electron .",
-    "dev": "yarn build && yarn start",
-    "start:windows": "electron . --windows-ui",
-    "start:linux": "electron . --linux-ui",
-    "start:mac": "electron . --mac-ui",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "rimraf build dist",
-    "watch:tsc": "tsc -w",
-    "watch:assets": "node ./scripts/extract.js && node ./scripts/copyassets.js watch",
-    "watch": "concurrently \"yarn watch:tsc\" \"yarn watch:assets\" ",
-    "build": "tsc && yarn bundle:preload && node ./scripts/extract.js && node ./scripts/copyassets.js",
-    "build:all": "yarn clean && yarn build && yarn start",
-    "bundle:preload": "webpack --config webpack.preload.js",
-    "extract": "node scripts/extract.js",
-    "pack": "yarn build && electron-builder --dir",
-    "dist": "yarn build && electron-builder",
-    "dist:linux": "yarn build && electron-builder --linux --publish never",
-    "dist:mac": "yarn build && electron-builder --macos --publish never",
-    "dist:win": "yarn build && electron-builder --win --publish never",
-    "dockerdist:linux": "docker run --rm -ti -v ${PWD}:/project -v ${PWD##*/}-node-modules:/project/node_modules -v ~/.electron:/root/.electron electronuserland/builder:wine /bin/bash -c \"yarn && yarn dist:linux\"",
-    "dockerdist:win": "docker run --rm -ti -v ${PWD}:/project -v ${PWD##*/}-node-modules:/project/node_modules -v ~/.electron:/root/.electron electronuserland/builder:wine /bin/bash -c \"yarn && yarn dist:win\"",
-    "create_env_installer:linux": "rimraf ./env_installer/NeurodeskApp*.sh && constructor ./env_installer --platform=linux-64 --output-dir ./env_installer",
-    "create_env_installer:mac": "rimraf ./env_installer/NeurodeskApp*.sh && constructor ./env_installer --platform=osx-64 --output-dir ./env_installer",
-    "create_env_installer:win": "rimraf ./env_installer/NeurodeskApp*.exe && constructor ./env_installer --platform=win-64 --output-dir ./env_installer",
-    "check_version_match": "node scripts/buildutil.js --check-version-match",
-    "set_jupyterlab_version": "node scripts/buildutil.js --set-jupyterlab-version",
-    "set_neurodesk_version": "node scripts/neurodeskutil.js --set-neurodesk-version",
-    "eslint": "eslint --ext .js,.jsx,.ts,.tsx --cache --fix .",
-    "eslint:check": "eslint --ext .js,.jsx,.ts,.tsx --cache .",
-    "eslint:check:typed": "eslint --config .eslintrc.typecheck.js --ext .js,.jsx,.ts,.tsx .",
-    "eslint:typed": "eslint --config .eslintrc.typecheck.js --cache --ext .js,.jsx,.ts,.tsx --fix .",
-    "lint": "yarn && yarn prettier && yarn eslint && yarn stylelint --allow-empty-input",
-    "lint:check": "yarn prettier:check && yarn eslint:check && yarn stylelint:check --allow-empty-input",
-    "prettier": "prettier --write \"**/*{.ts,.tsx,.js,.jsx,.css,.json,.md}\"",
-    "prettier:check": "prettier --check \"**/*{.ts,.tsx,.js,.jsx,.css,.json,.md}\"",
-    "stylelint": "yarn stylelint:check --fix",
-    "stylelint:check": "stylelint \"**/*.css\""
-  },
-  "build": {
-    "appId": "org.neurodesk.neurodeskapp",
-    "productName": "NeurodeskApp",
-    "artifactName": "${productName}.${ext}",
-    "directories": {
-      "buildResources": "dist-resources"
-    },
-    "fileAssociations": {
-      "ext": "ipynb"
-    },
-    "files": [
-      "!**/*.d.ts",
-      "!env_installer/NeurodeskApp*.*"
-    ],
-    "extraResources": [
-      "env_installer/NeurodeskAppAppServer-*[.sh,.exe]"
-    ],
-    "afterSign": "scripts/notarize.js",
-    "linux": {
-      "target": [
-        "deb",
-        "rpm"
-      ],
-      "category": "Science;Development;",
-      "extraResources": [
-        {
-          "from": "dist-resources/linux/neurodeskapp.sh",
-          "to": "app/neurodeskapp"
-        }
-      ]
-    },
-    "deb": {
-      "fpm": [
-        "--after-install=build/linux_after_install.sh"
-      ]
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ],
-      "extraFiles": [
-        {
-          "from": "dist-resources/win/neurodeskapp.cmd",
-          "to": "neurodeskapp.cmd"
-        }
-      ]
-    },
-    "rpm": {
-      "depends": [
-        "libXScrnSaver"
-      ],
-      "fpm": [
-        "--after-install=build/linux_after_install.sh"
-      ]
-    },
-    "nsis": {
-      "oneClick": "false",
-      "artifactName": "${productName}-Setup.${ext}",
-      "perMachine": true,
-      "license": "LICENSE",
-      "language": "1033",
-      "installerSidebar": "installerSidebar.bmp",
-      "include": "build/wininstall.nsh",
-      "warningsAsErrors": false
-    },
-    "mac": {
-      "category": "public.app-category.productivity",
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
-      "icon": "dist-resources/icon.icns",
-      "entitlements": "build/entitlements.plist",
-      "entitlementsInherit": "build/entitlements.plist",
-      "darkModeSupport": true,
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
-      "artifactName": "${productName}-${arch}.${ext}",
-      "extraResources": [
-        {
-          "from": "dist-resources/darwin/neurodeskapp.sh",
-          "to": "app/neurodeskapp"
-        }
-      ]
-    },
-    "dmg": {
-      "sign": false
-    }
-  },
-  "author": {
-    "name": "Project Jupyter",
-    "email": "project.jupyter@gmail.com",
-    "url": "http://jupyter.org"
-  },
-  "bugs": {
-    "url": "https://github.com/NeuroDesk/neurodesk-app/issues"
-  },
-  "homepage": "https://github.com/NeuroDesk/neurodesk-app#readme",
-  "repository": "https://github.com/NeuroDesk/neurodesk-app",
-  "license": "BSD-3-Clause",
-  "resolutions": {
-    "@types/react": "^18.2.14"
-  },
-  "devDependencies": {
-    "@babel/preset-react": "^7.22.5",
-    "@types/ejs": "^3.1.0",
-    "@types/js-yaml": "^4.0.3",
-    "@types/node": "^14.14.31",
-    "@types/node-fetch": "~2.5.12",
-    "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
-    "@types/semver": "^7.3.4",
-    "@types/yargs": "^17.0.18",
-    "@typescript-eslint/eslint-plugin": "~5.28.0",
-    "@typescript-eslint/parser": "~5.28.0",
-    "babel-loader": "^9.1.2",
-    "copy-webpack-plugin": "^11.0.0",
-    "css-loader": "~5.1.1",
-    "electron": "^24.1.2",
-    "electron-builder": "^23.6.0",
-    "electron-notarize": "^1.2.2",
-    "eslint": "~8.17.0",
-    "eslint-config-prettier": "~8.5.0",
-    "eslint-plugin-prettier": "~4.0.0",
-    "eslint-plugin-react": "~7.29.4",
-    "file-loader": "~6.2.0",
-    "fs-extra": "~9.1.0",
-    "html-webpack-plugin": "^5.5.3",
-    "meow": "^6.0.1",
-    "mini-css-extract-plugin": "^1.3.9",
-    "node-watch": "^0.7.1",
-    "prettier": "~2.1.1",
-    "raw-loader": "^4.0.2",
-    "read-package-tree": "^5.1.6",
-    "rimraf": "~3.0.0",
-    "style-loader": "~2.0.0",
-    "stylelint": "^14.3.0",
-    "stylelint-config-prettier": "^9.0.3",
-    "stylelint-config-recommended": "^6.0.0",
-    "stylelint-config-standard": "~24.0.0",
-    "stylelint-prettier": "^2.0.0",
-    "typescript": "~4.2.2",
-    "url-loader": "~4.1.1",
-    "webpack": "^5.76.0",
-    "webpack-cli": "^4.5.0"
-  },
+  "name": "deepsyence_tsc",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.2",
-    "@lumino/signaling": "^1.10.0",
-    "@mui/icons-material": "^5.11.16",
-    "@mui/material": "^5.13.6",
-    "@niivue/niivue": "^0.35.1",
-    "ejs": "^3.1.7",
-    "electron-log": "^4.4.8",
-    "fast-xml-parser": "^4.0.12",
-    "fix-path": "^3.0.0",
-    "js-yaml": "^4.1.0",
-    "node-fetch": "^2.6.7",
-    "onnxruntime-web": "^1.15.1",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^13.0.0",
+    "@testing-library/user-event": "^13.2.1",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.7.13",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "^5.0.1",
-    "semver": "^7.5.0",
-    "toml": "^3.0.0",
-    "update-electron-app": "^2.0.1",
-    "uuid": "^9.0.0",
-    "which": "^2.0.2",
-    "winreg": "^1.2.4",
-    "yargs": "^17.6.2"
+    "react-scripts": "5.0.1",
+    "typescript": "^4.4.2",
+    "web-vitals": "^2.1.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
