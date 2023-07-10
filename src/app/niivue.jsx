@@ -17,8 +17,19 @@ import NVSwitch from './components/Switch'
 import LocationTable from './components/LocationTable'
 import Layer from './components/Layer'
 import { v4 as uuidv4 } from 'uuid';
+import {
+  createTheme,
+  ThemeProvider,
+} from '@mui/material/styles';
 
-// import './index.css'
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#FF9F1C"
+    }
+  }
+});
+
 
 const nv = new Niivue({
   loadingText: 'Drag-drop images or Click "+" button',
@@ -199,112 +210,116 @@ export default function NiiVue(props) {
   
   }
 
-  
-	// nv.on('intensityRange', (nvimage) => {
-	// 	//setIntensityRange(nvimage)
-	// })
-
   return (
-    <Box sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems:'stretch',
-      height: '100vh',
-      backgroundColor: 'black'
-      }}
-    >	
-      
-
-      <NavBar
-        nvUpdateSliceType={nvUpdateSliceType}
-      >
-        <SettingsPanel 
-        width={300}
-      >
-
-        <NVSwitch
-          checked={clipPlane}
-          title={'Clip plane'}
-          onChange={nvUpdateClipPlane}
+    <ThemeProvider theme={theme}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems:'stretch',
+        height: '100vh',
+        backgroundColor: 'black'
+        }}
+      >	
+        <NavBar
+          nvUpdateSliceType={nvUpdateSliceType}
         >
-        </NVSwitch>
-        <NVSwitch
-          checked={radiological}
-          title={'radiological'}
-          onChange={nvUpdateRadiological}
-        >
-        </NVSwitch>
-        <NVSwitch
-          checked={crosshair3D}
-          title={'3D crosshair'}
-          onChange={nvUpdateCrosshair3D}
-        >
-        </NVSwitch>
-        <NVSwitch
-          checked={colorBar}
-          title={'Show color bar'}
-          onChange={nvUpdateColorBar}
-        >
-        </NVSwitch>
-
-        <NumberPicker
-          value={decimalPrecision}
-          onChange={updateDecimalPrecision}
-          title={'Decimal precision'}
-          min={0}
-          max={8}
-          step={1}
-        >
-        </NumberPicker>
-        <NumberPicker
-          value={multiplanarPadPixels}
-          onChange={nvUpdateMultiplanarPadPixels}
-          title={'Multiplanar padding'}
-          min={0}
-          max={20}
-          step={2}
-        >
-        </NumberPicker>
-        <FormControl>
-              <InputLabel>Mode</InputLabel>
-              <Select
-                style={{width: '100px'}}
-                value={penMode}
-                label='Pen'
-                size='small'
-                onChange={doDrawPen}
-              >
-                {allModes}
-              </Select>
-            </FormControl>
-      </SettingsPanel>
-      </NavBar>
-      <NiivuePanel
-        nv={nv}
-        volumes={layers}
-      >
-      </NiivuePanel>
-        <Box
-          sx={{
-            width: props.width,
-            display: "flex",
-            flexDirection: "row",
-            height: "20%"
-          }}
-        >
-          <LayersPanel
-            open={openLayers}
-            // width={320}
-            onToggleMenu={toggleLayers}
-            onAddLayer={addLayer}
+          <SettingsPanel 
+          width={300}
           >
-            {layerList} 
-          </LayersPanel>
-          <LocationTable 
-            tableData={locationData} 
-            decimalPrecision={decimalPrecision}
-          />
+
+          <NVSwitch
+            checked={clipPlane}
+            title={'Clip plane'}
+            onChange={nvUpdateClipPlane}
+            color="companyRed"
+          >
+          </NVSwitch>
+          <NVSwitch
+            checked={radiological}
+            title={'radiological'}
+            onChange={nvUpdateRadiological}
+          >
+          </NVSwitch>
+          <NVSwitch
+            checked={crosshair3D}
+            title={'3D crosshair'}
+            onChange={nvUpdateCrosshair3D}
+          >
+          </NVSwitch>
+          <NVSwitch
+            checked={colorBar}
+            title={'Show color bar'}
+            onChange={nvUpdateColorBar}
+          >
+          </NVSwitch>
+
+          <NumberPicker
+            value={decimalPrecision}
+            onChange={updateDecimalPrecision}
+            title={'Decimal precision'}
+            min={0}
+            max={8}
+            step={1}
+          >
+          </NumberPicker>
+          <NumberPicker
+            value={multiplanarPadPixels}
+            onChange={nvUpdateMultiplanarPadPixels}
+            title={'Multiplanar padding'}
+            min={0}
+            max={20}
+            step={2}
+          >
+          </NumberPicker>
+          <FormControl>
+                <InputLabel>Mode</InputLabel>
+                <Select
+                  style={{width: '100px'}}
+                  value={penMode}
+                  label='Pen'
+                  size='small'
+                  onChange={doDrawPen}
+                >
+                  {allModes}
+                </Select>
+              </FormControl>
+        </SettingsPanel>
+        </NavBar>
+
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          height: '100%'
+          }}
+        >	
+        <NiivuePanel
+          nv={nv}
+          volumes={layers}
+        >
+        </NiivuePanel>
+          <Box
+            sx={{
+              width: "30%",
+              display: "flex",
+              flexDirection: "row",
+              // height: "20%"
+            }}
+          >
+            <LayersPanel
+              open={openLayers}
+              // width={320}
+              onToggleMenu={toggleLayers}
+              onAddLayer={addLayer}
+            >
+              {layerList} 
+            </LayersPanel>
+            {/* <LocationTable 
+              tableData={locationData} 
+              decimalPrecision={decimalPrecision}
+            /> */}
+        </Box>
+        </Box>
       </Box>
-    </Box>
+    </ThemeProvider>
   )
 }

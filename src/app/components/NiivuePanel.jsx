@@ -17,8 +17,8 @@ export function NiivuePanel (props) {
 		<Box
       sx={{
         display: 'flex',
-        width: '100%',
-        height: '70%'
+        width: '70%',
+        height: '100%'
       }}  
     >
       <canvas ref={canvas} height={480} width={640} />

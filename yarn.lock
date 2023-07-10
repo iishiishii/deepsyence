@@ -1851,6 +1851,11 @@
   dependencies:
     eslint-scope "5.1.1"
 
+"@niivue/niimath-js@^0.0.1643874671203":
+  version "0.0.1643874671203"
+  resolved "https://registry.yarnpkg.com/@niivue/niimath-js/-/niimath-js-0.0.1643874671203.tgz#c8a29b69c7ebdaabc127f37cf1a110d35f393849"
+  integrity sha512-R344/VNb6dVvMHReTK2EGyTOBSz0J/AuopQVL8TRjGPcT+YO0PJRawRLHtSF5FEOYEFL14COKCuiKr6ECZsH+w==
+
 "@niivue/niivue@^0.35.1":
   version "0.35.1"
   resolved "https://registry.yarnpkg.com/@niivue/niivue/-/niivue-0.35.1.tgz#28b2add721514d49b7f4bb0a69e0102423a76ef2"

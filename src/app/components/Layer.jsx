@@ -14,6 +14,9 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import DeleteIcon from '@mui/icons-material/Delete';
 import React from 'react'
 import * as ort from 'onnxruntime-web'
+import { v4 as uuidv4 } from 'uuid';
+import { useEffect, useMemo, useRef, useState } from "react";
+
 
 export default function Layer(props){
   const image = props.image
@@ -29,6 +32,17 @@ export default function Layer(props){
     return (<MenuItem value={colorName} key={colorName}>{colorName}</MenuItem>)
   })
   console.log(props.colorMaps)
+
+  const counter = useMemo(
+    () => new Worker(new URL("worker.js", import.meta.url)),
+    []
+  );
+  
+  useEffect(() => {
+    if (window.Worker) {
+      nvMath()
+    }
+  }, [counter]);
 
   function colToRow(colArray) {
     let dims = image.dimsRAS
@@ -70,8 +84,6 @@ export default function Layer(props){
 
       ort.env.wasm.wasmPaths = new URL('./assets/onnxruntime-web/', document.baseURI).href
 
-
-      
       // @ts-ignore
       let session = await ort.InferenceSession.create('./assets/model/model_dynamic.onnx');
       const float32Data = colToRow(image.img)
@@ -130,6 +142,77 @@ export default function Layer(props){
   function visibilityToggle() {
     setVisibilityIcon(!visibilityIcon)
 	}
+
+
+  function processImage() {
+    const imageIndex = image.id
+    let image =image.img.clone();
+    // let image = nv.volumes[nv.getVolumeIndexByID(id)].clone();
+
+    let metadata = image.getImageMetadata();
+    const isNewLayer = true;
+    // const input = document.getElementById('command');
+    const cmd = "round";
+    counter.postMessage([metadata, image.img.buffer, cmd, isNewLayer]);
+  }
+
+
+  const nvMath = async () => {
+    // let newImage = await initWasm();
+    counter.onmessage = (e) => {
+      // find our processed image
+      // const id = e.data.id;
+      let processedImage = image.img;
+      if (!processedImage) {
+        console.log("image not found");
+        return;
+      }
+  
+      const isNewLayer = true;
+      if (isNewLayer) {
+        processedImage = processedImage.clone();
+        processedImage.id = uuidv4();
+      }
+  
+      let imageBytes = e.data.imageBytes;
+  
+      switch (processedImage.hdr.datatypeCode) {
+        case processedImage.DT_UNSIGNED_CHAR:
+          processedImage.img = new Uint8Array(imageBytes);
+          break;
+        case processedImage.DT_SIGNED_SHORT:
+          processedImage.img = new Int16Array(imageBytes);
+          break;
+        case processedImage.DT_FLOAT:
+          processedImage.img = new Float32Array(imageBytes);
+          break;
+        case processedImage.DT_DOUBLE:
+          throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+        case processedImage.DT_RGB:
+          processedImage.img = new Uint8Array(imageBytes);
+          break;
+        case processedImage.DT_UINT16:
+          processedImage.img = new Uint16Array(imageBytes);
+          break;
+        case processedImage.DT_RGBA32:
+          processedImage.img = new Uint8Array(imageBytes);
+          break;
+        default:
+          throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+      }
+  
+      // recalculate
+      processedImage.trustCalMinMax = false;
+      processedImage.calMinMax();
+      let imageIndex = image.id+1;
+  
+      props.onSetProcess(imageIndex, processedImage)
+      
+      console.log('image processed');
+    }
+    // processImage(counter);
+    // let imageIndex = nv.volumes.length;
+  }
 
   return (
     <Box
@@ -194,9 +277,14 @@ export default function Layer(props){
               </Select>
             </FormControl>
             <IconButton
-              onClick={onnxFunct}
+              onClick={processImage}
             >
               <PlayCircleFilledWhiteIcon />
+            </IconButton>
+            <IconButton
+              onClick={nvMath}
+            >
+              NiiMath
             </IconButton>
             <IconButton
               onClick={handleDelete}
