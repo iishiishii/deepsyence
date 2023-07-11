@@ -13,19 +13,25 @@
   overflow-x: hidden;
   overflow-y: auto;
   padding: 0;
-  background-color: hsl(0,0%,98%);
+  background-color: hsl(0deg, 0%, 98%);
   pointer-events: none;
   visibility: hidden;
   opacity: 0;
   transform: scale(1.1);
-  transition: visibility 0s .12s linear , opacity .12s ease-in, transform .12s ease-in;
+  transition:
+    visibility 0s 0.12s linear,
+    opacity 0.12s ease-in,
+    transform 0.12s ease-in;
 }
 .about.is-shown {
   pointer-events: auto;
   visibility: visible;
   opacity: 1;
   transform: scale(1);
-  transition: visibility 0s 0s linear , opacity .24s ease-out, transform .24s ease-out;
+  transition:
+    visibility 0s 0s linear,
+    opacity 0.24s ease-out,
+    transform 0.24s ease-out;
 }
 
 .about-wrapper {
@@ -34,7 +40,7 @@
 
 .about-header {
   padding: var(--about-space) 0;
-  border-bottom: 1px solid hsl(0,0%,88%);
+  border-bottom: 1px solid hsl(0deg, 0%, 88%);
 }
 
 .about-logo {
@@ -57,21 +63,21 @@
   text-align: center;
   margin: 0 0 1em 0;
   font-size: 1.5em;
-  color: hsl(0, 0%, 55%);
+  color: hsl(0deg, 0%, 55%);
 }
 
 .about .about-code h2 {
-  color: hsl(330, 65%, 55%);
+  color: hsl(330deg, 65%, 55%);
 }
 
 .about .play-along h2 {
-  color: hsl(222, 53%, 50%);
+  color: hsl(222deg, 53%, 50%);
 }
 
 .about-button {
   display: block;
   margin: 0 auto;
-  padding: .4em 1.2em;
+  padding: 0.4em 1.2em;
   font: inherit;
   font-size: 1.6em;
   color: inherit;
@@ -81,7 +87,7 @@
 }
 .about-button:focus {
   outline: none;
-  border-color: hsl(0,0%,88%);
+  border-color: hsl(0deg, 0%, 88%);
 }
 
 footer.about-section {
@@ -93,13 +99,13 @@ footer.about-section {
   --rainbow-button-height: 50px;
   --rainbow-button-width-inner: 164px;
   --rainbow-button-height-inner: 44px;
-  --rainbow-color-1: hsl(116, 30%, 36%);
-  --rainbow-color-2: hsl(194, 60%, 36%);
-  --rainbow-color-3: hsl(222, 53%, 50%);
-  --rainbow-color-4: hsl(285, 47%, 46%);
-  --rainbow-color-5: hsl(330, 65%, 48%);
-  --rainbow-color-6: hsl(32, 79%, 49%);
-  --rainbow-color-7: hsl(53, 84%, 50%);
+  --rainbow-color-1: hsl(116deg, 30%, 36%);
+  --rainbow-color-2: hsl(194deg, 60%, 36%);
+  --rainbow-color-3: hsl(222deg, 53%, 50%);
+  --rainbow-color-4: hsl(285deg, 47%, 46%);
+  --rainbow-color-5: hsl(330deg, 65%, 48%);
+  --rainbow-color-6: hsl(32deg, 79%, 49%);
+  --rainbow-color-7: hsl(53deg, 84%, 50%);
 
   display: inline-block;
   width: var(--rainbow-button-width);
@@ -117,8 +123,18 @@ footer.about-section {
   left: 0;
   width: 600px;
   height: var(--rainbow-button-height);
-  background: #CCC;
-  background: linear-gradient(to right, var(--rainbow-color-1) 0%, var(--rainbow-color-2) 14%, var(--rainbow-color-3) 28%, var(--rainbow-color-4) 42%, var(--rainbow-color-5) 56%, var(--rainbow-color-6) 70%, var(--rainbow-color-7) 84%, var(--rainbow-color-1) 100%);
+  background: #ccc;
+  background: linear-gradient(
+    to right,
+    var(--rainbow-color-1) 0%,
+    var(--rainbow-color-2) 14%,
+    var(--rainbow-color-3) 28%,
+    var(--rainbow-color-4) 42%,
+    var(--rainbow-color-5) 56%,
+    var(--rainbow-color-6) 70%,
+    var(--rainbow-color-7) 84%,
+    var(--rainbow-color-1) 100%
+  );
   background-position: -200px 0;
   transition: all 0.5s;
   content: "";
@@ -142,11 +158,11 @@ footer.about-section {
   background-position: 200px 0;
 }
 
-@media (min-width: 940px) {
+@media (width >= 940px) {
   .about-header {
     align-self: center;
     padding: var(--about-space);
-    border-right: 1px solid hsl(0,0%,88%);
+    border-right: 1px solid hsl(0deg, 0%, 88%);
     border-bottom: none;
   }
   .about-wrapper {

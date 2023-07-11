@@ -14,7 +14,6 @@ body {
   margin: 0; /* remove default margin */
 }
 
-
 /* enable text selection */
 
 .is-selectable,
@@ -24,10 +23,9 @@ code {
   cursor: auto;
 }
 
-
 /* Buttons and links */
 
-button{
+button {
   cursor: default;
 }
 
@@ -42,7 +40,8 @@ a {
 /* New window (target) + external links */
 a[target],
 a[href^="https://"],
-a[href^="http://"] {
+a[href^="http://"]
+{
   border-bottom: 1px solid;
 }
 
@@ -50,7 +49,6 @@ a:hover,
 a:focus {
   border-bottom: none;
 }
-
 
 /* Images */
 

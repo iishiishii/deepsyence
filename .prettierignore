@@ -1,0 +1,12 @@
+**/build
+**/node_modules
+**/lib
+**/package.json
+**/static
+**/dist
+**/.ipynb_checkpoints
+src/assets/onnxruntime-web
+
+# ms IDE stuff
+.history/
+.vscode/

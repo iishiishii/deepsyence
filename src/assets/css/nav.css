@@ -11,7 +11,7 @@
   opacity: 0;
 }
 .nav.is-shown {
-  visibility: visible;;
+  visibility: visible;
   opacity: 1;
 }
 
@@ -42,21 +42,19 @@
   right: 1.75rem; /* magic */
 }
 
-
-
 .nav-item {
-  padding: .5em 0;
+  padding: 0.5em 0;
 }
 
 .nav-icon {
   width: 16px;
   height: 16px;
   vertical-align: top;
-  margin-right: .25rem;
+  margin-right: 0.25rem;
 }
 
 .nav-category {
-  margin: .2em 0;
+  margin: 0.2em 0;
   padding-left: 2rem;
   font-size: 11px;
   font-weight: normal;
@@ -66,8 +64,8 @@
 .nav-button {
   display: block;
   width: 100%;
-  padding: .3rem;
-  padding-left: calc(2rem + 16px + .5rem); /* padding + icon + magic */
+  padding: 0.3rem;
+  padding-left: calc(2rem + 16px + 0.5rem); /* padding + icon + magic */
   line-height: 2;
   text-align: left;
   font: inherit;
@@ -80,7 +78,7 @@
 }
 .nav-button:hover,
 .nav-button:focus:not(.is-selected) {
-  background-color: hsla(0,0%,0%,.1);
+  background-color: hsla(0deg, 0%, 0%, 0.1);
 }
 .nav-button.is-selected {
   background-color: var(--color-accent);
@@ -90,7 +88,7 @@
   color: #fff;
 }
 .nav-button.is-selected:focus {
-  opacity: .8;
+  opacity: 0.8;
 }
 
 .nav-button em {
@@ -120,9 +118,8 @@
   display: block;
   width: 100%;
   padding: 0;
-  margin-bottom: .75rem;
+  margin-bottom: 0.75rem;
   line-height: 2;
-  text-align: left;
   font: inherit;
   font-size: 13px;
   color: inherit;
@@ -137,10 +134,10 @@
 }
 
 .nav-footer-logo {
-  color: hsl(0,0%,66%);
+  color: hsl(0deg, 0%, 66%);
 }
 .nav-footer-logo:focus {
-  color: hsl(0,0%,33%);
+  color: hsl(0deg, 0%, 33%);
 }
 
 /* Remove border on the logo */
