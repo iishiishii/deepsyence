@@ -245,6 +245,7 @@ export default function Layer(props) {
         elevation={2}
         sx={{
           m: 1,
+          width: "100%",
         }}
       >
         <Box
@@ -253,7 +254,6 @@ export default function Layer(props) {
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            width: 600,
             height: 20,
           }}
         >

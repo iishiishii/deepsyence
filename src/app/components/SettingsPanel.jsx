@@ -11,7 +11,7 @@ export function SettingsPanel(props) {
         width: props.width,
         role: "presentation",
         display: "flex",
-        flexDirection: "row",
+        flexDirection: "column",
         flexGrow: 1,
         m: 2,
       }}

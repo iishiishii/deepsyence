@@ -1,19 +1,16 @@
 import React from "react";
 import { MenuItem, Select } from "@mui/material";
 import { Box } from "@mui/material";
-import { Fade } from "@mui/material";
+import { Grid } from "@mui/material";
 import { Popper } from "@mui/material";
 import { FormControl } from "@mui/material";
 import { InputLabel } from "@mui/material";
 import { Paper } from "@mui/material";
 import { Niivue, NVImage } from "@niivue/niivue";
 import NavBar from "./components/NavBar";
-import { SettingsPanel } from "./components/SettingsPanel";
-import { ColorPicker } from "./components/ColorPicker";
-import { NumberPicker } from "./components/NumberPicker";
+import SideBar from "./components/SideBar";
 import { LayersPanel } from "./components/LayersPanel";
 import { NiivuePanel } from "./components/NiivuePanel";
-import NVSwitch from "./components/Switch";
 import LocationTable from "./components/LocationTable";
 import Layer from "./components/Layer";
 import { v4 as uuidv4 } from "uuid";
@@ -22,7 +19,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#FF9F1C",
+      main: "#468189",
     },
   },
 });
@@ -49,44 +46,6 @@ export default function NiiVue(props) {
   );
   // TODO: add crosshair size state and setter
   const [locationData, setLocationData] = React.useState([]);
-  const [decimalPrecision, setDecimalPrecision] = React.useState(2);
-  const [multiplanarPadPixels, setMultiplanarPadPixels] = React.useState(
-    nv.opts.multiplanarPadPixels,
-  );
-  const [penMode, setPenMode] = React.useState(-1);
-  const modeValueMaps = [-1, 0, 1, 2, 3, 8, 9, 10, 11, 12];
-  const modeNameMaps = [
-    "Off",
-    "Erase",
-    "Red",
-    "Green",
-    "Blue",
-    "Filled Erase",
-    "Filled Red",
-    "Filled Green",
-    "Filled Blue",
-    "Erase Cluster",
-  ];
-  let allModes = modeValueMaps.map((modeValue, id) => {
-    return (
-      <MenuItem value={modeValue} key={modeNameMaps[id]}>
-        {modeNameMaps[id]}
-      </MenuItem>
-    );
-  });
-
-  // write a function to handle the pen drawing
-  //   document.getElementById("drawPen").addEventListener("change", doDrawPen);
-  function doDrawPen(event) {
-    console.log(event.target.value);
-    const mode = parseInt(event.target.value);
-    nv.setDrawingEnabled(mode >= 0);
-    if (mode >= 0) nv.setPenValue(mode & 7, mode > 7);
-    if (mode === 12)
-      //erase selected cluster
-      nv.setPenValue(-0);
-    setPenMode(mode);
-  }
 
   nv.opts.onImageLoaded = () => {
     console.log(`layer name ${nv.volumes[0]}`);
@@ -124,43 +83,6 @@ export default function NiiVue(props) {
 
   function toggleLayers() {
     setOpenLayers(!openLayers);
-  }
-
-  function nvUpdateMultiplanarPadPixels(v) {
-    nv.opts.multiplanarPadPixels = v;
-    setMultiplanarPadPixels(v);
-    nv.drawScene();
-  }
-
-  function nvUpdateClipPlane() {
-    if (!clipPlane) {
-      setClipPlane(true);
-      nv.setClipPlane([0, 270, 0]); //left
-    } else {
-      setClipPlane(false);
-      nv.setClipPlane([2, 0, 0]); //none
-    }
-  }
-
-  function nvUpdateColorBar() {
-    setColorBar(!colorBar);
-    nv.opts.isColorbar = !colorBar;
-    nv.drawScene();
-  }
-
-  function updateDecimalPrecision(v) {
-    setDecimalPrecision(v);
-  }
-
-  function nvUpdateCrosshair3D() {
-    nv.opts.show3Dcrosshair = !crosshair3D;
-    nv.updateGLVolume();
-    setCrosshair3D(!crosshair3D);
-  }
-
-  function nvUpdateRadiological() {
-    nv.setRadiologicalConvention(!radiological);
-    setRadiological(!radiological);
   }
 
   function nvUpdateSliceType(newSliceType) {
@@ -229,83 +151,36 @@ export default function NiiVue(props) {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box
+      {/* <Grid container direction={ 'column' } style={{ flexWrap: 'nowrap' }}> */}
+      <Grid
+        container
+        direction={"column"}
+        style={{ flexWrap: "nowrap" }}
+        alignItems="stretch"
+      >
+        {/* <Box
         sx={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           alignItems: "stretch",
-          height: "100vh",
+          maxHeight: "100vh",
           backgroundColor: "black",
         }}
-      >
-        <NavBar nvUpdateSliceType={nvUpdateSliceType}>
-          <SettingsPanel width={300}>
-            <NVSwitch
-              checked={clipPlane}
-              title={"Clip plane"}
-              onChange={nvUpdateClipPlane}
-              color="companyRed"
-            ></NVSwitch>
-            <NVSwitch
-              checked={radiological}
-              title={"radiological"}
-              onChange={nvUpdateRadiological}
-            ></NVSwitch>
-            <NVSwitch
-              checked={crosshair3D}
-              title={"3D crosshair"}
-              onChange={nvUpdateCrosshair3D}
-            ></NVSwitch>
-            <NVSwitch
-              checked={colorBar}
-              title={"Show color bar"}
-              onChange={nvUpdateColorBar}
-            ></NVSwitch>
-
-            <NumberPicker
-              value={decimalPrecision}
-              onChange={updateDecimalPrecision}
-              title={"Decimal precision"}
-              min={0}
-              max={8}
-              step={1}
-            ></NumberPicker>
-            <NumberPicker
-              value={multiplanarPadPixels}
-              onChange={nvUpdateMultiplanarPadPixels}
-              title={"Multiplanar padding"}
-              min={0}
-              max={20}
-              step={2}
-            ></NumberPicker>
-            <FormControl
-              size="small"
-              sx={{
-                m: 2,
-                minWidth: 120,
-              }}
-            >
-              <InputLabel>Mode</InputLabel>
-              <Select
-                style={{ width: "100px" }}
-                value={penMode}
-                label="Pen"
-                size="small"
-                onChange={doDrawPen}
-              >
-                {allModes}
-              </Select>
-            </FormControl>
-          </SettingsPanel>
-        </NavBar>
+      > */}
+        <NavBar></NavBar>
 
         <Box
           sx={{
             display: "flex",
             flexDirection: "row",
-            height: "100%",
+            // height: "100vh",
+            maxHeight: "100vh",
+            backgroundColor: "black",
+            marginTop: "auto",
           }}
         >
+          <SideBar nv={nv} nvUpdateSliceType={nvUpdateSliceType}></SideBar>
+
           <NiivuePanel nv={nv} volumes={layers}></NiivuePanel>
           <Box
             sx={{
@@ -329,7 +204,9 @@ export default function NiiVue(props) {
             /> */}
           </Box>
         </Box>
-      </Box>
+        {/* </Box> */}
+      </Grid>
+      {/* </Grid> */}
     </ThemeProvider>
   );
 }
