@@ -8,7 +8,9 @@ export function NiivuePanel(props) {
     async function fetchData() {
       const nv = props.nv;
       nv.attachToCanvas(canvas.current);
-      await nv.loadVolumes(props.volumes);
+      await nv.loadVolumes(props.volumes).then(() => {
+        console.log("loaded volumes ", props.volumes);
+      });
     }
     fetchData();
   }, []);

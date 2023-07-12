@@ -2,15 +2,10 @@ import React from "react";
 import { MenuItem, Select } from "@mui/material";
 import { Box } from "@mui/material";
 import { Grid } from "@mui/material";
-import { Popper } from "@mui/material";
-import { FormControl } from "@mui/material";
-import { InputLabel } from "@mui/material";
-import { Paper } from "@mui/material";
 import { Niivue, NVImage } from "@niivue/niivue";
 import NavBar from "./components/NavBar";
 import { LayersPanel } from "./components/LayersPanel";
 import { NiivuePanel } from "./components/NiivuePanel";
-import LocationTable from "./components/LocationTable";
 import Layer from "./components/Layer";
 import { v4 as uuidv4 } from "uuid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -38,13 +33,14 @@ export default function NiiVue(props) {
 
   const [layers, setLayers] = React.useState(nv.volumes);
 
-  // TODO: add crosshair size state and setter
-  const [locationData, setLocationData] = React.useState([]);
-
   nv.opts.onImageLoaded = () => {
-    console.log(`layer name ${nv.volumes[0]}`);
     setLayers([...nv.volumes]);
   };
+  nv.opts.onVolumeAddedFromUrl = () => {
+    setLayers([...nv.volumes]);
+  };
+  
+  console.log(`layer name ${nv.volumes[0]}`);
 
   nv.opts.onLocationChange = (data) => {
     setLocationData(data.values);
@@ -145,24 +141,11 @@ export default function NiiVue(props) {
 
   return (
     <ThemeProvider theme={theme}>
-      {/* <Grid container direction={ 'column' } style={{ flexWrap: 'nowrap' }}> */}
       <Grid
         container
         direction={"row"}
       >
-        {/* <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "stretch",
-          maxHeight: "100vh",
-          backgroundColor: "black",
-        }}
-      > */}
-
         <NavBar nv={nv}></NavBar>
-
-
         <Box
           sx={{
             display: "flex",
@@ -173,12 +156,10 @@ export default function NiiVue(props) {
             marginTop: "auto",
           }}
         >
-          {/* <SideBar nv={nv} nvUpdateSliceType={nvUpdateSliceType}></SideBar> */}
-
           <NiivuePanel nv={nv} volumes={layers}></NiivuePanel>
           <Box
             sx={{
-              width: "20%",
+              width: "25%",
               display: "flex",
               flexDirection: "row",
               // height: "20%"
@@ -192,13 +173,8 @@ export default function NiiVue(props) {
             >
               {layerList}
             </LayersPanel>
-            {/* <LocationTable 
-              tableData={locationData} 
-              decimalPrecision={decimalPrecision}
-            /> */}
           </Box>
         </Box>
-        {/* </Box> */}
       </Grid>
     </ThemeProvider>
   );
