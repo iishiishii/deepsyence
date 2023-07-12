@@ -33,14 +33,11 @@ export default function NiiVue(props) {
 
   const [layers, setLayers] = React.useState(nv.volumes);
 
-  nv.opts.onImageLoaded = () => {
+  nv.onImageLoaded = () => {
     setLayers([...nv.volumes]);
   };
-  nv.opts.onVolumeAddedFromUrl = () => {
-    setLayers([...nv.volumes]);
-  };
-  
-  console.log(`layer name ${nv.volumes[0]}`);
+
+  console.log(`layer name ${nv.volumes.length}`);
 
   nv.opts.onLocationChange = (data) => {
     setLocationData(data.values);
@@ -141,17 +138,13 @@ export default function NiiVue(props) {
 
   return (
     <ThemeProvider theme={theme}>
-      <Grid
-        container
-        direction={"row"}
-      >
+      <Grid container direction={"row"}>
         <NavBar nv={nv}></NavBar>
         <Box
           sx={{
             display: "flex",
             flexDirection: "row",
-            // height: "100vh",
-            // maxHeight: "100vh",
+            height: `calc(100vh - 64px)`,
             backgroundColor: "black",
             marginTop: "auto",
           }}
@@ -162,12 +155,10 @@ export default function NiiVue(props) {
               width: "25%",
               display: "flex",
               flexDirection: "row",
-              // height: "20%"
             }}
           >
             <LayersPanel
               open={openLayers}
-              // width={320}
               onToggleMenu={toggleLayers}
               onAddLayer={addLayer}
             >

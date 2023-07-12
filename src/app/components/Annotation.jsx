@@ -1,8 +1,7 @@
 import React from "react";
 import { Select } from "@mui/material";
 import { MenuItem } from "@mui/material";
-import BrushIcon from '@mui/icons-material/Brush';
-
+import BrushIcon from "@mui/icons-material/Brush";
 
 export default function Annotation(props) {
   const nv = props.nv;
@@ -44,23 +43,22 @@ export default function Annotation(props) {
 
   return (
     <div>
-    <Select
-      // style={{ width: "90px"}}
-      value={penMode}
-      // label="Pen"
-      size="small"
-      onChange={doDrawPen}
-      MenuProps={{
-        anchorOrigin: {
-          vertical: 'bottom',
-          horizontal: 'left',
-        },
-
-      }}
-      IconComponent={BrushIcon}
-    >
-      {allModes}
-    </Select>
+      <Select
+        // style={{ width: "90px"}}
+        value={penMode}
+        // label="Pen"
+        size="small"
+        onChange={doDrawPen}
+        MenuProps={{
+          anchorOrigin: {
+            vertical: "bottom",
+            horizontal: "left",
+          },
+        }}
+        IconComponent={BrushIcon}
+      >
+        {allModes}
+      </Select>
     </div>
   );
 }

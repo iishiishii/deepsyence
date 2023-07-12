@@ -19,23 +19,23 @@ export default function NavBar(props) {
   function updateDecimalPrecision(v) {
     setDecimalPrecision(v);
   }
-  
+
   function nvUpdateMultiplanarPadPixels(v) {
     nv.opts.multiplanarPadPixels = v;
     setMultiplanarPadPixels(v);
     nv.drawScene();
   }
+
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Deepsyence
-          </Typography>
-          <Annotation nv={nv}/>
-            <DropDown nv={nv}/>
-          <Button color="inherit">Computation</Button>
-          {/* <NumberPicker
+    <AppBar position="static">
+      <Toolbar>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          Deepsyence
+        </Typography>
+        <Annotation nv={nv} />
+        <DropDown nv={nv} />
+        <Button color="inherit">Computation</Button>
+        {/* <NumberPicker
           value={decimalPrecision}
           onChange={updateDecimalPrecision}
           title={"Decimal precision"}
@@ -51,8 +51,7 @@ export default function NavBar(props) {
           max={20}
           step={2}
         ></NumberPicker> */}
-        </Toolbar>
-      </AppBar>
-    </Box>
+      </Toolbar>
+    </AppBar>
   );
 }
