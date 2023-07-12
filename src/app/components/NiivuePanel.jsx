@@ -21,7 +21,7 @@ export function NiivuePanel(props) {
         // height: "100%",
       }}
     >
-      <canvas ref={canvas} height={480} width={640} />
+      <canvas ref={canvas} height={800} width={640} />
     </Box>
   );
 }

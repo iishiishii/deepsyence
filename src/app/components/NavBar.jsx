@@ -8,6 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import DropDown from "./DropDown";
 import { NumberPicker } from "./NumberPicker";
+import Annotation from "./Annotation";
 
 export default function NavBar(props) {
   const nv = props.nv;
@@ -31,6 +32,7 @@ export default function NavBar(props) {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Deepsyence
           </Typography>
+          <Annotation nv={nv}/>
             <DropDown nv={nv}/>
           <Button color="inherit">Computation</Button>
           {/* <NumberPicker

@@ -8,7 +8,6 @@ import { InputLabel } from "@mui/material";
 import { Paper } from "@mui/material";
 import { Niivue, NVImage } from "@niivue/niivue";
 import NavBar from "./components/NavBar";
-import SideBar from "./components/SideBar";
 import { LayersPanel } from "./components/LayersPanel";
 import { NiivuePanel } from "./components/NiivuePanel";
 import LocationTable from "./components/LocationTable";
@@ -38,12 +37,7 @@ export default function NiiVue(props) {
   const [openLayers, setOpenLayers] = React.useState(false);
 
   const [layers, setLayers] = React.useState(nv.volumes);
-  const [radiological, setRadiological] = React.useState(false);
-  const [crosshair3D, setCrosshair3D] = React.useState(false);
-  const [colorBar, setColorBar] = React.useState(nv.opts.isColorbar);
-  const [clipPlane, setClipPlane] = React.useState(
-    nv.currentClipPlaneIndex > 0 ? true : false,
-  );
+
   // TODO: add crosshair size state and setter
   const [locationData, setLocationData] = React.useState([]);
 
@@ -179,7 +173,7 @@ export default function NiiVue(props) {
             marginTop: "auto",
           }}
         >
-          <SideBar nv={nv} nvUpdateSliceType={nvUpdateSliceType}></SideBar>
+          {/* <SideBar nv={nv} nvUpdateSliceType={nvUpdateSliceType}></SideBar> */}
 
           <NiivuePanel nv={nv} volumes={layers}></NiivuePanel>
           <Box

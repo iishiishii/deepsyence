@@ -82,7 +82,7 @@ export function LayersPanel(props) {
           variant="outlined"
           sx={{
             m: 2,
-            minWidth: 120,
+            width: 150,
           }}
         >
           <InputLabel
