@@ -19,7 +19,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#468189",
+      main: "#496A81",
     },
   },
 });
@@ -154,9 +154,7 @@ export default function NiiVue(props) {
       {/* <Grid container direction={ 'column' } style={{ flexWrap: 'nowrap' }}> */}
       <Grid
         container
-        direction={"column"}
-        style={{ flexWrap: "nowrap" }}
-        alignItems="stretch"
+        direction={"row"}
       >
         {/* <Box
         sx={{
@@ -167,14 +165,16 @@ export default function NiiVue(props) {
           backgroundColor: "black",
         }}
       > */}
-        <NavBar></NavBar>
+
+        <NavBar nv={nv}></NavBar>
+
 
         <Box
           sx={{
             display: "flex",
             flexDirection: "row",
             // height: "100vh",
-            maxHeight: "100vh",
+            // maxHeight: "100vh",
             backgroundColor: "black",
             marginTop: "auto",
           }}
@@ -184,7 +184,7 @@ export default function NiiVue(props) {
           <NiivuePanel nv={nv} volumes={layers}></NiivuePanel>
           <Box
             sx={{
-              width: "30%",
+              width: "20%",
               display: "flex",
               flexDirection: "row",
               // height: "20%"
@@ -206,7 +206,6 @@ export default function NiiVue(props) {
         </Box>
         {/* </Box> */}
       </Grid>
-      {/* </Grid> */}
     </ThemeProvider>
   );
 }

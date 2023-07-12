@@ -10,6 +10,7 @@ import AddIcon from "@mui/icons-material/Add";
 import React from "react";
 import { styled } from "@mui/material/styles";
 import { outlinedInputClasses } from "@mui/material/OutlinedInput";
+import shadows from "@mui/material/styles/shadows";
 
 export function LayersPanel(props) {
   function handleAddLayer() {
@@ -50,14 +51,15 @@ export function LayersPanel(props) {
   return (
     <Box
       sx={{
-        width: 700,
+        width: 500,
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
         // overflowY: "scroll",
         m: 1,
-        borderRadius: 5,
-        border: "1px dashed grey",
+        borderRadius: 1,
+        border: "1px solid grey",
+        boxShadow: "3px white inset",
         // backgroundColor: "#468189",
         // opacity: [0.9, 0.8, 0.8],
       }}
