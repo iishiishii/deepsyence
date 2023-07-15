@@ -89,15 +89,19 @@ export default function Layer(props) {
     try {
       let id = image.id;
 
-      ort.env.wasm.wasmPaths = new URL(
-        "./assets/onnxruntime-web/",
-        document.baseURI,
-      ).href;
+      ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
 
+      console.log(ort.env.wasm.wasmPaths);
       // @ts-ignore
-      let session = await ort.InferenceSession.create(
-        "./assets/model/model_dynamic.onnx",
-      );
+
+      let model_url = new URL("./model/model_dynamic.onnx", document.baseURI)
+        .href;
+      console.log(model_url);
+
+      let session = await ort.InferenceSession.create(model_url, {
+        executionProviders: ["wasm"],
+      });
+
       const float32Data = colToRow(image.img);
       console.log(image.dims.slice(1).concat([1]));
       console.log(

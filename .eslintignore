@@ -11,7 +11,7 @@ coverage
 *.map.js
 *.bundle.js
 src/assets/onnxruntime-web
-
+**/public
 #TypeDoc
 typedoc-theme/
 
