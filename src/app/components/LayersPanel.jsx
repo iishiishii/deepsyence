@@ -31,7 +31,7 @@ export function LayersPanel(props) {
 
   function handleSliceTypeChange(e) {
     let newSliceType = e.target.value;
-    let nvUpdateSliceType = props.nvUpdateSliceType;
+    let nvUpdateSliceType = props.onSetSliceType;
     setSliceType(newSliceType);
     nvUpdateSliceType(newSliceType);
   }

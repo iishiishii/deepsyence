@@ -239,13 +239,13 @@ export default function Layer(props) {
       sx={{
         display: "flex",
         flexDirection: "row",
+        // width: "100%",
       }}
     >
       <Paper
-        elevation={2}
+        elevation={20}
         sx={{
           m: 1,
-          width: "100%",
         }}
       >
         <Box

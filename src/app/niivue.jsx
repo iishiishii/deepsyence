@@ -87,7 +87,7 @@ export default function NiiVue(props) {
   }
 
   function nvUpdateColorMap(id, clr) {
-    nv.volumes[nv.getVolumeIndexByID(id)].setColorMap(clr);
+    nv.setColormap(id, clr);
     nv.updateGLVolume();
   }
 
@@ -161,6 +161,7 @@ export default function NiiVue(props) {
               open={openLayers}
               onToggleMenu={toggleLayers}
               onAddLayer={addLayer}
+              onSetSliceType={nvUpdateSliceType}
             >
               {layerList}
             </LayersPanel>
