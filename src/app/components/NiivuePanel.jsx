@@ -14,14 +14,26 @@ export function NiivuePanel(props) {
   }, []);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        width: "75%",
-        // height: "100%",
-      }}
-    >
-      <canvas ref={canvas} />
-    </Box>
+    <div style={{ width: "75%" }}>
+      <canvas ref={canvas} style={{ display: "flex" }} />
+      <div
+        id="intensity"
+        style={{
+          height: "30px",
+          width: "200px",
+          position: "fixed",
+          bottom: "0",
+          left: "0",
+          backgroundColor: "rgba(0,0,0,0.9)",
+          borderRadius: "5px",
+          boxShadow: "0px 1px 4px #496A81 inset",
+          color: "white",
+          paddingTop: "6px",
+          paddingLeft: "5px",
+        }}
+      >
+        &nbsp;
+      </div>
+    </div>
   );
 }

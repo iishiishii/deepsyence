@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import DropDown from "./DropDown";
+import View from "./View";
 import { NumberPicker } from "./NumberPicker";
 import Annotation from "./Annotation";
 
@@ -33,7 +33,7 @@ export default function NavBar(props) {
           Deepsyence
         </Typography>
         <Annotation nv={nv} />
-        <DropDown nv={nv} />
+        <View nv={nv} />
         <Button color="inherit">Computation</Button>
         {/* <NumberPicker
           value={decimalPrecision}

@@ -88,6 +88,7 @@ export default function Layer(props) {
   const onnxFunct = async () => {
     try {
       let id = image.id;
+      let name = image.name;
 
       ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
 
@@ -130,7 +131,7 @@ export default function Layer(props) {
         )}`,
       );
       const rasImage = rowToCol(newImage);
-      props.onSetProcess(id, rasImage);
+      props.onSetProcess(id, name, rasImage);
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `);
     }

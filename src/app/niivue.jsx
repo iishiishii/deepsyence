@@ -24,13 +24,17 @@ const nv = new Niivue({
   textHeight: "0.02",
   backColor: [0, 0, 0, 1],
   crosshairColor: [244, 243, 238, 0.5],
+  onLocationChange: handleIntensityChange,
 });
+
+function handleIntensityChange(data) {
+  document.getElementById("intensity").innerHTML = "&nbsp;&nbsp;" + data.string;
+}
 
 // The NiiVue component wraps all other components in the UI.
 // It is exported so that it can be used in other projects easily
 export default function NiiVue(props) {
   const [openLayers, setOpenLayers] = React.useState(false);
-
   const [layers, setLayers] = React.useState(nv.volumes);
 
   nv.onImageLoaded = () => {
@@ -102,29 +106,24 @@ export default function NiiVue(props) {
     nv.updateGLVolume();
   }
 
-  function nvProcess(id, array) {
+  function nvProcess(id, name, array) {
     // find our processed image
     console.log(array.reduce((partialSum, a) => partialSum + a, 0));
 
-    let processedImage = nv.volumes[nv.getVolumeIndexByID(id)];
-    // console.log(processedImage)
-    if (!processedImage) {
+    let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
+
+    if (!modelOutput) {
       console.log("image not found");
       return;
     }
 
-    console.log(
-      processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
-    );
-    processedImage = processedImage.clone();
+    let processedImage = modelOutput.clone();
     processedImage.id = uuidv4();
-    console.log(processedImage.img.length, array.length);
+    processedImage.name = name.split(".")[0] + "_processed.nii.gz";
+
     processedImage.hdr.datatypeCode = processedImage.DT_FLOAT;
     processedImage.img = array;
 
-    console.log(
-      processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
-    );
     processedImage.trustCalMinMax = false;
     processedImage.calMinMax();
     console.log(

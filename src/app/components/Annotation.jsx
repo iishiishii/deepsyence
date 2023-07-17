@@ -5,6 +5,7 @@ import BrushIcon from "@mui/icons-material/Brush";
 
 export default function Annotation(props) {
   const nv = props.nv;
+  nv.setDrawColormap("$slicer3d");
 
   const [penMode, setPenMode] = React.useState(-1);
   const modeValueMaps = [-1, 0, 1, 2, 3, 8, 9, 10, 11, 12];
