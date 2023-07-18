@@ -19,14 +19,9 @@ import NVTick from "./Tick";
 
 export default function NavBar(props) {
   const nv = props.nv;
-  const colorMaps = props.colorMaps || [];
-  const [color, setColor] = React.useState("Gray");
-  const [decimalPrecision, setDecimalPrecision] = React.useState(2);
-  const [multiplanarPadPixels, setMultiplanarPadPixels] = React.useState(
-    nv.opts.multiplanarPadPixels,
-  );
-  const [sliceType, setSliceType] = React.useState("multi");
 
+  const [color, setColor] = React.useState("Gray");
+  const [sliceType, setSliceType] = React.useState("multi");
   const [radiological, setRadiological] = React.useState(false);
   const [crosshair3D, setCrosshair3D] = React.useState(false);
   const [colorBar, setColorBar] = React.useState(nv.opts.isColorbar);
@@ -67,24 +62,6 @@ export default function NavBar(props) {
     setSliceType(newSliceType);
     nvUpdateSliceType(newSliceType);
   }
-  function updateDecimalPrecision(v) {
-    setDecimalPrecision(v);
-  }
-
-  function nvUpdateMultiplanarPadPixels(v) {
-    nv.opts.multiplanarPadPixels = v;
-    setMultiplanarPadPixels(v);
-    nv.drawScene();
-  }
-
-  let allColors = colorMaps.map((colorName) => {
-    return (
-      <MenuItem value={colorName} key={colorName}>
-        {colorName}
-      </MenuItem>
-    );
-  });
-  console.log(props.colorMaps);
 
   function handleColorChange(event) {
     let clr = event;
@@ -112,26 +89,28 @@ export default function NavBar(props) {
     input.click();
   }
 
+  function handleSaveImage() {
+    nv.saveImage("draw.nii", true);
+  }
+
   return (
-    <div>
-      <Box sx={{ width: "100vh", height: "36px" }}>
+    <div style={{width: "100%"}}>
+      <Box sx={{ height: "36px", backgroundColor: "#496A81"}}>
         <Dropdown
-          trigger={<Button>File</Button>}
+          trigger={<Button sx={{ color: "white" }}>File</Button>}
           menu={[
             <DropdownMenuItem onClick={handleAddLayer}>
               {"Upload File"}
             </DropdownMenuItem>,
             <DropdownMenuItem
-              onClick={() => {
-                console.log("clicked");
-              }}
+              onClick={handleSaveImage}
             >
               {"Download File"}
             </DropdownMenuItem>,
           ]}
         />
-        <Dropdown
-          trigger={<Button>View</Button>}
+        <Dropdown 
+          trigger={<Button sx={{ color: "white" }}>View</Button>}
           menu={[
             <DropdownMenuItem
               onClick={() => {
@@ -262,6 +241,12 @@ export default function NavBar(props) {
                 </DropdownMenuItem>,
               ]}
             />,
+          ]}
+        />
+        <Dropdown
+          trigger={<Button sx={{ color: "white" }}>Annotation</Button>}
+          menu={[
+            <Annotation nv={nv}/>
           ]}
         />
       </Box>

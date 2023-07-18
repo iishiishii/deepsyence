@@ -13,26 +13,6 @@ import { outlinedInputClasses } from "@mui/material/OutlinedInput";
 import shadows from "@mui/material/styles/shadows";
 
 export function LayersPanel(props) {
-  const [sliceType, setSliceType] = React.useState("multi");
-
-  function handleSliceTypeChange(e) {
-    let newSliceType = e.target.value;
-    let nvUpdateSliceType = props.onSetSliceType;
-    setSliceType(newSliceType);
-    nvUpdateSliceType(newSliceType);
-  }
-
-  const StyledSelect = styled(Select)(`
-  & .${outlinedInputClasses.notchedOutline} {
-    border-color: orange;
-  }
-  &:hover .${outlinedInputClasses.notchedOutline} {
-    border-color: white;
-  }
-  &.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline} {
-    border-color: orange;
-  }
-`);
 
   return (
     <div

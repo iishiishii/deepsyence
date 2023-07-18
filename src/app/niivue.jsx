@@ -14,7 +14,11 @@ const theme = createTheme({
   palette: {
     primary: {
       main: "#496A81",
+      contrastText: "#FFFFFF",
     },
+    background: {
+      default: "#496A81",
+    }
   },
 });
 
@@ -144,6 +148,7 @@ export default function NiiVue(props) {
     <ThemeProvider theme={theme}>
       <Grid container direction={"row"}>
         <NavBar
+          theme={theme}
           nv={nv}
           colorMaps={nv.colormaps() || []}
           onSetSliceType={nvUpdateSliceType}
