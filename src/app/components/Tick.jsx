@@ -15,7 +15,7 @@ export default function NVTick(props) {
         display: "flex",
         alignItems: "left",
       }}
-      m={1}
+      // m={1}
     >
       <Grid item xs={11}>
         <Typography

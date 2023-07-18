@@ -36,6 +36,7 @@ function handleIntensityChange(data) {
 export default function NiiVue(props) {
   const [openLayers, setOpenLayers] = React.useState(false);
   const [layers, setLayers] = React.useState(nv.volumes);
+  const [selectedLayer, setSelectedLayer] = [] || React.useState(nv.volumes[0]);
 
   nv.onImageLoaded = () => {
     setLayers([...nv.volumes]);
@@ -53,14 +54,18 @@ export default function NiiVue(props) {
       <Layer
         key={layer.name}
         image={layer}
-        colorMaps={nv.colormaps() || []}
         onColorMapChange={nvUpdateColorMap}
         onRemoveLayer={nvRemoveLayer}
         onSetOpacity={nvUpdateOpacity}
         onSetProcess={nvProcess}
+        onSelect={nvSelect}
       />
     );
   });
+
+  function nvSelect(layer) {
+    setSelectedLayer(layer);
+  }
 
   async function addLayer(file) {
     const nvimage = await NVImage.loadFromFile({
@@ -138,12 +143,18 @@ export default function NiiVue(props) {
   return (
     <ThemeProvider theme={theme}>
       <Grid container direction={"row"}>
-        <NavBar nv={nv}></NavBar>
+        <NavBar
+          nv={nv}
+          colorMaps={nv.colormaps() || []}
+          onSetSliceType={nvUpdateSliceType}
+          onColorMapChange={nvUpdateColorMap}
+          onAddLayer={addLayer}
+        ></NavBar>
         <Box
           sx={{
             display: "flex",
             flexDirection: "row",
-            height: `calc(100vh - 64px)`,
+            height: `calc(100vh - 36px)`,
             backgroundColor: "black",
             marginTop: "auto",
           }}
@@ -159,7 +170,6 @@ export default function NiiVue(props) {
             <LayersPanel
               open={openLayers}
               onToggleMenu={toggleLayers}
-              onAddLayer={addLayer}
               onSetSliceType={nvUpdateSliceType}
             >
               {layerList}

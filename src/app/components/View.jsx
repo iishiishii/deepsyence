@@ -154,6 +154,35 @@ export default function View(props) {
             onChange={nvUpdateColorBar}
           ></NVTick>
         </MenuItem>
+        <MenuItem disableRipple>
+          <Button
+            id="demo-customized-button"
+            aria-controls={open ? "demo-customized-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+            variant="contained"
+            disableElevation
+            onClick={handleClick}
+            endIcon={<KeyboardArrowDownIcon />}
+          >
+            Display Mode
+          </Button>
+          <Menu
+            id="demo-customized-menu"
+            MenuListProps={{
+              "aria-labelledby": "demo-customized-button",
+            }}
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+          >
+            <MenuItem value={"axial"}>Axial</MenuItem>
+            <MenuItem value={"coronal"}>Coronal</MenuItem>
+            <MenuItem value={"sagittal"}>Sagittal</MenuItem>
+            <MenuItem value={"multi"}>Multi</MenuItem>
+            <MenuItem value={"3d"}>3D</MenuItem>
+          </Menu>
+        </MenuItem>
       </StyledMenu>
     </div>
   );

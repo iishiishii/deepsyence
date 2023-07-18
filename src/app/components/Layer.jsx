@@ -16,29 +16,28 @@ import React from "react";
 import * as ort from "onnxruntime-web";
 import { v4 as uuidv4 } from "uuid";
 import { useEffect, useMemo, useRef, useState } from "react";
+import Checkbox from "@mui/material/Checkbox";
 
 export default function Layer(props) {
   const image = props.image;
-  const colorMaps = props.colorMaps || [];
   // const [processedImage, setImage] = React.useState(image.img)
   const [detailsOpen, setDetailsOpen] = React.useState(false);
-  const [color, setColor] = React.useState(image.colorMap);
   const [visibilityIcon, setVisibilityIcon] = React.useState(true);
   const [opacity, setOpacity] = React.useState(image.opacity);
+  const [selected, setSelected] = React.useState(false);
+
   let Visibility = visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />;
   let ArrowIcon = detailsOpen ? (
     <KeyboardArrowUpIcon />
   ) : (
     <KeyboardArrowDownIcon />
   );
-  let allColors = colorMaps.map((colorName) => {
-    return (
-      <MenuItem value={colorName} key={colorName}>
-        {colorName}
-      </MenuItem>
-    );
-  });
-  console.log(props.colorMaps);
+  let SelectIcon = selected ? <Checkbox checked /> : <Checkbox />;
+
+  function handleSelect() {
+    setSelected(!selected);
+    props.onSelect(image);
+  }
 
   const counter = useMemo(
     () => new Worker(new URL("../worker.js", import.meta.url)),
@@ -141,14 +140,6 @@ export default function Layer(props) {
     setDetailsOpen(!detailsOpen);
   }
 
-  function handleColorChange(event) {
-    let clr = event.target.value;
-    let id = image.id;
-    console.log(clr);
-    props.onColorMapChange(id, clr);
-    setColor(clr);
-  }
-
   function handleDelete() {
     props.onRemoveLayer(image);
   }
@@ -240,86 +231,69 @@ export default function Layer(props) {
   };
 
   return (
-    <Box
+    <Paper
+      elevation={20}
       sx={{
-        display: "flex",
-        flexDirection: "row",
-        // width: "100%",
+        m: 1,
       }}
     >
-      <Paper
-        elevation={20}
+      <Box
         sx={{
-          m: 1,
+          margin: 1,
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          height: 20,
+        }}
+      >
+        <ListItemIcon
+          onClick={(e) => {
+            e.stopPropagation();
+            visibilityToggle(image);
+            handleOpacity(image.opacity);
+          }}
+        >
+          {Visibility}
+        </ListItemIcon>
+        <Typography
+          sx={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {image.name}
+        </Typography>
+        <IconButton onClick={handleDetails} style={{ marginRight: "auto" }}>
+          {ArrowIcon}
+        </IconButton>
+        <IconButton onClick={handleSelect} style={{ marginRight: "auto" }}>
+          {SelectIcon}
+        </IconButton>
+      </Box>
+      <Box
+        sx={{
+          display: detailsOpen ? "flex" : "none",
         }}
       >
         <Box
           sx={{
-            margin: 1,
             display: "flex",
             flexDirection: "row",
-            alignItems: "center",
-            height: 20,
+            justifyContent: "left",
+            width: "100%",
           }}
+          m={1}
         >
-          <ListItemIcon
-            onClick={(e) => {
-              e.stopPropagation();
-              visibilityToggle(image);
-              handleOpacity(image.opacity);
-            }}
-          >
-            {Visibility}
-          </ListItemIcon>
-          <Typography
-            sx={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {image.name}
-          </Typography>
-          <IconButton onClick={handleDetails} style={{ marginRight: "auto" }}>
-            {ArrowIcon}
+          <IconButton onClick={onnxFunct}>
+            <PlayCircleFilledWhiteIcon />
+          </IconButton>
+          <IconButton onClick={nvMath}>NiiMath</IconButton>
+          <IconButton onClick={handleDelete}>
+            <DeleteIcon />
           </IconButton>
         </Box>
-        <Box
-          sx={{
-            display: detailsOpen ? "flex" : "none",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "left",
-              width: "100%",
-            }}
-            m={1}
-          >
-            <FormControl>
-              <InputLabel>Color</InputLabel>
-              <Select
-                style={{ width: "200px" }}
-                value={color}
-                label="Color"
-                size="small"
-                onChange={handleColorChange}
-              >
-                {allColors}
-              </Select>
-            </FormControl>
-            <IconButton onClick={onnxFunct}>
-              <PlayCircleFilledWhiteIcon />
-            </IconButton>
-            <IconButton onClick={nvMath}>NiiMath</IconButton>
-            <IconButton onClick={handleDelete}>
-              <DeleteIcon />
-            </IconButton>
-          </Box>
-        </Box>
-      </Paper>
-    </Box>
+      </Box>
+    </Paper>
   );
 }
