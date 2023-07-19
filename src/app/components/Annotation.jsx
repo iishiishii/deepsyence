@@ -24,7 +24,7 @@ export default function Annotation(props) {
   nv.setDrawColormap("$slicer3d");
 
   const [penMode, setPenMode] = React.useState(-1);
-  const [filled, setFill] = React.useState(true);
+  const [filled, setFill] = React.useState(false);
 
   const modeValueMaps = [1, 2, 3, 4, 5];
   const colors = ['#80AE80', '#F1D691', '#B17A65', '#6FB8D2', '#D8654F'];
@@ -47,8 +47,9 @@ export default function Annotation(props) {
 
   function handleFill(fill) {
     console.log(fill);
+    nv.setPenValue(penMode, fill)
     setFill(fill);
-    nv.setPenValue(penMode, filled)
+    console.log(filled);
   }
 
   return (
@@ -79,21 +80,23 @@ export default function Annotation(props) {
           <BsFillEraserFill size={22} />
           </Grid>
           <Grid item xs={3}> 
-          <IconContext.Provider value={{ style: { boxShadow: filled ?  "inset 1px 1px 1px #496A81" : ""} }}>
+          <IconContext.Provider value={{ style: { boxShadow: filled==true ?  "inset 1px 1px 1px #496A81" : ""} }}>
           <RiPaintFill size={22}
           // style={{ boxShadow: filled ?  "1px 1px 4px #496A81" : ""}}
             onClick={(e) => {
               e.stopPropagation();
+              e.preventDefault();
               handleFill(true);
             }}
           />
           </IconContext.Provider>
           </Grid>
           <Grid item xs={3}>
-          <IconContext.Provider value={{ style: { boxShadow: !filled ?  "inset 1px 1px 1px #496A81" : ""} }}>
+          <IconContext.Provider value={{ style: { boxShadow: filled==false ?  "inset 1px 1px 1px #496A81" : ""} }}>
             <AiOutlineEdit size={22}
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 handleFill(false);
               }}
             />

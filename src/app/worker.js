@@ -1,11 +1,18 @@
-import init from "../../node_modules/@niivue/niimath-js/src/process-image.wasm";
+import initialize from "../../node_modules/@niivue/niimath-js/src/process-image.wasm";
 import { LinearMemory } from "@niivue/niimath-js/src/linear-memory.js";
 
 let linearMemory = new LinearMemory({ initial: 256, maximum: 2048 });
-let wasmReady = init({ env: linearMemory.env() });
+
+const importObject = {
+  imports: {
+    initialize: initialize
+  },
+};
+const wasmReady = await WebAssembly.instantiate(linearMemory, importObject);
+// let wasmReady = instance({ env: linearMemory.env() });
 
 //convert this function to use in react
-
+export default () => {
 onmessage = function (e) {
   wasmReady.then((niimathWasm) => {
     const imageMetadata = e.data[0];
@@ -72,8 +79,8 @@ onmessage = function (e) {
     niimathWasm.wfree(ptr);
   });
 };
+}
 
-export {};
 // addEventListener("message", (e) => {
 //   wasmReady.then((niimathWasm) => {
 //     const imageMetadata = e.data[0];

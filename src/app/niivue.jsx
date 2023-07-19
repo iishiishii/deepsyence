@@ -138,8 +138,10 @@ export default function NiiVue(props) {
     console.log(
       processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
     );
-    nv.addVolume(processedImage);
-    setLayers([...nv.volumes]);
+    nv.loadDrawing(processedImage);
+    nv.setDrawColormap("$slicer3d");
+    // nv.addVolume(processedImage);
+    // setLayers([...nv.volumes]);
 
     console.log("image processed");
   }

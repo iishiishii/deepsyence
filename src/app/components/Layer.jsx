@@ -12,11 +12,13 @@ import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import DeleteIcon from "@mui/icons-material/Delete";
-import React from "react";
+import React, { Component }  from "react";
 import * as ort from "onnxruntime-web";
 import { v4 as uuidv4 } from "uuid";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Checkbox from "@mui/material/Checkbox";
+import WorkerBuilder from './WorkerBuilder';
+import Worker from '../worker';
 
 export default function Layer(props) {
   const image = props.image;
@@ -39,16 +41,15 @@ export default function Layer(props) {
     props.onSelect(image);
   }
 
-  const counter = useMemo(
-    () => new Worker(new URL("../worker.js", import.meta.url)),
-    [],
-  );
+  let instance = new WorkerBuilder(Worker);
 
   useEffect(() => {
-    if (window.Worker) {
-      nvMath();
+    instance.onmessage = (message) => {
+      if (message) {
+        console.log("Message from worker", message.data);
+      }
     }
-  }, [counter]);
+  }, []);
 
   function colToRow(colArray) {
     let dims = image.dimsRAS;
@@ -288,7 +289,10 @@ export default function Layer(props) {
           <IconButton onClick={onnxFunct}>
             <PlayCircleFilledWhiteIcon />
           </IconButton>
-          <IconButton onClick={nvMath}>NiiMath</IconButton>
+          <IconButton onClick={() => {
+              instance.postMessage(5);
+            }
+          }>NiiMath</IconButton>
           <IconButton onClick={handleDelete}>
             <DeleteIcon />
           </IconButton>
