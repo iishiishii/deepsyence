@@ -1,24 +1,39 @@
-import { Box, Divider, MenuItem } from "@mui/material";
+import { Box} from "@mui/material";
 import { Typography } from "@mui/material";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { ListItemIcon } from "@mui/material";
-import { Select } from "@mui/material";
-import { InputLabel } from "@mui/material";
-import { FormControl } from "@mui/material";
 import { Paper } from "@mui/material";
 import { IconButton } from "@mui/material";
 import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import DeleteIcon from "@mui/icons-material/Delete";
-import React, { Component }  from "react";
+import React from "react";
 import * as ort from "onnxruntime-web";
 import { v4 as uuidv4 } from "uuid";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect} from "react";
 import Checkbox from "@mui/material/Checkbox";
-import WorkerBuilder from './WorkerBuilder';
-import Worker from '../worker';
+import { LinearMemory } from "@niivue/niimath-js/src/linear-memory.js";
+
+let linearMemory = new LinearMemory({ initial: 256, maximum: 2048 });
+// export let wasmReady;
+
+let niimathWasm = await (async () => {
+    let module 
+    try {
+        const wasmPath = new URL("./process-image.wasm", document.baseURI).href;
+
+        const response = await fetch(wasmPath);
+        module = await WebAssembly.instantiateStreaming(response, { env: linearMemory.env() });
+    } catch (error) {
+        console.error('Error loading or instantiating WebAssembly module:', error);
+    }
+    return module.instance.exports;
+
+})();
+
+
 
 export default function Layer(props) {
   const image = props.image;
@@ -41,15 +56,11 @@ export default function Layer(props) {
     props.onSelect(image);
   }
 
-  let instance = new WorkerBuilder(Worker);
+  // let instance = new WorkerBuilder(Worker);
 
-  useEffect(() => {
-    instance.onmessage = (message) => {
-      if (message) {
-        console.log("Message from worker", message.data);
-      }
-    }
-  }, []);
+  // useEffect(() => {
+  //   nvMath();
+  // }, []);
 
   function colToRow(colArray) {
     let dims = image.dimsRAS;
@@ -159,23 +170,108 @@ export default function Layer(props) {
   }
 
   function processImage() {
-    const imageIndex = image.id;
-    let image = image.img.clone();
+
+    let process_image = image.clone();
     // let image = nv.volumes[nv.getVolumeIndexByID(id)].clone();
 
-    let metadata = image.getImageMetadata();
+    let imageMetadata = process_image.getImageMetadata();
+    let imageBytes = process_image.img.buffer;
     const isNewLayer = true;
     // const input = document.getElementById('command');
-    const cmd = "round";
-    counter.postMessage([metadata, image.img.buffer, cmd, isNewLayer]);
+    const cmd = "-round";
+    // instance.postMessage([metadata, process_image.img.buffer, cmd, isNewLayer]);
+    console.log(imageMetadata)
+    // niimathWasmPromise.then((niimathWasm) => {
+      // const niimathWasm = niimathWasmPromise;
+      // console.log("message", e)
+      // const imageMetadata = e.data[0];
+      // const imageBytes = e.data[1];
+      // const cmd = e.data[2];
+      // const isNewLayer = e.data[3];
+  
+      let cptr = niimathWasm.walloc(cmd.length + 1);
+      linearMemory.record_malloc(cptr, cmd.length + 1);
+      let cmdstr = new Uint8Array(cmd.length + 1);
+      for (let i = 0; i < cmd.length; i++) cmdstr[i] = cmd.charCodeAt(i);
+      let cstr = new Uint8Array(niimathWasm.memory.buffer, cptr, cmd.length + 1);
+      cstr.set(cmdstr);
+      //allocate WASM image data
+      let nvox =
+        imageMetadata.nx * imageMetadata.ny * imageMetadata.nz * imageMetadata.nt;
+      let ptr = niimathWasm.walloc(nvox * imageMetadata.bpv);
+      linearMemory.record_malloc(ptr, nvox * imageMetadata.bpv);
+      let cimg = new Uint8Array(
+        niimathWasm.memory.buffer,
+        ptr,
+        nvox * imageMetadata.bpv,
+      );
+      cimg.set(new Uint8Array(imageBytes));
+      console.log(cimg);
+      let ok = niimathWasm.niimath(
+        ptr,
+        imageMetadata.datatypeCode,
+        imageMetadata.nx,
+        imageMetadata.ny,
+        imageMetadata.nz,
+        imageMetadata.nt,
+        imageMetadata.dx,
+        imageMetadata.dy,
+        imageMetadata.dz,
+        imageMetadata.dt,
+        cptr,
+      );
+  
+      if (ok != 0) {
+        console.error(" -> '", cmd, " generated a fatal error: ", ok);
+        return;
+      }
+      cimg = new Uint8Array(
+        niimathWasm.memory.buffer,
+        ptr,
+        nvox * imageMetadata.bpv,
+      );
+      // https://stackoverflow.com/questions/59705741/why-memory-could-not-be-cloned
+      let clone = new Uint8Array(cimg, 0, nvox * imageMetadata.bpv);
+
+      switch (process_image.hdr.datatypeCode) {
+        case process_image.DT_UNSIGNED_CHAR:
+          process_image.img = new Uint8Array(clone);
+          break;
+        case process_image.DT_SIGNED_SHORT:
+          process_image.img = new Int16Array(clone);
+          break;
+        case process_image.DT_FLOAT:
+          process_image.img = new Float32Array(clone);
+          break;
+        case process_image.DT_DOUBLE:
+          throw "datatype " + process_image.hdr.datatypeCode + " not supported";
+        case process_image.DT_RGB:
+          process_image.img = new Uint8Array(clone);
+          break;
+        case process_image.DT_UINT16:
+          process_image.img = new Uint16Array(clone);
+          break;
+        case process_image.DT_RGBA32:
+          process_image.img = new Uint8Array(clone);
+          break;
+        default:
+          throw "datatype " + process_image.hdr.datatypeCode + " not supported";
+      }
+      
+      let imageIndex = image.id;
+      props.onSetProcess(imageIndex, "new.nii", process_image.img);
+  
+  //   }
+  // );
   }
 
-  const nvMath = async () => {
+  async function nvMath() {
     // let newImage = await initWasm();
-    counter.onmessage = (e) => {
+    instance.onmessage = (e) => {
+      console.log(e)
       // find our processed image
       // const id = e.data.id;
-      let processedImage = image.img;
+      let processedImage = image;
       if (!processedImage) {
         console.log("image not found");
         return;
@@ -222,8 +318,8 @@ export default function Layer(props) {
       processedImage.trustCalMinMax = false;
       processedImage.calMinMax();
       let imageIndex = image.id + 1;
-
-      props.onSetProcess(imageIndex, processedImage);
+      console.log(processedImage.img)
+      props.onSetProcess(imageIndex, "new.nii", processedImage);
 
       console.log("image processed");
     };
@@ -289,10 +385,7 @@ export default function Layer(props) {
           <IconButton onClick={onnxFunct}>
             <PlayCircleFilledWhiteIcon />
           </IconButton>
-          <IconButton onClick={() => {
-              instance.postMessage(5);
-            }
-          }>NiiMath</IconButton>
+          <IconButton sx={{ fontSize: "13px", borderRadius: "5px" }} onClick={processImage}>NiiMath</IconButton>
           <IconButton onClick={handleDelete}>
             <DeleteIcon />
           </IconButton>

@@ -135,13 +135,13 @@ export default function NiiVue(props) {
 
     processedImage.trustCalMinMax = false;
     processedImage.calMinMax();
-    console.log(
-      processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
-    );
-    nv.loadDrawing(processedImage);
-    nv.setDrawColormap("$slicer3d");
-    // nv.addVolume(processedImage);
-    // setLayers([...nv.volumes]);
+    // console.log(
+    //   processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
+    // );
+    // nv.loadDrawing(processedImage);
+    // nv.setDrawColormap("$slicer3d");
+    nv.addVolume(processedImage);
+    setLayers([...nv.volumes]);
 
     console.log("image processed");
   }
