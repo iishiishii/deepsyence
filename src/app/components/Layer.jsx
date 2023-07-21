@@ -15,6 +15,8 @@ import { v4 as uuidv4 } from "uuid";
 import { useEffect} from "react";
 import Checkbox from "@mui/material/Checkbox";
 import { LinearMemory } from "@niivue/niimath-js/src/linear-memory.js";
+// import WorkerBuilder from "./WorkerBuilder";
+// import Worker from "../worker"
 
 let linearMemory = new LinearMemory({ initial: 256, maximum: 2048 });
 // export let wasmReady;
@@ -179,7 +181,7 @@ export default function Layer(props) {
     const isNewLayer = true;
     // const input = document.getElementById('command');
     const cmd = "-round";
-    // instance.postMessage([metadata, process_image.img.buffer, cmd, isNewLayer]);
+    // instance.postMessage([imageMetadata, process_image.img.buffer, cmd, isNewLayer]);
     console.log(imageMetadata)
     // niimathWasmPromise.then((niimathWasm) => {
       // const niimathWasm = niimathWasmPromise;
@@ -233,6 +235,12 @@ export default function Layer(props) {
       // https://stackoverflow.com/questions/59705741/why-memory-could-not-be-cloned
       let clone = new Uint8Array(cimg, 0, nvox * imageMetadata.bpv);
 
+      //free WASM memory
+      linearMemory.record_free(cptr);
+      niimathWasm.wfree(cptr);
+      linearMemory.record_free(ptr);
+      niimathWasm.wfree(ptr);
+      
       switch (process_image.hdr.datatypeCode) {
         case process_image.DT_UNSIGNED_CHAR:
           process_image.img = new Uint8Array(clone);
@@ -317,7 +325,7 @@ export default function Layer(props) {
       // recalculate
       processedImage.trustCalMinMax = false;
       processedImage.calMinMax();
-      let imageIndex = image.id + 1;
+      let imageIndex = image.id;
       console.log(processedImage.img)
       props.onSetProcess(imageIndex, "new.nii", processedImage);
 

@@ -18,11 +18,13 @@ let niimathWasmPromise = await (async () => {
 })();
 
 
-export default async () => { 
 
-  onmessage = (e) => {
+
+export default () => {
+  // eslint-disable-next-line no-restricted-globals
+  self.onmessage = async (e) => {
     
-    niimathWasmPromise.then((niimathWasm) => {
+    await niimathWasmPromise.then((niimathWasm) => {
         // const niimathWasm = niimathWasmPromise;
         console.log("message", e)
         const imageMetadata = e.data[0];
@@ -90,6 +92,6 @@ export default async () => {
       }
     );
 
-
-};
+    }
 }
+// export default onmessage();

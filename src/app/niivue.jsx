@@ -9,6 +9,7 @@ import { NiivuePanel } from "./components/NiivuePanel";
 import Layer from "./components/Layer";
 import { v4 as uuidv4 } from "uuid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+// import WorkerBuilder from "./components/WorkerBuilder";
 
 const theme = createTheme({
   palette: {
@@ -34,6 +35,8 @@ const nv = new Niivue({
 function handleIntensityChange(data) {
   document.getElementById("intensity").innerHTML = "&nbsp;&nbsp;" + data.string;
 }
+
+// let instance = new WorkerBuilder(Worker);
 
 // The NiiVue component wraps all other components in the UI.
 // It is exported so that it can be used in other projects easily
@@ -135,13 +138,15 @@ export default function NiiVue(props) {
 
     processedImage.trustCalMinMax = false;
     processedImage.calMinMax();
-    // console.log(
-    //   processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
-    // );
-    // nv.loadDrawing(processedImage);
-    // nv.setDrawColormap("$slicer3d");
-    nv.addVolume(processedImage);
-    setLayers([...nv.volumes]);
+
+    console.log(processedImage)
+    console.log(
+      processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
+    );
+    nv.loadDrawing(processedImage);
+    nv.setDrawColormap("$slicer3d");
+    // nv.addVolume(processedImage);
+    // setLayers([...nv.volumes]);
 
     console.log("image processed");
   }
@@ -161,19 +166,20 @@ export default function NiiVue(props) {
           sx={{
             display: "flex",
             flexDirection: "row",
+            width: "100vw",
             height: `calc(100vh - 36px)`,
             backgroundColor: "black",
             marginTop: "auto",
           }}
         >
           <NiivuePanel nv={nv} volumes={layers}></NiivuePanel>
-          <Box
+          {/* <Box
             sx={{
               width: "25%",
               display: "flex",
               flexDirection: "row",
             }}
-          >
+          > */}
             <LayersPanel
               open={openLayers}
               onToggleMenu={toggleLayers}
@@ -181,7 +187,7 @@ export default function NiiVue(props) {
             >
               {layerList}
             </LayersPanel>
-          </Box>
+          {/* </Box> */}
         </Box>
       </Grid>
     </ThemeProvider>

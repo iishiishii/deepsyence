@@ -17,7 +17,7 @@ export function LayersPanel(props) {
   return (
     <div
       style={{
-        width: 500,
+        width: "25%",
         overflow: "hidden",
         // overflowY: "scroll",
         marginRight: "5px",
