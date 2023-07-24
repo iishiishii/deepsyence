@@ -64,8 +64,9 @@ export default function NiiVue(props) {
         onColorMapChange={nvUpdateColorMap}
         onRemoveLayer={nvRemoveLayer}
         onSetOpacity={nvUpdateOpacity}
-        onSetProcess={nvProcess}
+        onPreprocess={nvPreprocess}
         onSelect={nvSelect}
+        onModel={nvModel}
       />
     );
   });
@@ -118,17 +119,19 @@ export default function NiiVue(props) {
     nv.updateGLVolume();
   }
 
-  function nvProcess(id, name, array) {
+  function nvModel(id, name, array) {
     // find our processed image
-    console.log(array.reduce((partialSum, a) => partialSum + a, 0));
+    // console.log("output ", array.reduce((partialSum, a) => partialSum + a, 0));
 
     let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
-
+    console.log("processed image ",
+      modelOutput.img.reduce((partialSum, a) => partialSum + a, 0),
+    );
     if (!modelOutput) {
       console.log("image not found");
       return;
     }
-
+    console.log("model output ", modelOutput); 
     let processedImage = modelOutput.clone();
     processedImage.id = uuidv4();
     processedImage.name = name.split(".")[0] + "_processed.nii.gz";
@@ -138,8 +141,8 @@ export default function NiiVue(props) {
 
     processedImage.trustCalMinMax = false;
     processedImage.calMinMax();
-
-    console.log(processedImage)
+    // processedImage.dims = modelOutput.dims;
+    console.log("processed image", processedImage)
     console.log(
       processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
     );
@@ -147,6 +150,66 @@ export default function NiiVue(props) {
     nv.setDrawColormap("$slicer3d");
     // nv.addVolume(processedImage);
     // setLayers([...nv.volumes]);
+
+    console.log("image processed");
+  }
+
+  function nvPreprocess(id, name, array) {
+    // find our processed image
+    // console.log("output ", array.reduce((partialSum, a) => partialSum + a, 0));
+
+    let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
+    console.log("processed image ",
+      modelOutput.img.reduce((partialSum, a) => partialSum + a, 0),
+    );
+    if (!modelOutput) {
+      console.log("image not found");
+      return;
+    }
+    console.log("model output ", modelOutput); 
+    let processedImage = modelOutput.clone();
+    processedImage.id = uuidv4();
+    processedImage.name = name.split(".")[0] + "_processed.nii.gz";
+    processedImage.img = array;
+
+    // processedImage.hdr.datatypeCode = processedImage.DT_FLOAT;
+    switch (processedImage.hdr.datatypeCode) {
+      case processedImage.DT_UNSIGNED_CHAR:
+        processedImage.img = new Uint8Array(array);
+        break;
+      case processedImage.DT_SIGNED_SHORT:
+        processedImage.img = new Int16Array(array);
+        break;
+      case processedImage.DT_FLOAT:
+        processedImage.img = new Float32Array(array);
+        break;
+      case processedImage.DT_DOUBLE:
+        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+      case processedImage.DT_RGB:
+        processedImage.img = new Uint8Array(array);
+        break;
+      case processedImage.DT_UINT16:
+        processedImage.img = new Uint16Array(array);
+        break;
+      case processedImage.DT_RGBA32:
+        processedImage.img = new Uint8Array(array);
+        break;
+      default:
+        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+    }
+    
+
+    processedImage.trustCalMinMax = false;
+    processedImage.calMinMax();
+    processedImage.dims = modelOutput.dims;
+    console.log("processed image", processedImage)
+    console.log(
+      processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
+    );
+    // nv.loadDrawing(processedImage);
+    // nv.setDrawColormap("$slicer3d");
+    nv.addVolume(processedImage);
+    setLayers([...nv.volumes]);
 
     console.log("image processed");
   }

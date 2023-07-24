@@ -144,7 +144,7 @@ export default function Layer(props) {
         )}`,
       );
       const rasImage = rowToCol(newImage);
-      props.onSetProcess(id, name, rasImage);
+      props.onModel(id, name, rasImage);
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `);
     }
@@ -175,10 +175,11 @@ export default function Layer(props) {
 
     let process_image = image.clone();
     // let image = nv.volumes[nv.getVolumeIndexByID(id)].clone();
-
+    process_image.img = new Uint8Array(process_image.img);
+    process_image.hdr.datatypeCode = process_image.DT_UNSIGNED_CHAR;
     let imageMetadata = process_image.getImageMetadata();
     let imageBytes = process_image.img.buffer;
-    const isNewLayer = true;
+
     // const input = document.getElementById('command');
     const cmd = "-round";
     // instance.postMessage([imageMetadata, process_image.img.buffer, cmd, isNewLayer]);
@@ -234,106 +235,15 @@ export default function Layer(props) {
       );
       // https://stackoverflow.com/questions/59705741/why-memory-could-not-be-cloned
       let clone = new Uint8Array(cimg, 0, nvox * imageMetadata.bpv);
-
+      let imageIndex = image.id;
+      props.onPreprocess(imageIndex, "new.nii", clone);
       //free WASM memory
       linearMemory.record_free(cptr);
       niimathWasm.wfree(cptr);
       linearMemory.record_free(ptr);
       niimathWasm.wfree(ptr);
-      
-      switch (process_image.hdr.datatypeCode) {
-        case process_image.DT_UNSIGNED_CHAR:
-          process_image.img = new Uint8Array(clone);
-          break;
-        case process_image.DT_SIGNED_SHORT:
-          process_image.img = new Int16Array(clone);
-          break;
-        case process_image.DT_FLOAT:
-          process_image.img = new Float32Array(clone);
-          break;
-        case process_image.DT_DOUBLE:
-          throw "datatype " + process_image.hdr.datatypeCode + " not supported";
-        case process_image.DT_RGB:
-          process_image.img = new Uint8Array(clone);
-          break;
-        case process_image.DT_UINT16:
-          process_image.img = new Uint16Array(clone);
-          break;
-        case process_image.DT_RGBA32:
-          process_image.img = new Uint8Array(clone);
-          break;
-        default:
-          throw "datatype " + process_image.hdr.datatypeCode + " not supported";
-      }
-      
-      let imageIndex = image.id;
-      props.onSetProcess(imageIndex, "new.nii", process_image.img);
-  
-  //   }
-  // );
   }
 
-  async function nvMath() {
-    // let newImage = await initWasm();
-    instance.onmessage = (e) => {
-      console.log(e)
-      // find our processed image
-      // const id = e.data.id;
-      let processedImage = image;
-      if (!processedImage) {
-        console.log("image not found");
-        return;
-      }
-
-      const isNewLayer = true;
-      if (isNewLayer) {
-        processedImage = processedImage.clone();
-        processedImage.id = uuidv4();
-      }
-
-      let imageBytes = e.data.imageBytes;
-
-      switch (processedImage.hdr.datatypeCode) {
-        case processedImage.DT_UNSIGNED_CHAR:
-          processedImage.img = new Uint8Array(imageBytes);
-          break;
-        case processedImage.DT_SIGNED_SHORT:
-          processedImage.img = new Int16Array(imageBytes);
-          break;
-        case processedImage.DT_FLOAT:
-          processedImage.img = new Float32Array(imageBytes);
-          break;
-        case processedImage.DT_DOUBLE:
-          throw (
-            "datatype " + processedImage.hdr.datatypeCode + " not supported"
-          );
-        case processedImage.DT_RGB:
-          processedImage.img = new Uint8Array(imageBytes);
-          break;
-        case processedImage.DT_UINT16:
-          processedImage.img = new Uint16Array(imageBytes);
-          break;
-        case processedImage.DT_RGBA32:
-          processedImage.img = new Uint8Array(imageBytes);
-          break;
-        default:
-          throw (
-            "datatype " + processedImage.hdr.datatypeCode + " not supported"
-          );
-      }
-
-      // recalculate
-      processedImage.trustCalMinMax = false;
-      processedImage.calMinMax();
-      let imageIndex = image.id;
-      console.log(processedImage.img)
-      props.onSetProcess(imageIndex, "new.nii", processedImage);
-
-      console.log("image processed");
-    };
-    // processImage(counter);
-    // let imageIndex = nv.volumes.length;
-  };
 
   return (
     <Paper
