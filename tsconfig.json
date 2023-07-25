@@ -16,5 +16,5 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "public/js"]
+  "include": ["src", "public/js", "**/*.ts", "**/*.tsx", "typings.d.ts"]
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { MenuItem, Select } from "@mui/material";
 import { Box } from "@mui/material";
 import { Grid } from "@mui/material";
@@ -10,6 +10,10 @@ import Layer from "./components/Layer";
 import { v4 as uuidv4 } from "uuid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 // import WorkerBuilder from "./components/WorkerBuilder";
+import { handleImageScale } from "./helpers/scaleHelper";
+import { modelScaleProps } from "./helpers/Interfaces";
+import { onnxMaskToImage } from "./helpers/maskUtils";
+import { modelData } from "./helpers/onnxModelAPI";
 
 const theme = createTheme({
   palette: {
@@ -41,9 +45,9 @@ function handleIntensityChange(data) {
 // The NiiVue component wraps all other components in the UI.
 // It is exported so that it can be used in other projects easily
 export default function NiiVue(props) {
-  const [openLayers, setOpenLayers] = React.useState(false);
-  const [layers, setLayers] = React.useState(nv.volumes);
-  const [selectedLayer, setSelectedLayer] = [] || React.useState(nv.volumes[0]);
+  const [openLayers, setOpenLayers] = useState(false);
+  const [layers, setLayers] = useState(nv.volumes);
+  const [selectedLayer, setSelectedLayer] = [] || useState(nv.volumes[0]);
 
   nv.onImageLoaded = () => {
     setLayers([...nv.volumes]);
