@@ -9,14 +9,16 @@ import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import DeleteIcon from "@mui/icons-material/Delete";
-import React from "react";
 import * as ort from "onnxruntime-web";
 import { v4 as uuidv4 } from "uuid";
-import { useEffect} from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Checkbox from "@mui/material/Checkbox";
 import { LinearMemory } from "@niivue/niimath-js/src/linear-memory.js";
 // import WorkerBuilder from "./WorkerBuilder";
 // import Worker from "../worker"
+import npyjs from "npyjs";
+import { modelData } from "../helpers/onnxModelAPI";
+import AppContext from "../hooks/createContext";
 
 let linearMemory = new LinearMemory({ initial: 256, maximum: 2048 });
 // export let wasmReady;
@@ -44,6 +46,8 @@ export default function Layer(props) {
   const [visibilityIcon, setVisibilityIcon] = React.useState(true);
   const [opacity, setOpacity] = React.useState(image.opacity);
   const [selected, setSelected] = React.useState(false);
+  const [clicks, setClick] = useState(null); // ONNX model
+  const [tensor, setTensor] = useState(null); // Image embedding tensor
 
   let Visibility = visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />;
   let ArrowIcon = detailsOpen ? (
@@ -63,6 +67,23 @@ export default function Layer(props) {
   // useEffect(() => {
   //   nvMath();
   // }, []);
+    // Initialize the ONNX model. load the image, and load the SAM
+  // pre-computed image embedding
+  useEffect(() => {
+    const IMAGE_EMBEDDING = new URL("./model/head.npy", document.baseURI).href;
+
+    const click = {
+      x: 20,
+      y: 20,
+      clickType: 1,
+    }
+    setClick([click]);
+    // Load the Segment Anything pre-computed embedding
+    Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
+      (embedding) => setTensor(embedding)
+    );
+  }, []);
+
 
   function colToRow(colArray) {
     let dims = image.dimsRAS;
@@ -97,6 +118,15 @@ export default function Layer(props) {
     }
     return colArray;
   }
+
+  // Decode a Numpy file into a tensor. 
+  const loadNpyTensor = async (tensorFile, dType) => {
+    console.log(tensorFile)
+    let npLoader = new npyjs();
+    const npArray = await npLoader.load(tensorFile);
+    const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
+    return tensor;
+  };  
 
   const onnxFunct = async () => {
     try {
@@ -145,6 +175,76 @@ export default function Layer(props) {
       );
       const rasImage = rowToCol(newImage);
       props.onModel(id, name, rasImage);
+    } catch (e) {
+      console.log(`failed to inference ONNX model: ${e}. `);
+    }
+  };
+
+  const runSam = async () => {
+    try {
+      let id = image.id;
+      let name = image.name;
+    
+      // Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
+      //   (embedding) => {
+      //     console.log(embedding)
+      //     setTensor(embedding);
+      //   }
+      // );
+      console.log("dims ", image.dims, tensor, clicks)
+      const modelScale = {
+        samScale: 1,
+        height: image.dims[1],
+        width: image.dims[2],
+      }
+
+      ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
+
+      console.log(ort.env.wasm.wasmPaths);
+      // @ts-ignore
+
+      let model_url = new URL("./model/sam_onnx_quantized_example.onnx", document.baseURI)
+        .href;
+      console.log(model_url);
+
+      let session = await ort.InferenceSession.create(model_url, {
+        executionProviders: ["wasm"],
+      });
+
+      const float32Data = colToRow(image.img);
+      console.log(image.dims.slice(1).concat([1]));
+      console.log(
+        `${float32Data.reduce((partialSum, a) => partialSum + a, 0)}`,
+      );
+      // const inputTensor = new ort.Tensor(
+      //   "float32",
+      //   float32Data,
+      //   image.dims.slice(1).concat([1]),
+      // );
+
+      // prepare feeds. use model input names as keys
+      //const feeds = { a: tensorA, b: tensorB }
+      // var feeds = { input_2: input };
+      const feeds = modelData({
+        clicks,
+        tensor,
+        modelScale,
+      });
+      console.log("feeds ", feeds)
+      // feed inputs and run
+      var results = await session.run(feeds);
+
+      // read from results
+      const newImage = results[session.outputNames[0]].data;
+      console.log("newImage ", results[session.outputNames[0]]);
+      console.log(
+        `data of result tensor 'c': ${newImage.reduce(
+          (partialSum, a) => partialSum + a,
+          0,
+        )}`,
+      );
+      const rasImage = rowToCol(newImage);
+      props.onModel(id, name, newImage);
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `);
     }
@@ -300,7 +400,7 @@ export default function Layer(props) {
           }}
           m={1}
         >
-          <IconButton onClick={onnxFunct}>
+          <IconButton onClick={runSam}>
             <PlayCircleFilledWhiteIcon />
           </IconButton>
           <IconButton sx={{ fontSize: "13px", borderRadius: "5px" }} onClick={processImage}>NiiMath</IconButton>

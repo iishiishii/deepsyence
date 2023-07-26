@@ -22,7 +22,7 @@ import * as ort from "onnxruntime-web";
 
 // Define image, embedding and model paths
 // const IMAGE_PATH = "/assets/data/dogs.jpg";
-const IMAGE_EMBEDDING = new URL("./head.npy", document.baseURI).href;
+const IMAGE_EMBEDDING = new URL("./model/head.npy", document.baseURI).href;
 const MODEL_DIR = new URL("./model/sam_onnx_quantized_example.onnx", document.baseURI).href;
 
 const theme = createTheme({
@@ -109,9 +109,9 @@ export default function NiiVue(props) {
   };
 
   // Run the ONNX model every time clicks has changed
-  useEffect(() => {
-    runONNX();
-  }, [clicks]);
+  // useEffect(() => {
+  //   runONNX();
+  // }, [clicks]);
 
   const runONNX = async () => {
     try {
@@ -134,6 +134,7 @@ export default function NiiVue(props) {
         // Run the SAM ONNX model with the feeds returned from modelData()
         const results = await model.run(feeds);
         const output = results[model.outputNames[0]];
+        console.log("output ", output.data)
         // The predicted mask returned from the ONNX model is an array which is 
         // rendered as an HTML image using onnxMaskToImage() from maskUtils.tsx.
         setMaskImg(onnxMaskToImage(output.data, output.dims[2], output.dims[3]));
@@ -244,10 +245,10 @@ export default function NiiVue(props) {
     console.log(
       processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
     );
-    nv.loadDrawing(processedImage);
-    nv.setDrawColormap("$slicer3d");
-    // nv.addVolume(processedImage);
-    // setLayers([...nv.volumes]);
+    // nv.loadDrawing(processedImage);
+    // nv.setDrawColormap("$slicer3d");
+    nv.addVolume(processedImage);
+    setLayers([...nv.volumes]);
 
     console.log("image processed");
   }
