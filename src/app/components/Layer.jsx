@@ -18,7 +18,7 @@ import { LinearMemory } from "@niivue/niimath-js/src/linear-memory.js";
 // import Worker from "../worker"
 import npyjs from "npyjs";
 import { modelData } from "../helpers/onnxModelAPI";
-import AppContext from "../hooks/createContext";
+import { onnxMaskToImage } from "../helpers/maskUtils";
 
 let linearMemory = new LinearMemory({ initial: 256, maximum: 2048 });
 // export let wasmReady;
@@ -73,8 +73,8 @@ export default function Layer(props) {
     const IMAGE_EMBEDDING = new URL("./model/head.npy", document.baseURI).href;
 
     const click = {
-      x: 20,
-      y: 20,
+      x: 120,
+      y: 120,
       clickType: 1,
     }
     setClick([click]);
@@ -192,10 +192,14 @@ export default function Layer(props) {
       //   }
       // );
       console.log("dims ", image.dims, tensor, clicks)
+      const LONG_SIDE_LENGTH = 1024;
+      let w = image.dims[2];
+      let h = image.dims[1];
+      const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
       const modelScale = {
-        samScale: 1,
-        height: image.dims[1],
-        width: image.dims[2],
+        samScale: samScale,
+        height: image.dims[2],
+        width: image.dims[1],
       }
 
       ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
@@ -236,15 +240,28 @@ export default function Layer(props) {
 
       // read from results
       const newImage = results[session.outputNames[0]].data;
-      console.log("newImage ", results[session.outputNames[0]]);
+      const output = results[session.outputNames[0]].data;
+      for (let i = 0; i < output.length; i++) {
+
+        // Threshold the onnx model mask prediction at 0.0
+        // This is equivalent to thresholding the mask using predictor.model.mask_threshold
+        // in python
+        if (output[i] <= 0.0) {
+          output[i] = 0;
+        }
+        else {
+          output[i] = 1;
+        }
+      }
+      console.log("newImage ", output);
       console.log(
         `data of result tensor 'c': ${newImage.reduce(
           (partialSum, a) => partialSum + a,
           0,
         )}`,
       );
-      const rasImage = rowToCol(newImage);
-      props.onModel(id, name, newImage);
+      // const rasImage = onnxMaskToImage(output.data, output.dims[2], output.dims[3]);
+      props.onModel(id, name, output);
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `);
     }

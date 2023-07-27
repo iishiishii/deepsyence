@@ -23,6 +23,26 @@ function arrayToImageData(input: any, width: number, height: number) {
   return new ImageData(arr, height, width);
 }
 
+// Convert the onnx model mask prediction to ImageData
+function arrayToMaskData(input: any, width: number, height: number) {
+  const [r, g, b, a] = [0, 114, 189, 255]; // the masks's blue color
+  const arr = new Float32Array(4 * width * height).fill(0);
+  for (let i = 0; i < input.length; i++) {
+
+    // Threshold the onnx model mask prediction at 0.0
+    // This is equivalent to thresholding the mask using predictor.model.mask_threshold
+    // in python
+    if (input[i] > 0.0) {
+      arr[4 * i + 0] = r;
+      arr[4 * i + 1] = g;
+      arr[4 * i + 2] = b;
+      arr[4 * i + 3] = a;
+    }
+  }
+  console.log("arr ", arr, "height ", height, "width ", width)
+  return arr;
+}
+
 // Use a Canvas element to produce an image from ImageData
 function imageDataToImage(imageData: ImageData) {
   const canvas = imageDataToCanvas(imageData);
@@ -43,5 +63,5 @@ function imageDataToCanvas(imageData: ImageData) {
 
 // Convert the onnx model mask output to an HTMLImageElement
 export function onnxMaskToImage(input: any, width: number, height: number) {
-  return imageDataToImage(arrayToImageData(input, width, height));
+  return arrayToMaskData(input, width, height);
 }
