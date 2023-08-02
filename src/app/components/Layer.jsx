@@ -121,10 +121,10 @@ export default function Layer(props) {
 
   // Decode a Numpy file into a tensor. 
   const loadNpyTensor = async (tensorFile, dType) => {
-    console.log(tensorFile)
     let npLoader = new npyjs();
     const npArray = await npLoader.load(tensorFile);
     const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
+    console.log("tensor ", tensor, npArray.shape)
     return tensor;
   };  
 
@@ -193,13 +193,13 @@ export default function Layer(props) {
       // );
       console.log("dims ", image.dims, tensor, clicks)
       const LONG_SIDE_LENGTH = 1024;
-      let w = image.dims[2];
-      let h = image.dims[1];
+      let w = image.dims[1];
+      let h = image.dims[2];
       const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
       const modelScale = {
         samScale: samScale,
-        height: image.dims[2],
-        width: image.dims[1],
+        height: h,
+        width: w,
       }
 
       ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
@@ -241,18 +241,18 @@ export default function Layer(props) {
       // read from results
       const newImage = results[session.outputNames[0]].data;
       const output = results[session.outputNames[0]].data;
-      for (let i = 0; i < output.length; i++) {
+      // for (let i = 0; i < output.length; i++) {
 
-        // Threshold the onnx model mask prediction at 0.0
-        // This is equivalent to thresholding the mask using predictor.model.mask_threshold
-        // in python
-        if (output[i] <= 0.0) {
-          output[i] = 0;
-        }
-        else {
-          output[i] = 1;
-        }
-      }
+      //   // Threshold the onnx model mask prediction at 0.0
+      //   // This is equivalent to thresholding the mask using predictor.model.mask_threshold
+      //   // in python
+      //   if (output[i] <= 0.0) {
+      //     output[i] = 0;
+      //   }
+      //   else {
+      //     output[i] = 1;
+      //   }
+      // }
       console.log("newImage ", output);
       console.log(
         `data of result tensor 'c': ${newImage.reduce(
@@ -260,8 +260,8 @@ export default function Layer(props) {
           0,
         )}`,
       );
-      // const rasImage = onnxMaskToImage(output.data, output.dims[2], output.dims[3]);
-      props.onModel(id, name, output);
+      const rasImage = onnxMaskToImage(output, w, h);
+      props.onModel(id, name, rasImage);
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `);
     }
