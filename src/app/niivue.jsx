@@ -150,9 +150,9 @@ export default function NiiVue(props) {
 
   console.log(`layer name ${nv.volumes.length}`);
 
-  nv.opts.onLocationChange = (data) => {
-    setLocationData(data.values);
-  };
+  // nv.opts.onLocationChange = (data) => {
+  //   setLocationData(data.values);
+  // };
   // construct an array of <Layer> components. Each layer is a NVImage or NVMesh
   const layerList = layers.map((layer) => {
     console.log(`layer list ${layer.name}`);

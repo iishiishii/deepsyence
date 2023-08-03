@@ -7,7 +7,7 @@
 // Convert the onnx model mask prediction to ImageData
 function arrayToImageData(input: any, width: number, height: number) {
   // const [r, g, b, a] = [0, 114, 189, 255]; // the masks's blue color
-  // let arr = Array(width*height*58).fill(0);
+  let arr = Array(width*height*58).fill(0);
   // let arr = []
   for (let i = 0; i < input.length; i++) {
 
@@ -27,21 +27,20 @@ function arrayToImageData(input: any, width: number, height: number) {
       0,
     )}`,
   );
-  // for (let i = height-1; i >= 0; i--) {
-  //   for (let j = 0; j <width; j++) {
+  // for (let i = 0; i < height; i++) {
+  //   for (let j = 0; j < width; j++) {
   //     // let idxWidth = i * width + j;
   //     // let idxHeight = j * height + i;
-  //     arr.push(input[j * height + i]);
+  //     arr[j + i * width ] = input[i + j * height];
   //   }
   // }
       // arr.push(...input)
   // let arr = rotateColMajor(input, width, height)
   // Rotate 90 degrees counter-clockwise
-  const rotatedArray = rotateCounterClockwise(input, width, height);
+  // const rotatedArray = rotateCounterClockwise(input, width, height);
   
   // Flatten the rotated 2D image back to column-major array
-  const flattenedArray = flattenImage(rotatedArray, height, width);
-  // let rotat = rotate(arr, height, width)
+  arr.push(...rotateCounterClockwise(input, height, width));
   // for (let r = 0; r < height; r++) { // flip 180 degree
   //   for (let c = width - 1; c >= 0; c--) {
   //     arr.push(input[r * width + c]);
@@ -50,7 +49,7 @@ function arrayToImageData(input: any, width: number, height: number) {
 
   // console.log("orig index, transposed index ", input[160], arr[0])
   // arr.push(...input)
-  let transposedInput = new Float32Array(flattenedArray);
+  let transposedInput = new Float32Array(arr);
   console.log("transposedInput ", transposedInput, "height ", height, "width ", width)
   console.log(
     `sum of transposed array: ${transposedInput.reduce(
@@ -59,6 +58,18 @@ function arrayToImageData(input: any, width: number, height: number) {
     )}`,
   );
   return transposedInput;
+}
+
+function rotateImage180CW(arr: any, width: number, height: number) {
+  const rotatedArray = [];
+  
+  for (let col = width - 1; col >= 0; col--) {
+    for (let row = 0; row < height; row++) {
+      rotatedArray.push(arr[(col * height) + row]);
+    }
+  }
+  
+  return rotatedArray;
 }
 
 function flipVertical(arr: any, rows: number, cols: number) {

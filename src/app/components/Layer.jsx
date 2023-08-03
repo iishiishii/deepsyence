@@ -198,8 +198,8 @@ export default function Layer(props) {
       const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
       const modelScale = {
         samScale: samScale,
-        height: h,
-        width: w,
+        height: w,    // swap height and width to get row major order from npy arrayt to column order ?
+        width: h,
       }
 
       ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
