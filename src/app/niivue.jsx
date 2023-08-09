@@ -19,6 +19,7 @@ import { InferenceSession, Tensor } from "onnxruntime-web";
 /* @ts-ignore */
 import npyjs from "npyjs";
 import * as ort from "onnxruntime-web";
+import { nv3dModelPostProcess, nvPostSam, updateSliceType } from "./helpers/niivueHandler";
 
 // Define image, embedding and model paths
 // const IMAGE_PATH = "/assets/data/dogs.jpg";
@@ -89,10 +90,6 @@ export default function NiiVue(props) {
     };
     initModel();
 
-    // Load the image
-    // const url = new URL(IMAGE_PATH, location.origin);
-    // loadImage(url);
-
     // Load the Segment Anything pre-computed embedding
     Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
       (embedding) => setTensor(embedding)
@@ -108,52 +105,12 @@ export default function NiiVue(props) {
     return tensor;
   };
 
-  // Run the ONNX model every time clicks has changed
-  // useEffect(() => {
-  //   runONNX();
-  // }, [clicks]);
-
-  const runONNX = async () => {
-    try {
-      if (
-        model === null ||
-        clicks === null ||
-        tensor === null ||
-        modelScale === null
-      )
-        return;
-      else {
-        // Preapre the model input in the correct format for SAM. 
-        // The modelData function is from onnxModelAPI.tsx.
-        const feeds = modelData({
-          clicks,
-          tensor,
-          modelScale,
-        });
-        if (feeds === undefined) return;
-        // Run the SAM ONNX model with the feeds returned from modelData()
-        const results = await model.run(feeds);
-        const output = results[model.outputNames[0]];
-        console.log("output ", output.data)
-        // The predicted mask returned from the ONNX model is an array which is 
-        // rendered as an HTML image using onnxMaskToImage() from maskUtils.tsx.
-        setMaskImg(onnxMaskToImage(output.data, output.dims[2], output.dims[3]));
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
   nv.onImageLoaded = () => {
     setLayers([...nv.volumes]);
   };
 
   console.log(`layer name ${nv.volumes.length}`);
 
-  // nv.opts.onLocationChange = (data) => {
-  //   setLocationData(data.values);
-  // };
-  // construct an array of <Layer> components. Each layer is a NVImage or NVMesh
   const layerList = layers.map((layer) => {
     console.log(`layer list ${layer.name}`);
     return (
@@ -189,17 +146,7 @@ export default function NiiVue(props) {
   }
 
   function nvUpdateSliceType(newSliceType) {
-    if (newSliceType === "axial") {
-      nv.setSliceType(nv.sliceTypeAxial);
-    } else if (newSliceType === "coronal") {
-      nv.setSliceType(nv.sliceTypeCoronal);
-    } else if (newSliceType === "sagittal") {
-      nv.setSliceType(nv.sliceTypeSagittal);
-    } else if (newSliceType === "multi") {
-      nv.setSliceType(nv.sliceTypeMultiplanar);
-    } else if (newSliceType === "3d") {
-      nv.setSliceType(nv.sliceTypeRender);
-    }
+    updateSliceType(nv, newSliceType);
   }
 
   function nvUpdateColorMap(id, clr) {
@@ -213,104 +160,16 @@ export default function NiiVue(props) {
   }
 
   function nvUpdateOpacity(id, opacity) {
-    // console.log(nv.getVolumeIndexByID(id))
     nv.setOpacity(nv.getVolumeIndexByID(id), opacity);
     nv.updateGLVolume();
   }
 
   function nvModel(id, name, array) {
-    // find our processed image
-    // console.log("output ", array.reduce((partialSum, a) => partialSum + a, 0));
-
-    let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
-    console.log("processed image ",
-      modelOutput.img.reduce((partialSum, a) => partialSum + a, 0),
-    );
-    if (!modelOutput) {
-      console.log("image not found");
-      return;
-    }
-    console.log("model output ", modelOutput); 
-    let processedImage = modelOutput.clone();
-    processedImage.id = uuidv4();
-    processedImage.name = name.split(".")[0] + "_processed.nii.gz";
-
-    processedImage.hdr.datatypeCode = processedImage.DT_FLOAT;
-    processedImage.img = array;
-
-    processedImage.trustCalMinMax = false;
-    processedImage.calMinMax();
-    // processedImage.dims = modelOutput.dims;
-    console.log("processed image", processedImage)
-    console.log(
-      processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
-    );
-    nv.loadDrawing(processedImage);
-    nv.setDrawColormap("$slicer3d");
-    // nv.addVolume(processedImage);
-    // setLayers([...nv.volumes]);
-
-    console.log("image processed");
+    nvPostSam(nv, id, name, array);
   }
 
   function nvPreprocess(id, name, array) {
-    // find our processed image
-    // console.log("output ", array.reduce((partialSum, a) => partialSum + a, 0));
-
-    let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
-    console.log("processed image ",
-      modelOutput.img.reduce((partialSum, a) => partialSum + a, 0),
-    );
-    if (!modelOutput) {
-      console.log("image not found");
-      return;
-    }
-    console.log("model output ", modelOutput); 
-    let processedImage = modelOutput.clone();
-    processedImage.id = uuidv4();
-    processedImage.name = name.split(".")[0] + "_processed.nii.gz";
-    processedImage.img = array;
-
-    // processedImage.hdr.datatypeCode = processedImage.DT_FLOAT;
-    switch (processedImage.hdr.datatypeCode) {
-      case processedImage.DT_UNSIGNED_CHAR:
-        processedImage.img = new Uint8Array(array);
-        break;
-      case processedImage.DT_SIGNED_SHORT:
-        processedImage.img = new Int16Array(array);
-        break;
-      case processedImage.DT_FLOAT:
-        processedImage.img = new Float32Array(array);
-        break;
-      case processedImage.DT_DOUBLE:
-        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
-      case processedImage.DT_RGB:
-        processedImage.img = new Uint8Array(array);
-        break;
-      case processedImage.DT_UINT16:
-        processedImage.img = new Uint16Array(array);
-        break;
-      case processedImage.DT_RGBA32:
-        processedImage.img = new Uint8Array(array);
-        break;
-      default:
-        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
-    }
-    
-
-    processedImage.trustCalMinMax = false;
-    processedImage.calMinMax();
-    processedImage.dims = modelOutput.dims;
-    console.log("processed image", processedImage)
-    console.log(
-      processedImage.img.reduce((partialSum, a) => partialSum + a, 0),
-    );
-    // nv.loadDrawing(processedImage);
-    // nv.setDrawColormap("$slicer3d");
-    nv.addVolume(processedImage);
-    setLayers([...nv.volumes]);
-
-    console.log("image processed");
+    nv3dModelPostProcess(nv, id, name, array, setLayers)
   }
 
   return (
