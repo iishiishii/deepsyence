@@ -20,7 +20,7 @@ import { viewType } from "./types";
 /* @ts-ignore */
 import npyjs from "npyjs";
 import * as ort from "onnxruntime-web";
-import { nv3dModelPostProcess, nvPostSam, updateSliceType } from "./helpers/niivueHandler";
+import { nvNiimathPostProcess, nvPostSam, updateSliceType } from "./helpers/niivueHandler";
 
 const theme = createTheme({
   palette: {
@@ -120,7 +120,7 @@ export default function NiiVue(props: any) {
   }
 
   function nvPreprocess(id: any, name: any, array: Float32Array) {
-    nv3dModelPostProcess(nv, id, name, array, setLayers)
+    nvNiimathPostProcess(nv, id, name, array, setLayers)
   }
 
   return (

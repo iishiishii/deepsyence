@@ -15,7 +15,7 @@ export function updateSliceType(nv: any, newSliceType: viewType) {
     }
 }
 
-export function nvPostSam(nv: any, id: any, name: any, array: Float32Array) {
+function setImage(nv: any, id: any, name: any, array: Float32Array, niimath: boolean) {
     let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
     console.log("processed image ",
       modelOutput.img.reduce((partialSum: number, a: number) => partialSum + a, 0),
@@ -28,17 +28,49 @@ export function nvPostSam(nv: any, id: any, name: any, array: Float32Array) {
     let processedImage = modelOutput.clone();
     processedImage.id = uuid();
     processedImage.name = name.split(".")[0] + "_processed.nii.gz";
-
-    processedImage.hdr.datatypeCode = processedImage.DT_FLOAT;
-    processedImage.img = array;
-
+    if (niimath) {
+        processedImage.img = array;
+        switch (processedImage.hdr.datatypeCode) {
+        case processedImage.DT_UNSIGNED_CHAR:
+            processedImage.img = new Uint8Array(array);
+            break;
+        case processedImage.DT_SIGNED_SHORT:
+            processedImage.img = new Int16Array(array);
+            break;
+        case processedImage.DT_FLOAT:
+            processedImage.img = new Float32Array(array);
+            break;
+        case processedImage.DT_DOUBLE:
+            throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+        case processedImage.DT_RGB:
+            processedImage.img = new Uint8Array(array);
+            break;
+        case processedImage.DT_UINT16:
+            processedImage.img = new Uint16Array(array);
+            break;
+        case processedImage.DT_RGBA32:
+            processedImage.img = new Uint8Array(array);
+            break;
+        default:
+            throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
+        }
+    }
+    else {
+        processedImage.hdr.datatypeCode = processedImage.DT_FLOAT;
+        processedImage.img = array;
+    }
     processedImage.trustCalMinMax = false;
     processedImage.calMinMax();
-    // processedImage.dims = modelOutput.dims;
+    processedImage.dims = modelOutput.dims;
     console.log("processed image", processedImage)
     console.log(
       processedImage.img.reduce((partialSum: number, a: number) => partialSum + a, 0),
     );
+    return processedImage;
+}
+
+export function nvPostSam(nv: any, id: any, name: any, array: Float32Array) {
+    let processedImage = setImage(nv, id, name, array, false);
     nv.loadDrawing(processedImage);
     nv.setDrawColormap("$slicer3d");
     // nv.addVolume(processedImage);
@@ -47,57 +79,8 @@ export function nvPostSam(nv: any, id: any, name: any, array: Float32Array) {
     console.log("image processed");
   }
 
-export function nv3dModelPostProcess(nv: any, id: any, name: any, array: Float32Array, setLayers: (layers: any) => void) {
-    // find our processed image
-    // console.log("output ", array.reduce((partialSum, a) => partialSum + a, 0));
-
-    let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
-    console.log("processed image ",
-      modelOutput.img.reduce((partialSum: number, a: number) => partialSum + a, 0),
-    );
-    if (!modelOutput) {
-      console.log("image not found");
-      return;
-    }
-    console.log("model output ", modelOutput); 
-    let processedImage = modelOutput.clone();
-    processedImage.id = uuid();
-    processedImage.name = name.split(".")[0] + "_processed.nii.gz";
-    processedImage.img = array;
-
-    // processedImage.hdr.datatypeCode = processedImage.DT_FLOAT;
-    switch (processedImage.hdr.datatypeCode) {
-      case processedImage.DT_UNSIGNED_CHAR:
-        processedImage.img = new Uint8Array(array);
-        break;
-      case processedImage.DT_SIGNED_SHORT:
-        processedImage.img = new Int16Array(array);
-        break;
-      case processedImage.DT_FLOAT:
-        processedImage.img = new Float32Array(array);
-        break;
-      case processedImage.DT_DOUBLE:
-        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
-      case processedImage.DT_RGB:
-        processedImage.img = new Uint8Array(array);
-        break;
-      case processedImage.DT_UINT16:
-        processedImage.img = new Uint16Array(array);
-        break;
-      case processedImage.DT_RGBA32:
-        processedImage.img = new Uint8Array(array);
-        break;
-      default:
-        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
-    }
-    
-    processedImage.trustCalMinMax = false;
-    processedImage.calMinMax();
-    processedImage.dims = modelOutput.dims;
-    console.log("processed image", processedImage)
-    console.log(
-      processedImage.img.reduce((partialSum: number, a: number) => partialSum + a, 0),
-    );
+export function nvNiimathPostProcess(nv: any, id: any, name: any, array: Float32Array, setLayers: (layers: any) => void) {
+    let processedImage = setImage(nv, id, name, array, true);
     // nv.loadDrawing(processedImage);
     // nv.setDrawColormap("$slicer3d");
     nv.addVolume(processedImage);
