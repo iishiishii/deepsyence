@@ -15,19 +15,19 @@ export const Dropdown = React.forwardRef(
       isOpen: controlledIsOpen,
       onOpen: onControlledOpen,
       minWidth,
-    },
+    }: any,
     ref,
   ) => {
     const [isInternalOpen, setInternalOpen] = React.useState(null);
 
     const isOpen = controlledIsOpen || isInternalOpen;
 
-    let anchorRef = React.useRef(null);
+    let anchorRef: any = React.useRef(null);
     if (ref) {
       anchorRef = ref;
     }
 
-    const handleOpen = (event) => {
+    const handleOpen = (event: any) => {
       event.stopPropagation();
 
       if (menu.length) {
@@ -37,7 +37,7 @@ export const Dropdown = React.forwardRef(
       }
     };
 
-    const handleClose = (event) => {
+    const handleClose = (event: any) => {
       event.stopPropagation();
 
       if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -51,7 +51,7 @@ export const Dropdown = React.forwardRef(
       onControlledOpen ? onControlledOpen(null) : setInternalOpen(null);
     };
 
-    const renderMenu = (menuItem, index) => {
+    const renderMenu: any = (menuItem: any, index: number) => {
       const { keepOpen: keepOpenLocal, ...props } = menuItem.props;
 
       let extraProps = {};
@@ -65,7 +65,7 @@ export const Dropdown = React.forwardRef(
         ...props,
         key: index,
         ...extraProps,
-        onClick: (event) => {
+        onClick: (event: any) => {
           event.stopPropagation();
 
           if (!keepOpenGlobal && !keepOpenLocal) {
@@ -90,7 +90,6 @@ export const Dropdown = React.forwardRef(
         })}
 
         <Menu
-          Paper={{ sx: { minWidth: minWidth ?? 0 } }}
           anchorEl={isOpen}
           open={!!isOpen}
           onClose={handleClose}

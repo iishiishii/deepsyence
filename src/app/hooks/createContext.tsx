@@ -20,6 +20,14 @@ interface contextProps {
     maskImg: HTMLImageElement | null,
     setMaskImg: (e: HTMLImageElement | null) => void
   ];
+  penMode: [
+    penMode: number,
+    setPenMode: (e: number) => void
+  ];
+  filled: [
+    filled: boolean,
+    setFilled: (e: boolean) => void
+  ];
 }
 
 const AppContext = createContext<contextProps | null>(null);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect, useState }  from "react";
 import { Box, Grid, Select } from "@mui/material";
 import { MenuItem } from "@mui/material";
 import BrushIcon from "@mui/icons-material/Brush";
@@ -18,24 +18,33 @@ import {
 } from '@uiw/color-convert';
 import Swatch from '@uiw/react-color-swatch';
 import { IconContext } from "react-icons";
+import AppContext from "../hooks/createContext";
 
-export default function Annotation(props) {
-  const nv = props.nv;
+interface Props {
+  niivue: any;
+}
+
+export default function Annotation ({
+  niivue
+}: Props) {
+  const nv = niivue;
   nv.setDrawColormap("$slicer3d");
 
-  const [penMode, setPenMode] = React.useState(-1);
-  const [filled, setFill] = React.useState(false);
+  const { 
+    penMode: [penMode, setPenMode], 
+    filled: [filled, setFill]
+  } = useContext(AppContext)!;
 
-  const modeValueMaps = [1, 2, 3, 4, 5];
+  const modeValueMaps: number[] = [1, 2, 3, 4, 5];
   const colors = ['#80AE80', '#F1D691', '#B17A65', '#6FB8D2', '#D8654F'];
 
-  function doDrawPen(event) {
+  function doDrawPen(event: any) {
     console.log(event);
     let hex = hsvaToHex(event);
     console.log(hex);
     let colorIndex = colors.indexOf(hex.toUpperCase());
     console.log(colorIndex);
-    const mode = parseInt(modeValueMaps[colorIndex]);
+    const mode = modeValueMaps[colorIndex];
     console.log(mode);
     nv.setDrawingEnabled(mode >= 0);
     nv.setPenValue(mode, filled);
@@ -45,7 +54,7 @@ export default function Annotation(props) {
     setPenMode(mode);
   }
 
-  function handleFill(fill) {
+  function handleFill(fill: boolean) {
     console.log(fill);
     nv.setPenValue(penMode, fill)
     setFill(fill);

@@ -9,7 +9,6 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import View from "./View";
-import { NumberPicker } from "./NumberPicker";
 import Annotation from "./Annotation";
 import { Box, Link } from "@mui/material";
 import ArrowRight from "@mui/icons-material/ArrowRight";
@@ -246,7 +245,7 @@ export default function NavBar(props) {
         <Dropdown
           trigger={<Button sx={{ color: "white" }}>Annotation</Button>}
           menu={[
-            <Annotation nv={nv}/>
+            <Annotation niivue={nv}/>
           ]}
         />
       </Box>
