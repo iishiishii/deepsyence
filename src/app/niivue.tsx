@@ -20,7 +20,11 @@ import { viewType } from "./types";
 /* @ts-ignore */
 import npyjs from "npyjs";
 import * as ort from "onnxruntime-web";
-import { nvNiimathPostProcess, nvPostSam, updateSliceType } from "./helpers/niivueHandler";
+import {
+  nvNiimathPostProcess,
+  nvPostSam,
+  updateSliceType,
+} from "./helpers/niivueHandler";
 
 const theme = createTheme({
   palette: {
@@ -30,7 +34,7 @@ const theme = createTheme({
     },
     background: {
       default: "#496A81",
-    }
+    },
   },
 });
 
@@ -40,11 +44,13 @@ const nv = new Niivue({
   textHeight: "0.02",
   backColor: [0, 0, 0, 1],
   crosshairColor: [244, 243, 238, 0.5],
+  multiplanarForceRender: false,
   onLocationChange: handleIntensityChange,
 });
 
 function handleIntensityChange(data: any) {
-  document.getElementById("intensity")!.innerHTML = "&nbsp;&nbsp;" + data.string;
+  document.getElementById("intensity")!.innerHTML =
+    "&nbsp;&nbsp;" + data.string;
 }
 
 // let instance = new WorkerBuilder(Worker);
@@ -57,7 +63,6 @@ export default function NiiVue(props: any) {
   nv.onImageLoaded = () => {
     setLayers([...nv.volumes]);
   };
-
   console.log(`layer name ${nv.volumes.length}`);
 
   const layerList = layers.map((layer: any) => {
@@ -78,7 +83,7 @@ export default function NiiVue(props: any) {
 
   function nvSelect(layer: any) {
     if (layer) {
-    setSelectedLayer(layer);
+      setSelectedLayer(layer);
     }
   }
 
@@ -120,7 +125,7 @@ export default function NiiVue(props: any) {
   }
 
   function nvPreprocess(id: any, name: any, array: Float32Array) {
-    nvNiimathPostProcess(nv, id, name, array, setLayers)
+    nvNiimathPostProcess(nv, id, name, array, setLayers);
   }
 
   return (
@@ -152,13 +157,13 @@ export default function NiiVue(props: any) {
               flexDirection: "row",
             }}
           > */}
-            <LayersPanel
-              open={openLayers}
-              onToggleMenu={toggleLayers}
-              onSetSliceType={nvUpdateSliceType}
-            >
-              {layerList}
-            </LayersPanel>
+          <LayersPanel
+            open={openLayers}
+            onToggleMenu={toggleLayers}
+            onSetSliceType={nvUpdateSliceType}
+          >
+            {layerList}
+          </LayersPanel>
           {/* </Box> */}
         </Box>
       </Grid>

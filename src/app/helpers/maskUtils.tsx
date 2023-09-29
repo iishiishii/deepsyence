@@ -6,13 +6,12 @@
 
 // Convert the onnx model mask prediction to ImageData
 function arrayToImageData(input: any, width: number, height: number) {
-  let arr = Array(width*height*58).fill(0);
+  let arr = Array(width * height * 58).fill(0);
   for (let i = 0; i < input.length; i++) {
     // Threshold the onnx model mask prediction at 0.0
     if (input[i] <= 0.0) {
       input[i] = 0;
-    }
-    else {
+    } else {
       input[i] = 1;
     }
   }
@@ -27,7 +26,14 @@ function arrayToImageData(input: any, width: number, height: number) {
   arr.push(...rotate(input, height, width));
 
   let transposedInput = new Float32Array(arr);
-  console.log("transposedInput ", transposedInput, "height ", height, "width ", width)
+  console.log(
+    "transposedInput ",
+    transposedInput,
+    "height ",
+    height,
+    "width ",
+    width,
+  );
   console.log(
     `sum of transposed array: ${transposedInput.reduce(
       (partialSum, a) => partialSum + a,
@@ -88,7 +94,6 @@ function arrayToMaskData(input: any, width: number, height: number) {
   const [r, g, b, a] = [0, 114, 189, 255]; // the masks's blue color
   const arr = new Float32Array(4 * width * height).fill(0);
   for (let i = 0; i < input.length; i++) {
-
     // Threshold the onnx model mask prediction at 0.0
     // This is equivalent to thresholding the mask using predictor.model.mask_threshold
     // in python
@@ -99,7 +104,7 @@ function arrayToMaskData(input: any, width: number, height: number) {
       arr[4 * i + 3] = a;
     }
   }
-  console.log("arr ", arr, "height ", height, "width ", width)
+  console.log("arr ", arr, "height ", height, "width ", width);
   return arr;
 }
 

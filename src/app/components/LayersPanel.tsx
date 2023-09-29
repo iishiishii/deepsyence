@@ -13,7 +13,6 @@ import { outlinedInputClasses } from "@mui/material/OutlinedInput";
 import shadows from "@mui/material/styles/shadows";
 
 export function LayersPanel(props: any) {
-
   return (
     <div
       style={{

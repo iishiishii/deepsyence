@@ -10,24 +10,18 @@ import { modelInputProps } from "../helpers/Interfaces";
 interface contextProps {
   clicks: [
     clicks: modelInputProps[] | null,
-    setClicks: (e: modelInputProps[] | null) => void
+    setClicks: (e: modelInputProps[] | null) => void,
   ];
   image: [
     image: HTMLImageElement | null,
-    setImage: (e: HTMLImageElement | null) => void
+    setImage: (e: HTMLImageElement | null) => void,
   ];
   maskImg: [
     maskImg: HTMLImageElement | null,
-    setMaskImg: (e: HTMLImageElement | null) => void
+    setMaskImg: (e: HTMLImageElement | null) => void,
   ];
-  penMode: [
-    penMode: number,
-    setPenMode: (e: number) => void
-  ];
-  filled: [
-    filled: boolean,
-    setFilled: (e: boolean) => void
-  ];
+  penMode: [penMode: number, setPenMode: (e: number) => void];
+  filled: [filled: boolean, setFilled: (e: boolean) => void];
 }
 
 const AppContext = createContext<contextProps | null>(null);

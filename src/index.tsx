@@ -6,9 +6,12 @@ import "./app/styles/index.css";
 import NiiVue from "./app/niivue";
 import AppContextProvider from "./app/hooks/context";
 
-
 const root = ReactDOM.createRoot(document.getElementById("app") as HTMLElement);
-root.render(<AppContextProvider><NiiVue /></AppContextProvider>);
+root.render(
+  <AppContextProvider>
+    <NiiVue />
+  </AppContextProvider>,
+);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

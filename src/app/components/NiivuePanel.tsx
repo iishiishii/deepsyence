@@ -4,45 +4,50 @@ import { modelInputProps } from "../helpers/Interfaces";
 import AppContext from "../hooks/createContext";
 import * as _ from "underscore";
 
-
-export function NiivuePanel({ nv, volumes}: any) {
+export function NiivuePanel({ nv, volumes }: any) {
   const canvas = React.useRef(null);
-  // const {
-  //   image: [image],
-  //   maskImg: [maskImg, setMaskImg],
-  // } = useContext(AppContext)!;
+  const {
+    image: [image],
+    maskImg: [maskImg, setMaskImg],
+  } = useContext(AppContext)!;
 
-  // const {
-  //   clicks: [, setClicks],
-  // } = useContext(AppContext)!;
+  const {
+    clicks: [, setClicks],
+  } = useContext(AppContext)!;
 
-  // const getClick = (x: number, y: number): modelInputProps => {
-  //   const clickType = 1;
-  //   return { x, y, clickType };
-  // };
-
+  const getClick = (x: number, y: number): modelInputProps => {
+    const clickType = 1;
+    console.log("***** CLICK TYPE    ", x, y);
+    return { x, y, clickType };
+  };
 
   // // Get mouse position and scale the (x, y) coordinates back to the natural
   // // scale of the image. Update the state of clicks with setClicks to trigger
   // // the ONNX model to run and generate a new mask via a useEffect in App.tsx
-  // const handleMouseMove = _.throttle((e: any) => {
-  //   let el = e.nativeEvent.target;
-  //   const rect = el.getBoundingClientRect();
-  //   let x = e.clientX - rect.left;
-  //   let y = e.clientY - rect.top;
-  //   const imageScale = image ? image.width / el.offsetWidth : 1;
-  //   x *= imageScale;
-  //   y *= imageScale;
-  //   const click = getClick(x, y);
-  //   if (click) setClicks([click]);
-  // }, 15);
+  const handleMouseMove = _.throttle((e: any) => {
+    let el = canvas.current || e.target;
+    console.log(
+      "***** NATIVE EVENT TARGET    ",
+      e.clientX,
+      e.clientY,
+      window.devicePixelRatio,
+    );
 
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+    console.log("***** CANVAS COORDINATE    ", x, y);
+    const click = getClick(x, y);
+    if (click) setClicks([click]);
+  }, 15);
 
   React.useEffect(() => {
     async function fetchData() {
       const niivue = nv;
       niivue.attachToCanvas(canvas.current);
       await niivue.loadVolumes(volumes);
+      nv.setSliceType(nv.sliceTypeAxial);
       // await niivue.loadVolumes(maskImg);
     }
     fetchData();
@@ -50,12 +55,12 @@ export function NiivuePanel({ nv, volumes}: any) {
 
   return (
     <div style={{ width: "75%" }}>
-      <canvas 
-          ref={canvas}        
-          // onMouseMove={handleMouseMove}
-          // onMouseOut={() => _.defer(() => setMaskImg(null))}
-          // onTouchStart={handleMouseMove}
-          />
+      <canvas
+        ref={canvas}
+        onMouseMove={handleMouseMove}
+        // onMouseOut={() => _.defer(() => setMaskImg(null))}
+        // onTouchStart={handleMouseMove}
+      />
       <div
         id="intensity"
         style={{

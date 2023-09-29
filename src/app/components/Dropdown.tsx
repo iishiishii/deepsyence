@@ -89,11 +89,7 @@ export const Dropdown = React.forwardRef(
           ref: anchorRef,
         })}
 
-        <Menu
-          anchorEl={isOpen}
-          open={!!isOpen}
-          onClose={handleClose}
-        >
+        <Menu anchorEl={isOpen} open={!!isOpen} onClose={handleClose}>
           {React.Children.map(menu, renderMenu)}
         </Menu>
       </>

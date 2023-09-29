@@ -4,7 +4,6 @@
 // This source code is licensed under the license found in the
 // LICENSE file in the root directory of this source tree.
 
-
 // Helper function for handling image scaling needed for SAM
 const handleImageScale = (image: HTMLImageElement) => {
   // Input images to SAM must be resized so the longest side is 1024
@@ -15,4 +14,83 @@ const handleImageScale = (image: HTMLImageElement) => {
   return { height: h, width: w, samScale };
 };
 
-export { handleImageScale };
+// resize image for SAM
+function bilinearInterpolation(src: any, dst: any) {
+  function interpolate(
+    k: number,
+    kMin: number,
+    kMax: number,
+    vMin: number,
+    vMax: number,
+  ) {
+    return Math.round((k - kMin) * vMax + (kMax - k) * vMin);
+  }
+
+  function interpolateHorizontal(
+    x: number,
+    y: number,
+    xMin: number,
+    xMax: number,
+  ) {
+    const vMin = src.data[y * src.width + xMin];
+    if (xMin === xMax) return vMin;
+
+    const vMax = src.data[y * src.width + xMax];
+    return interpolate(x, xMin, xMax, vMin, vMax);
+  }
+
+  function interpolateVertical(
+    x: number,
+    xMin: number,
+    xMax: number,
+    y: number,
+    yMin: number,
+    yMax: number,
+  ) {
+    const vMin = interpolateHorizontal(x, yMin, xMin, xMax);
+    if (yMin === yMax) return vMin;
+
+    const vMax = interpolateHorizontal(x, yMax, xMin, xMax);
+    return interpolate(y, yMin, yMax, vMin, vMax);
+  }
+
+  let pos = 0;
+
+  for (let y = 0; y < dst.height; y++) {
+    for (let x = 0; x < dst.width; x++) {
+      const srcX = (x * src.width) / dst.width;
+      const srcY = (y * src.height) / dst.height;
+
+      const xMin = Math.floor(srcX);
+      const yMin = Math.floor(srcY);
+
+      const xMax = Math.min(Math.ceil(srcX), src.width - 1);
+      const yMax = Math.min(Math.ceil(srcY), src.height - 1);
+
+      dst.data[pos++] = interpolateVertical(srcX, xMin, xMax, srcY, yMin, yMax); // R
+      // dst.data[pos++] = interpolateVertical(1, srcX, xMin, xMax, srcY, yMin, yMax) // G
+      // dst.data[pos++] = interpolateVertical(2, srcX, xMin, xMax, srcY, yMin, yMax) // B
+      // dst.data[pos++] = interpolateVertical(3, srcX, xMin, xMax, srcY, yMin, yMax) // A
+    }
+  }
+}
+
+const resizeImageData = (
+  image: { data: Float32Array; height: number; width: number },
+  width: number,
+  height: number,
+) => {
+  const resultArray = new Float32Array(width * height);
+
+  const result = {
+    data: resultArray,
+    width: width,
+    height: height,
+  };
+
+  bilinearInterpolation(image, result);
+
+  return result;
+};
+
+export { handleImageScale, resizeImageData };

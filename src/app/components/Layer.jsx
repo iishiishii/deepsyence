@@ -1,4 +1,4 @@
-import { Box} from "@mui/material";
+import { Box } from "@mui/material";
 import { Typography } from "@mui/material";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -16,7 +16,7 @@ import Checkbox from "@mui/material/Checkbox";
 import npyjs from "npyjs";
 import { processImage } from "../helpers/niimath";
 import { brainExtractionModel } from "../helpers/brainExtractionModel";
-import { samModel } from "../helpers/samModel";
+import { samEncoder, samModel } from "../helpers/samModel";
 
 export default function Layer(props) {
   const image = props.image;
@@ -49,29 +49,39 @@ export default function Layer(props) {
       x: 120,
       y: 120,
       clickType: 1,
-    }
+    };
     setClick([click]);
     // Load the Segment Anything pre-computed embedding
-    Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
-      (embedding) => setTensor(embedding)
-    );
+    //   Promise.resolve(samEncoder(image)).then(
+    //     (embedding) => {
+    //       setTensor(encodedTensor)}
+    //   );
   }, []);
 
-  // Decode a Numpy file into a tensor. 
+  // Decode a Numpy file into a tensor.
   const loadNpyTensor = async (tensorFile, dType) => {
     let npLoader = new npyjs();
     const npArray = await npLoader.load(tensorFile);
     const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
-    console.log("tensor ", tensor, npArray.shape)
+    console.log("tensor ", tensor, npArray.shape);
     return tensor;
-  };  
+  };
 
   const brainExtract = async () => {
-    brainExtractionModel(image, props.onModel)
+    brainExtractionModel(image, props.onModel);
   };
 
   const runSam = async () => {
-    samModel(image, tensor, clicks, props.onModel)
+    await samEncoder(image).then((embedding) => {
+      // const result = resizeImageData(embedding, 1024, 128, 'bilinear-interpolation')
+      let encodedTensor = new ort.Tensor(
+        "float32",
+        embedding,
+        [1, 256, 64, 64],
+      );
+      // setTensor(encodedTensor)
+      samModel(image, encodedTensor, clicks, props.onModel);
+    });
   };
 
   function handleDetails() {
@@ -98,7 +108,6 @@ export default function Layer(props) {
   function handleNiimath() {
     processImage(image, props.onPreprocess);
   }
-
 
   return (
     <Paper
@@ -158,7 +167,12 @@ export default function Layer(props) {
           <IconButton onClick={runSam}>
             <PlayCircleFilledWhiteIcon />
           </IconButton>
-          <IconButton sx={{ fontSize: "13px", borderRadius: "5px" }} onClick={handleNiimath}>NiiMath</IconButton>
+          <IconButton
+            sx={{ fontSize: "13px", borderRadius: "5px" }}
+            onClick={handleNiimath}
+          >
+            NiiMath
+          </IconButton>
           <IconButton onClick={handleDelete}>
             <DeleteIcon />
           </IconButton>

@@ -24,7 +24,7 @@ const AppContextProvider = (props: {
         image: [image, setImage],
         maskImg: [maskImg, setMaskImg],
         penMode: [penMode, setPenMode],
-        filled: [filled, setFilled]
+        filled: [filled, setFilled],
       }}
     >
       {props.children}

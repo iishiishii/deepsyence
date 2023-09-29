@@ -20,7 +20,7 @@ export default function NavBar(props) {
   const nv = props.nv;
 
   const [color, setColor] = React.useState("Gray");
-  const [sliceType, setSliceType] = React.useState("multi");
+  const [sliceType, setSliceType] = React.useState("axial");
   const [radiological, setRadiological] = React.useState(false);
   const [crosshair3D, setCrosshair3D] = React.useState(false);
   const [colorBar, setColorBar] = React.useState(nv.opts.isColorbar);
@@ -93,22 +93,20 @@ export default function NavBar(props) {
   }
 
   return (
-    <div style={{width: "100%"}}>
-      <Box sx={{ height: "36px", backgroundColor: "#496A81"}}>
+    <div style={{ width: "100%" }}>
+      <Box sx={{ height: "36px", backgroundColor: "#496A81" }}>
         <Dropdown
           trigger={<Button sx={{ color: "white" }}>File</Button>}
           menu={[
             <DropdownMenuItem onClick={handleAddLayer}>
               {"Upload File"}
             </DropdownMenuItem>,
-            <DropdownMenuItem
-              onClick={handleSaveImage}
-            >
+            <DropdownMenuItem onClick={handleSaveImage}>
               {"Download File"}
             </DropdownMenuItem>,
           ]}
         />
-        <Dropdown 
+        <Dropdown
           trigger={<Button sx={{ color: "white" }}>View</Button>}
           menu={[
             <DropdownMenuItem
@@ -244,9 +242,7 @@ export default function NavBar(props) {
         />
         <Dropdown
           trigger={<Button sx={{ color: "white" }}>Annotation</Button>}
-          menu={[
-            <Annotation niivue={nv}/>
-          ]}
+          menu={[<Annotation niivue={nv} />]}
         />
       </Box>
     </div>
