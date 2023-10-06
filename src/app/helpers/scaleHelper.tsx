@@ -27,19 +27,21 @@ function bilinearInterpolation(src: any, dst: any) {
   }
 
   function interpolateHorizontal(
+    offset: number,
     x: number,
     y: number,
     xMin: number,
     xMax: number,
   ) {
-    const vMin = src.data[y * src.width + xMin];
+    const vMin = src.data[((y * src.width + xMin) * 3) + offset];
     if (xMin === xMax) return vMin;
 
-    const vMax = src.data[y * src.width + xMax];
+    const vMax = src.data[((y * src.width + xMax) * 3) + offset]
     return interpolate(x, xMin, xMax, vMin, vMax);
   }
 
   function interpolateVertical(
+    offset: number,
     x: number,
     xMin: number,
     xMax: number,
@@ -47,10 +49,10 @@ function bilinearInterpolation(src: any, dst: any) {
     yMin: number,
     yMax: number,
   ) {
-    const vMin = interpolateHorizontal(x, yMin, xMin, xMax);
+    const vMin = interpolateHorizontal(offset, x, yMin, xMin, xMax);
     if (yMin === yMax) return vMin;
 
-    const vMax = interpolateHorizontal(x, yMax, xMin, xMax);
+    const vMax = interpolateHorizontal(offset, x, yMax, xMin, xMax);
     return interpolate(y, yMin, yMax, vMin, vMax);
   }
 
@@ -67,10 +69,28 @@ function bilinearInterpolation(src: any, dst: any) {
       const xMax = Math.min(Math.ceil(srcX), src.width - 1);
       const yMax = Math.min(Math.ceil(srcY), src.height - 1);
 
-      dst.data[pos++] = interpolateVertical(srcX, xMin, xMax, srcY, yMin, yMax); // R
-      // dst.data[pos++] = interpolateVertical(1, srcX, xMin, xMax, srcY, yMin, yMax) // G
-      // dst.data[pos++] = interpolateVertical(2, srcX, xMin, xMax, srcY, yMin, yMax) // B
+      dst.data[pos++] = interpolateVertical(0, srcX, xMin, xMax, srcY, yMin, yMax); // R
+      dst.data[pos++] = interpolateVertical(1, srcX, xMin, xMax, srcY, yMin, yMax) // G
+      dst.data[pos++] = interpolateVertical(2, srcX, xMin, xMax, srcY, yMin, yMax) // B
       // dst.data[pos++] = interpolateVertical(3, srcX, xMin, xMax, srcY, yMin, yMax) // A
+    }
+  }
+}
+
+function nearestNeighbor (src: any, dst: any) {
+  let pos = 0
+
+  for (let y = 0; y < dst.height; y++) {
+    for (let x = 0; x < dst.width; x++) {
+      const srcX = Math.floor(x * src.width / dst.width)
+      const srcY = Math.floor(y * src.height / dst.height)
+
+      let srcPos = ((srcY * src.width) + srcX) * 4
+
+      dst.data[pos++] = src.data[srcPos++] // R
+      dst.data[pos++] = src.data[srcPos++] // G
+      dst.data[pos++] = src.data[srcPos++] // B
+      dst.data[pos++] = src.data[srcPos++] // A
     }
   }
 }
@@ -80,7 +100,7 @@ const resizeImageData = (
   width: number,
   height: number,
 ) => {
-  const resultArray = new Float32Array(width * height);
+  const resultArray = new Float32Array(width * height * 3);
 
   const result = {
     data: resultArray,
@@ -89,6 +109,7 @@ const resizeImageData = (
   };
 
   bilinearInterpolation(image, result);
+  // nearestNeighbor(image, result);
 
   return result;
 };

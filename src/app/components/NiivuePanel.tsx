@@ -17,7 +17,7 @@ export function NiivuePanel({ nv, volumes }: any) {
 
   const getClick = (x: number, y: number): modelInputProps => {
     const clickType = 1;
-    console.log("***** CLICK TYPE    ", x, y);
+    // console.log("***** CLICK TYPE    ", x, y);
     return { x, y, clickType };
   };
 
@@ -26,18 +26,18 @@ export function NiivuePanel({ nv, volumes }: any) {
   // // the ONNX model to run and generate a new mask via a useEffect in App.tsx
   const handleMouseMove = _.throttle((e: any) => {
     let el = canvas.current || e.target;
-    console.log(
-      "***** NATIVE EVENT TARGET    ",
-      e.clientX,
-      e.clientY,
-      window.devicePixelRatio,
-    );
+    // console.log(
+    //   "***** NATIVE EVENT TARGET    ",
+    //   e.clientX,
+    //   e.clientY,
+    //   window.devicePixelRatio,
+    // );
 
     if (!el) return;
     const rect = el.getBoundingClientRect();
     let x = e.clientX - rect.left;
     let y = e.clientY - rect.top;
-    console.log("***** CANVAS COORDINATE    ", x, y);
+    // console.log("***** CANVAS COORDINATE    ", x, y);
     const click = getClick(x, y);
     if (click) setClicks([click]);
   }, 15);

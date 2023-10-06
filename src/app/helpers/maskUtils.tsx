@@ -6,7 +6,7 @@
 
 // Convert the onnx model mask prediction to ImageData
 function arrayToImageData(input: any, width: number, height: number) {
-  let arr = Array(width * height * 58).fill(0);
+  let arr = Array(width * height * 58).fill(0); // the encoded image using python is at slice 58th
   for (let i = 0; i < input.length; i++) {
     // Threshold the onnx model mask prediction at 0.0
     if (input[i] <= 0.0) {

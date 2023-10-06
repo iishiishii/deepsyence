@@ -70,7 +70,7 @@ function setImage(
   }
   processedImage.trustCalMinMax = false;
   processedImage.calMinMax();
-  processedImage.dims = modelOutput.dims;
+  processedImage.dims = [3, 1024, 1024, 160];
   console.log("processed image", processedImage);
   console.log(
     processedImage.img.reduce(

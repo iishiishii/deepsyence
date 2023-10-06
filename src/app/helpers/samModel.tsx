@@ -9,6 +9,7 @@ export const samModel = async (
   clicks: modelInputProps[],
   onModel: (id: any, name: any, array: any) => void,
 ) => {
+  const start = new Date();
   try {
     let id = image.id;
     let name = image.name;
@@ -21,8 +22,8 @@ export const samModel = async (
     // );
     console.log("dims ", image.dims, tensor, clicks);
     const LONG_SIDE_LENGTH = 1024;
-    let w = 1024;
-    let h = 1024;
+    let w = image.dims[1];
+    let h = image.dims[2];
     const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
     const modelScale = {
       samScale: samScale,
@@ -57,7 +58,9 @@ export const samModel = async (
     if (feeds === undefined) return;
     // feed inputs and run
     let results = await session.run(feeds);
-
+    const end = new Date();
+    const inferenceTime = (end.getTime() - start.getTime());
+    console.log("inference time ", inferenceTime)
     // read from results
     const newImage = results[session.outputNames[0]].data;
     const output = results[session.outputNames[0]].data;
@@ -71,11 +74,13 @@ export const samModel = async (
 };
 
 export const samEncoder = async (image: any) => {
+  const start = new Date();
   try {
-    let id = image.id;
-    let name = image.name;
+    // let id = image.id;
+    // let name = image.name;
     const LONG_SIDE_LENGTH = 1024;
-    const array = new Float32Array(3 * 1024 * 1024).fill(1);
+    const array = image;
+
     const tensor = new ort.Tensor("float32", array, [1, 3, 1024, 1024]);
     ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
 
@@ -97,6 +102,9 @@ export const samEncoder = async (image: any) => {
     if (feeds === undefined) return;
     // feed inputs and run
     let results = await session.run(feeds);
+    const end = new Date();
+    const inferenceTime = (end.getTime() - start.getTime());
+    console.log("inference time ", inferenceTime)
 
     const output = results[session.outputNames[0]].data;
 

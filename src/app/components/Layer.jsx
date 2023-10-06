@@ -17,6 +17,9 @@ import npyjs from "npyjs";
 import { processImage } from "../helpers/niimath";
 import { brainExtractionModel } from "../helpers/brainExtractionModel";
 import { samEncoder, samModel } from "../helpers/samModel";
+import { resizeImageData } from "../helpers/scaleHelper";
+// import nj from "numjs";
+import { colToRow } from "../helpers/maskUtils"
 
 export default function Layer(props) {
   const image = props.image;
@@ -71,9 +74,63 @@ export default function Layer(props) {
     brainExtractionModel(image, props.onModel);
   };
 
+  function Float32Concat(buffer)
+  {
+      var bufferLength = buffer.length,
+          result = new Float32Array(bufferLength * 3);
+
+      // result.set(buffer);
+      // result.set(buffer, bufferLength);
+      // result.set(buffer, bufferLength * 2);
+      // result.set(buffer, bufferLength * 3);
+
+      for(var i = 0; i < bufferLength; i++) {
+        result[3*i] = (buffer[i]*255);
+        result[3*i+1] = (buffer[i]*255);
+        result[3*i+2] = (buffer[i]*255);
+        // result[4*i+3] = 255;
+      }
+      return result;
+  }
+
+  function imagedata_to_image(imagedata) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    canvas.width = imagedata.width;
+    canvas.height = imagedata.height;
+    ctx.putImageData(imagedata, 0, 0);
+
+    var image = new Image();
+    image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+    window.location.href=image; 
+    return image;
+}
+
   const runSam = async () => {
-    await samEncoder(image).then((embedding) => {
-      // const result = resizeImageData(embedding, 1024, 128, 'bilinear-interpolation')
+    // const rowArray = colToRow(image, image.img)
+    const imageArray = image.img.slice(image.dims[1]*image.dims[2]*58, image.dims[1]*image.dims[2]*59 )
+    console.log("imageArray", imageArray)
+    let imageUint8 = new Float32Array(imageArray.buffer)
+    console.log("imageUint8", imageUint8)
+    let imageBuffer = Float32Concat(imageUint8)
+    console.log("imageBuffer", imageBuffer)
+
+    let imageObject = {
+      data: image.img,
+      width: image.dims[1],
+      height: image.dims[2],
+    };
+
+    const resizedImage = resizeImageData(imageObject, 1024, 1024).data
+    console.log("resizedImage", resizedImage)
+    // const oneSlice = new Uint8ClampedArray(resizedImage)
+    // console.log("oneSlice", oneSlice)
+    // let imageData = new ImageData(oneSlice, 1024, 1024);
+    // let image1 = imagedata_to_image(imageData)
+    // console.log("image1", image1)
+    // nj.images.save(image1, "./resizedImage.jpg")
+    await samEncoder(resizedImage).then((embedding) => {
+      console.log("embedding", embedding)
       let encodedTensor = new ort.Tensor(
         "float32",
         embedding,

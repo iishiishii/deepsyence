@@ -89,7 +89,7 @@ export default function NavBar(props) {
   }
 
   function handleSaveImage() {
-    nv.saveImage("draw.nii", true);
+    nv.saveImage("draw.nii", false);
   }
 
   return (
