@@ -18,6 +18,8 @@
     "@types/react-dom": "^18.2.6",
     "@uiw/color-convert": "^1.3.3",
     "@uiw/react-color": "^1.3.3",
+    "fs": "^0.0.1-security",
+    "jimp": "0.16.1",
     "npyjs": "^0.4.0",
     "onnxruntime-web": "^1.15.1",
     "react": "^18.2.0",
@@ -41,8 +43,9 @@
     "workbox-streams": "^6.6.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "react-app-rewired start",
     "build": "react-scripts build",
+    "install:copy": "yarn && copyfiles -f node_modules/onnxruntime-web/dist/*.js -f node_modules/onnxruntime-web/dist/*.wasm public/js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "eslint": "eslint --ext .js,.jsx,.ts,.tsx --cache --fix .",
@@ -80,15 +83,34 @@
     "@types/uuid": "^9.0.2",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "assert": "^2.1.0",
+    "browserify-fs": "^1.0.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "npm:buffer@6.0.3",
+    "crypto": "npm:crypto-browserify@^3.12.0",
     "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.32.2",
+    "http": "npm:stream-http@^3.2.0",
+    "https": "npm:https-browserify@^1.0.0",
+    "path-browserify": "^1.0.1",
     "prettier": "^3.0.0",
+    "process": "^0.11.10",
+    "querystring-es3": "^0.2.1",
+    "react-app-rewired": "^2.2.1",
+    "stream": "npm:stream-browserify@3.0.0",
     "stylelint": "^15.10.1",
     "stylelint-config-prettier": "^9.0.5",
     "stylelint-config-recommended": "^13.0.0",
     "stylelint-config-standard": "^34.0.0",
-    "stylelint-prettier": "^4.0.0"
+    "stylelint-prettier": "^4.0.0",
+    "util": "npm:util@^0.12.5",
+    "zlib": "npm:browserify-zlib@^0.2.0"
+  },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
   }
 }

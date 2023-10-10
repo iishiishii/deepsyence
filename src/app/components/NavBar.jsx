@@ -20,7 +20,7 @@ export default function NavBar(props) {
   const nv = props.nv;
 
   const [color, setColor] = React.useState("Gray");
-  const [sliceType, setSliceType] = React.useState("axial");
+  const [sliceType, setSliceType] = React.useState("multi");
   const [radiological, setRadiological] = React.useState(false);
   const [crosshair3D, setCrosshair3D] = React.useState(false);
   const [colorBar, setColorBar] = React.useState(nv.opts.isColorbar);

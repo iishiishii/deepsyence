@@ -47,7 +47,7 @@ export function NiivuePanel({ nv, volumes }: any) {
       const niivue = nv;
       niivue.attachToCanvas(canvas.current);
       await niivue.loadVolumes(volumes);
-      nv.setSliceType(nv.sliceTypeAxial);
+      nv.setSliceType(nv.sliceTypeMultiplanar);
       // await niivue.loadVolumes(maskImg);
     }
     fetchData();

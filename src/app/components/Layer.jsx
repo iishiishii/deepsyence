@@ -20,6 +20,7 @@ import { samEncoder, samModel } from "../helpers/samModel";
 import { resizeImageData } from "../helpers/scaleHelper";
 // import nj from "numjs";
 import { colToRow } from "../helpers/maskUtils"
+import { convertArrayToImg, convertFloatToImg, convertFloatToInt8, convertImgToFloat, imageToDataURL, normalize, normalizeAndTranspose, padToSquare, resize, resize_longer, transposeChannelDim } from "../helpers/imageHelpers"
 
 export default function Layer(props) {
   const image = props.image;
@@ -46,7 +47,6 @@ export default function Layer(props) {
 
   // pre-computed image embedding
   useEffect(() => {
-    const IMAGE_EMBEDDING = new URL("./model/head.npy", document.baseURI).href;
 
     const click = {
       x: 120,
@@ -64,7 +64,15 @@ export default function Layer(props) {
   // Decode a Numpy file into a tensor.
   const loadNpyTensor = async (tensorFile, dType) => {
     let npLoader = new npyjs();
-    const npArray = await npLoader.load(tensorFile);
+    let npArray = await npLoader.load(tensorFile).then((npArray) => {
+      console.log("embedding npy", npArray.data, npArray.data.reduce(
+        (partialSum, a) => partialSum + a,
+        0,
+      ),)
+      return npArray;
+    }
+      );
+
     const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
     console.log("tensor ", tensor, npArray.shape);
     return tensor;
@@ -76,8 +84,8 @@ export default function Layer(props) {
 
   function Float32Concat(buffer)
   {
-      var bufferLength = buffer.length,
-          result = new Float32Array(bufferLength * 3);
+    var bufferLength = buffer.length,
+          result = new Uint8Array(bufferLength * 3);
 
       // result.set(buffer);
       // result.set(buffer, bufferLength);
@@ -85,9 +93,9 @@ export default function Layer(props) {
       // result.set(buffer, bufferLength * 3);
 
       for(var i = 0; i < bufferLength; i++) {
-        result[3*i] = (buffer[i]*255);
-        result[3*i+1] = (buffer[i]*255);
-        result[3*i+2] = (buffer[i]*255);
+        result[3*i] = (buffer[i]);
+        result[3*i+1] = (buffer[i]);
+        result[3*i+2] = (buffer[i]);
         // result[4*i+3] = 255;
       }
       return result;
@@ -106,31 +114,73 @@ export default function Layer(props) {
     return image;
 }
 
-  const runSam = async () => {
-    // const rowArray = colToRow(image, image.img)
-    const imageArray = image.img.slice(image.dims[1]*image.dims[2]*58, image.dims[1]*image.dims[2]*59 )
-    console.log("imageArray", imageArray)
-    let imageUint8 = new Float32Array(imageArray.buffer)
-    console.log("imageUint8", imageUint8)
-    let imageBuffer = Float32Concat(imageUint8)
-    console.log("imageBuffer", imageBuffer)
+  const downloadToFile = (content, filename, contentType) => {
+    const a = document.createElement('a');
+    const file = new Blob([content], {type: contentType});
+    
+    a.href= URL.createObjectURL(file);
+    a.download = filename;
+    a.click();
+    
+    URL.revokeObjectURL(a.href);
+  };
 
+  const runSam = async () => {
+    const IMAGE_EMBEDDING = new URL("./model/head.npy", document.baseURI).href;
+
+    // const rowArray = colToRow(image, image.img)
+    const imageArray = image.img.slice(image.dims[1]*image.dims[2]*59, image.dims[1]*image.dims[2]*60 )
+    console.log("imageArray", imageArray.reduce(
+      (partialSum, a) => partialSum + a,
+      0,
+    ))
+    let imageUint8 = new Uint8Array(imageArray)
+    console.log("imageUint8", imageUint8.reduce(
+      (partialSum, a) => partialSum + a,
+      0,
+    ))
+    let imageBuffer = Float32Concat(imageUint8)
+    console.log("imageBuffer", imageBuffer.reduce(
+      (partialSum, a) => partialSum + a,
+      0,
+    ))
+    // let imageData0 = new ImageData(imageBuffer, image.dims[1]*2, image.dims[2]);
+    let image0 = convertArrayToImg(imageBuffer, [image.dims[1], image.dims[2]])
+    console.log("image0", image0, image0.bitmap.data.reduce((a,b) => a+b, 0))
     let imageObject = {
-      data: image.img,
+      data: imageBuffer,
       width: image.dims[1],
       height: image.dims[2],
     };
 
-    const resizedImage = resizeImageData(imageObject, 1024, 1024).data
-    console.log("resizedImage", resizedImage)
-    // const oneSlice = new Uint8ClampedArray(resizedImage)
+    const resizedImage = resize_longer(image0, 1024,true)
+    console.log("resizedImage", resizedImage, resizedImage.bitmap.data.reduce((a,b) => a+b, 0))
+    // const permutedImage = convertImgToFloat(resizedImage.bitmap.data)
+    const normalizedArray = normalize(resizedImage.bitmap.data, [123.675, 116.28, 103.53], [58.395, 57.12, 57.375])
+    let normalizedImage = convertFloatToImg(normalizedArray, [resizedImage.bitmap.width, resizedImage.bitmap.height], false);
+    // console.log("normalizedImage", normalizedImage, normalizedImage.bitmap.data.reduce((a,b) => a+b, 0))
+    // const paddedImage = padToSquare(normalizedImage)
+    // console.log("paddedImage", paddedImage, paddedImage.bitmap.data.reduce((a,b) => a+b, 0))
+    // const imageToFloat = convertImgToFloat(paddedImage.bitmap.data, [1024, 1024, 3])
+    // console.log("imageToFloat", imageToFloat, imageToFloat.reduce((a,b) => a+b, 0))
+    // const imageToUint8 = convertFloatToInt8(imageToFloat)
+    // console.log(imageToUint8)
+    // const transposedArray = transposeChannelDim(normalizedArray, 3)
+    // const oneSlice = new Uint8ClampedArray(paddedImage.bitmap.data)
     // console.log("oneSlice", oneSlice)
     // let imageData = new ImageData(oneSlice, 1024, 1024);
-    // let image1 = imagedata_to_image(imageData)
+    // await paddedImage.writeAsync("/home/thuy/repo/deepsyence/src/app/components/resizedImage.jpg");
+    // let image1 =  imagedata_to_image(imageData)
     // console.log("image1", image1)
     // nj.images.save(image1, "./resizedImage.jpg")
-    await samEncoder(resizedImage).then((embedding) => {
-      console.log("embedding", embedding)
+    // await loadNpyTensor(IMAGE_EMBEDDING, "float32")
+    downloadToFile(normalizedArray, 'new-file.raw', 'text/plain');
+
+    await samEncoder(normalizedArray).then((embedding) => {
+      console.log("embedding", embedding, embedding.reduce(
+        (partialSum, a) => partialSum + a,
+        0,
+      ),)
       let encodedTensor = new ort.Tensor(
         "float32",
         embedding,
