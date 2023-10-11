@@ -27,8 +27,8 @@ export const samModel = async (
     const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
     const modelScale = {
       samScale: samScale,
-      height: w, // swap height and width to get row major order from npy arrayt to column order ?
-      width: h,
+      height: h, // swap height and width to get row major order from npy arrayt to column order ?
+      width: w,
     };
 
     ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
@@ -37,7 +37,7 @@ export const samModel = async (
     // @ts-ignore
 
     let model_url = new URL(
-      "./model/sam_onnx_quantized_example.onnx",
+      "./model/decoder-quant.onnx",
       document.baseURI,
     ).href;
     console.log(model_url);
@@ -87,7 +87,7 @@ export const samEncoder = async (image: any) => {
     console.log(ort.env.wasm.wasmPaths);
     // @ts-ignore
 
-    let model_url = new URL("./model/encoder-quant.onnx", document.baseURI)
+    let model_url = new URL("./model/encoder-quant-new.onnx", document.baseURI)
       .href;
     console.log(model_url);
 

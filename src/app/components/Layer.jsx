@@ -20,7 +20,7 @@ import { samEncoder, samModel } from "../helpers/samModel";
 import { resizeImageData } from "../helpers/scaleHelper";
 // import nj from "numjs";
 import { colToRow } from "../helpers/maskUtils"
-import { convertArrayToImg, convertFloatToImg, convertFloatToInt8, convertImgToFloat, imageToDataURL, normalize, normalizeAndTranspose, padToSquare, resize, resize_longer, transposeChannelDim } from "../helpers/imageHelpers"
+import { convertArrayToImg, convertFloatToImg, convertFloatToInt8, convertImgToFloat, imageToDataURL, normalize, normalizeAndTranspose, padImageToSquare, padToSquare, resize, resize_longer, transposeChannelDim } from "../helpers/imageHelpers"
 
 export default function Layer(props) {
   const image = props.image;
@@ -87,11 +87,6 @@ export default function Layer(props) {
     var bufferLength = buffer.length,
           result = new Uint8Array(bufferLength * 3);
 
-      // result.set(buffer);
-      // result.set(buffer, bufferLength);
-      // result.set(buffer, bufferLength * 2);
-      // result.set(buffer, bufferLength * 3);
-
       for(var i = 0; i < bufferLength; i++) {
         result[3*i] = (buffer[i]);
         result[3*i+1] = (buffer[i]);
@@ -101,12 +96,31 @@ export default function Layer(props) {
       return result;
   }
 
+  function addChannelDim(buffer) {
+    var bufferLength = buffer.length,
+          result = new Uint8Array(bufferLength / 3 * 4);
+
+      for(var i = 0; i < bufferLength; i+=3) {
+        result[4*i/3] = buffer[i]*255;
+        result[4*i/3+1] = buffer[i+1]*255;
+        result[4*i/3+2] = buffer[i+2]*255;
+        result[4*i/3+3] = 255;
+      }
+      return result;
+  }
+
   function imagedata_to_image(imagedata) {
+    let addedChannel = addChannelDim(imagedata)
+    console.log("addedChannel", addedChannel)
+    let imageUint8Clamped = new Uint8ClampedArray(addedChannel)
+    let imageData = new ImageData(imageUint8Clamped, 1024, 1024);
+    
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-    canvas.width = imagedata.width;
-    canvas.height = imagedata.height;
-    ctx.putImageData(imagedata, 0, 0);
+    canvas.width = imageData.width;
+    canvas.height = imageData.height;
+    ctx.putImageData(imageData, 0, 0);
+
 
     var image = new Image();
     image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
@@ -140,7 +154,7 @@ export default function Layer(props) {
       0,
     ))
     let imageBuffer = Float32Concat(imageUint8)
-    console.log("imageBuffer", imageBuffer.reduce(
+    console.log("imageBuffer", imageBuffer, imageBuffer.reduce(
       (partialSum, a) => partialSum + a,
       0,
     ))
@@ -157,26 +171,23 @@ export default function Layer(props) {
     console.log("resizedImage", resizedImage, resizedImage.bitmap.data.reduce((a,b) => a+b, 0))
     // const permutedImage = convertImgToFloat(resizedImage.bitmap.data)
     const normalizedArray = normalize(resizedImage.bitmap.data, [123.675, 116.28, 103.53], [58.395, 57.12, 57.375])
-    let normalizedImage = convertFloatToImg(normalizedArray, [resizedImage.bitmap.width, resizedImage.bitmap.height], false);
+    // let normalizedImage = convertFloatToImg(normalizedArray, [resizedImage.bitmap.width, resizedImage.bitmap.height], false);
     // console.log("normalizedImage", normalizedImage, normalizedImage.bitmap.data.reduce((a,b) => a+b, 0))
-    // const paddedImage = padToSquare(normalizedImage)
-    // console.log("paddedImage", paddedImage, paddedImage.bitmap.data.reduce((a,b) => a+b, 0))
+    const paddedImage = padImageToSquare(normalizedArray, resizedImage.bitmap.width, resizedImage.bitmap.height, [0, 0, 0])
+    console.log("paddedImage", paddedImage, paddedImage.reduce((a,b) => a+b, 0))
     // const imageToFloat = convertImgToFloat(paddedImage.bitmap.data, [1024, 1024, 3])
     // console.log("imageToFloat", imageToFloat, imageToFloat.reduce((a,b) => a+b, 0))
     // const imageToUint8 = convertFloatToInt8(imageToFloat)
     // console.log(imageToUint8)
-    // const transposedArray = transposeChannelDim(normalizedArray, 3)
+    const transposedArray = transposeChannelDim(paddedImage, 3)
     // const oneSlice = new Uint8ClampedArray(paddedImage.bitmap.data)
     // console.log("oneSlice", oneSlice)
     // let imageData = new ImageData(oneSlice, 1024, 1024);
-    // await paddedImage.writeAsync("/home/thuy/repo/deepsyence/src/app/components/resizedImage.jpg");
-    // let image1 =  imagedata_to_image(imageData)
     // console.log("image1", image1)
-    // nj.images.save(image1, "./resizedImage.jpg")
-    // await loadNpyTensor(IMAGE_EMBEDDING, "float32")
-    downloadToFile(normalizedArray, 'new-file.raw', 'text/plain');
 
-    await samEncoder(normalizedArray).then((embedding) => {
+    // downloadToFile(new Float32Array(imageBuffer).buffer, 'stacked.raw', 'text/plain');
+
+    await samEncoder(transposedArray).then((embedding) => {
       console.log("embedding", embedding, embedding.reduce(
         (partialSum, a) => partialSum + a,
         0,

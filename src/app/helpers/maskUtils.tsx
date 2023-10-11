@@ -23,9 +23,9 @@ function arrayToImageData(input: any, width: number, height: number) {
   );
 
   // Flatten the rotated 2D image back to column-major array
-  arr.push(...rotate(input, height, width));
-
-  let transposedInput = new Float32Array(arr);
+  // arr.push(...rotateImage90CW(input, height, width));
+  // arr.push(...input);
+  let transposedInput = new Float32Array(input);
   console.log(
     "transposedInput ",
     transposedInput,
@@ -75,6 +75,18 @@ export function rowToCol(image: any, rowArray: any) {
     }
   }
   return colArray;
+}
+
+function rotateImage90CW(arr: any, width: number, height: number) {
+  const rotatedArray = [];
+
+  for (let col = width - 1; col >= 0; col--) {
+    for (let row = 0; row < height; row++) {
+      rotatedArray.push(arr[(col * height) + row]);
+    }
+  }
+
+  return rotatedArray;
 }
 
 function rotate(arr: any, width: number, height: number) {
