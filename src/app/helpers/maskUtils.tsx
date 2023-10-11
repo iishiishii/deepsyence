@@ -21,11 +21,12 @@ function arrayToImageData(input: any, width: number, height: number) {
       0,
     )}`,
   );
-
+  let inputArray = Array.from(input);
+  console.log("inputArray ", inputArray);
   // Flatten the rotated 2D image back to column-major array
   // arr.push(...rotateImage90CW(input, height, width));
-  // arr.push(...input);
-  let transposedInput = new Float32Array(input);
+  arr = arr.concat(inputArray);
+  let transposedInput = new Float32Array(arr);
   console.log(
     "transposedInput ",
     transposedInput,
