@@ -38,6 +38,7 @@ function setImage(
   let processedImage = modelOutput.clone();
   processedImage.id = uuid();
   processedImage.name = name.split(".")[0] + "_processed.nii.gz";
+  processedImage.permRAS = [1,2,3];
   if (niimath) {
     processedImage.img = array;
     switch (processedImage.hdr.datatypeCode) {
@@ -70,7 +71,7 @@ function setImage(
   }
   processedImage.trustCalMinMax = false;
   processedImage.calMinMax();
-  processedImage.dims = [3, 1024, 1024, 160];
+  processedImage.dims = modelOutput.dims;
   console.log("processed image", processedImage);
   console.log(
     processedImage.img.reduce(

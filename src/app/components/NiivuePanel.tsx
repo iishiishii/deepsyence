@@ -37,7 +37,7 @@ export function NiivuePanel({ nv, volumes }: any) {
     const rect = el.getBoundingClientRect();
     let x = e.clientX - rect.left;
     let y = e.clientY - rect.top;
-    // console.log("***** CANVAS COORDINATE    ", x, y);
+    console.log("***** CANVAS COORDINATE    ", x, y, nv.frac2vox(nv.scene.crosshairPos));
     const click = getClick(x, y);
     if (click) setClicks([click]);
   }, 15);

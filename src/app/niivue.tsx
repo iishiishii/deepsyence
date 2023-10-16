@@ -50,7 +50,7 @@ const nv = new Niivue({
 
 function handleIntensityChange(data: any) {
   document.getElementById("intensity")!.innerHTML =
-    "&nbsp;&nbsp;" + data.string;
+  data.vox[0]+'×'+data.vox[1]+'×'+data.vox[2]
 }
 
 // let instance = new WorkerBuilder(Worker);

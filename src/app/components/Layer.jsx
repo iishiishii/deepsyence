@@ -49,8 +49,8 @@ export default function Layer(props) {
   useEffect(() => {
 
     const click = {
-      x: 120,
-      y: 120,
+      x: 50,
+      y: 40,
       clickType: 1,
     };
     setClick([click]);
@@ -141,10 +141,11 @@ export default function Layer(props) {
 
   const runSam = async () => {
     const IMAGE_EMBEDDING = new URL("./model/head.npy", document.baseURI).href;
-
+    const imageRAS = image.img2RAS();
+    console.log("imageRAS", imageRAS)
     // const rowArray = colToRow(image, image.img)
-    const imageArray = image.img.slice(image.dims[1]*image.dims[2]*59, image.dims[1]*image.dims[2]*60 )
-    console.log("imageArray", imageArray.reduce(
+    const imageArray = imageRAS.slice(image.dims[1]*image.dims[2]*59, image.dims[1]*image.dims[2]*60 )
+    console.log("imageArray", imageArray, image.dims, imageArray.reduce(
       (partialSum, a) => partialSum + a,
       0,
     ))
@@ -158,7 +159,6 @@ export default function Layer(props) {
       (partialSum, a) => partialSum + a,
       0,
     ))
-    // let imageData0 = new ImageData(imageBuffer, image.dims[1]*2, image.dims[2]);
     let image0 = convertArrayToImg(imageBuffer, [image.dims[1], image.dims[2]])
     console.log("image0", image0, image0.bitmap.data.reduce((a,b) => a+b, 0))
     let imageObject = {
@@ -169,24 +169,11 @@ export default function Layer(props) {
 
     const resizedImage = resize_longer(image0, 1024,true)
     console.log("resizedImage", resizedImage, resizedImage.bitmap.data.reduce((a,b) => a+b, 0))
-    // const permutedImage = convertImgToFloat(resizedImage.bitmap.data)
     const normalizedArray = normalize(resizedImage.bitmap.data, [123.675, 116.28, 103.53], [58.395, 57.12, 57.375])
-    // let normalizedImage = convertFloatToImg(normalizedArray, [resizedImage.bitmap.width, resizedImage.bitmap.height], false);
-    // console.log("normalizedImage", normalizedImage, normalizedImage.bitmap.data.reduce((a,b) => a+b, 0))
     const paddedImage = padImageToSquare(normalizedArray, resizedImage.bitmap.width, resizedImage.bitmap.height, [0, 0, 0])
     console.log("paddedImage", paddedImage, paddedImage.reduce((a,b) => a+b, 0))
-    // const imageToFloat = convertImgToFloat(paddedImage.bitmap.data, [1024, 1024, 3])
-    // console.log("imageToFloat", imageToFloat, imageToFloat.reduce((a,b) => a+b, 0))
-    // const imageToUint8 = convertFloatToInt8(imageToFloat)
-    // console.log(imageToUint8)
+    // imagedata_to_image(paddedImage)
     const transposedArray = transposeChannelDim(paddedImage, 3)
-    // const oneSlice = new Uint8ClampedArray(paddedImage.bitmap.data)
-    // console.log("oneSlice", oneSlice)
-    // let imageData = new ImageData(oneSlice, 1024, 1024);
-    // console.log("image1", image1)
-
-    // downloadToFile(new Float32Array(imageBuffer).buffer, 'stacked.raw', 'text/plain');
-
     await samEncoder(transposedArray).then((embedding) => {
       console.log("embedding", embedding, embedding.reduce(
         (partialSum, a) => partialSum + a,
