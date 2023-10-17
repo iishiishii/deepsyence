@@ -40,7 +40,7 @@ module.exports = {
     "@typescript-eslint/no-namespace": "off",
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/ban-ts-comment": ["warn", { "ts-ignore": true }],
+    "@typescript-eslint/ban-ts-comment": ["off", { "ts-ignore": true }],
     "@typescript-eslint/ban-types": "warn",
     "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
     "@typescript-eslint/no-var-requires": "off",
@@ -48,7 +48,7 @@ module.exports = {
     "@typescript-eslint/triple-slash-reference": "warn",
     "@typescript-eslint/no-inferrable-types": "off",
     camelcase: [
-      "warn",
+      "off",
       {
         allow: [
           "__webpack_public_path__",
@@ -133,7 +133,7 @@ module.exports = {
     "no-case-declarations": "warn",
     "no-useless-escape": "off",
     "prefer-const": "off",
-    "react/prop-types": "warn",
+    "react/prop-types": "off",
     "sort-imports": [
       "error",
       {
