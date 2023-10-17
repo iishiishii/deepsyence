@@ -143,7 +143,7 @@ export function convertImgToFloat(image: Array<number>, dims: number[]): Float32
     float32Data[3*i/4+2] = image[i+2]; // convert to float
     // skip image[i + 3] to filter out the alpha channel
   }
-  console.log("float32Data", float32Data)
+  // console.log("float32Data", float32Data)
   return float32Data;
 };
 
@@ -172,10 +172,10 @@ export function convertFloatToInt8(float32Data: Float32Array): Array<number> {
 export function convertFloatToImg(float32Data: Float32Array, dims: number[], rgb: boolean): Jimp {
   // 4. convert to float32
   let i, l = float32Data.length; // length, we need this for the loop
-  console.log("float32Data.length", float32Data)
+  // console.log("float32Data.length", float32Data)
   // create the Float32Array size 3 * 224 * 224 for these dimensions output
   const ImgData = new (Jimp.default as any)(dims[0], dims[1], 0x000000ff);
-  console.log("dims", dims)
+  // console.log("dims", dims)
   if (rgb) {
     for (i = 0; i < l; i += 3) {
       ImgData.bitmap.data[4*i/3] =  Math.round(float32Data[i] * 255.0); // convert to float
@@ -302,7 +302,7 @@ export function pad(image: Jimp, padSize: number, center: boolean = false): Jimp
   } else {
     paddedImage.composite(image, 0, 0);
   };
-  console.log("image after padding", paddedImage, paddedImage.bitmap.data.reduce((a: number,b: number) => a+b, 0))
+  // console.log("image after padding", paddedImage, paddedImage.bitmap.data.reduce((a: number,b: number) => a+b, 0))
 
   // Place the original image into the padded image
   return paddedImage;
@@ -317,7 +317,7 @@ export function padToSquare(image: Jimp): Jimp {
 export function padImageToSquare(imageData: Float32Array, originalWidth: number, originalHeight: number): Float32Array {
   // Determine the size of the square canvas (use the larger dimension)
   const sideLength = Math.max(originalWidth, originalHeight);
-  console.log("sideLength", sideLength, originalWidth, originalHeight)
+  // console.log("sideLength", sideLength, originalWidth, originalHeight)
   // Create a new array to store the padded image data
   const paddedImageData = new Float32Array(sideLength * sideLength * 3).fill(0); // Initialize with zeros (RGBA)
 
@@ -333,7 +333,7 @@ export function padImageToSquare(imageData: Float32Array, originalWidth: number,
       }
     }
   }
-  console.log("paddedImageData", paddedImageData, paddedImageData.reduce((a,b) => a+b, 0))
+  // console.log("paddedImageData", paddedImageData, paddedImageData.reduce((a,b) => a+b, 0))
 
   return paddedImageData;
 }
@@ -372,7 +372,7 @@ export function normalizeAndTranspose(image: Jimp, mean: number[], std: number[]
 export function normalize(image: Uint8Array, mean: number[], std: number[]): Float32Array {
   // 1. Get buffer data from image and create R, G, and B arrays.
   let imageBufferData = new Float32Array(image);
-  console.log("imageBufferData", imageBufferData, imageBufferData.reduce((a,b) => a+b, 0))
+  // console.log("imageBufferData", imageBufferData, imageBufferData.reduce((a,b) => a+b, 0))
   // const [redArray, greenArray, blueArray] = new Array(new Array<number>(), new Array<number>(), new Array<number>());
   let minVal = 0, maxVal = 0;
   // // 2. Loop through the image buffer and extract the R, G, and B channels
@@ -389,8 +389,8 @@ export function normalize(image: Uint8Array, mean: number[], std: number[]): Flo
     maxVal = Math.max(float32Data[3*i/4 +2], maxVal);
     // skip data[i + 3] to filter out the alpha channel
   }
-  console.log("minVal", minVal, maxVal)
-  console.log("normalized array", float32Data, float32Data.reduce((a,b) => a+b, 0))
+  // console.log("minVal", minVal, maxVal)
+  // console.log("normalized array", float32Data, float32Data.reduce((a,b) => a+b, 0))
 
   return float32Data;
 };

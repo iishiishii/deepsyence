@@ -33,14 +33,14 @@ export const samDecoder = async (
 
     ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
 
-    console.log(ort.env.wasm.wasmPaths);
+    // console.log(ort.env.wasm.wasmPaths);
     // @ts-ignore
 
     let model_url = new URL(
       "./model/decoder-quant.onnx",
       document.baseURI,
     ).href;
-    console.log(model_url);
+    // console.log(model_url);
 
     let session = await ort.InferenceSession.create(model_url, {
       executionProviders: ["wasm"],
@@ -65,7 +65,7 @@ export const samDecoder = async (
     const newImage = results[session.outputNames[0]].data;
     const output = results[session.outputNames[0]].data;
 
-    console.log("newImage ", output);
+    // console.log("newImage ", output);
     const rasImage = onnxMaskToImage(output, w, h, clicks[0].z);
     onModel(id, name, rasImage);
   } catch (e) {

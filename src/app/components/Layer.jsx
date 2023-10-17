@@ -68,10 +68,10 @@ export default function Layer(props) {
   // }, [clicks]);
 
   useEffect(() => {
-    console.log("selected array", selected)
+    // console.log("selected array", selected)
 
     if (clicks && selected !== null) { // Check if clicks changed and selected is not null
-      console.log("selected array", selected)
+      // console.log("selected array", selected)
       
       runDecoder();
     }
@@ -156,32 +156,32 @@ export default function Layer(props) {
 
   const preprocess = (sliceId) => {
     const imageRAS = image.img2RAS();
-    console.log("imageRAS", imageRAS, sliceId)
+    // console.log("imageRAS", imageRAS, sliceId)
     // const rowArray = colToRow(image, image.img)
     const imageArray = imageRAS.slice(image.dims[1]*image.dims[2]*sliceId, image.dims[1]*image.dims[2]*(sliceId+1) )
-    console.log("imageArray", imageArray, image.dims, imageArray.reduce(
-      (partialSum, a) => partialSum + a,
-      0,
-    ))
+    // console.log("imageArray", imageArray, image.dims, imageArray.reduce(
+    //   (partialSum, a) => partialSum + a,
+    //   0,
+    // ))
     let imageUint8 = new Uint8Array(imageArray)
-    console.log("imageUint8", imageUint8.reduce(
-      (partialSum, a) => partialSum + a,
-      0,
-    ))
+    // console.log("imageUint8", imageUint8.reduce(
+    //   (partialSum, a) => partialSum + a,
+    //   0,
+    // ))
     let imageBuffer = Float32Concat(imageUint8)
-    console.log("imageBuffer", imageBuffer, imageBuffer.reduce(
-      (partialSum, a) => partialSum + a,
-      0,
-    ))
+    // console.log("imageBuffer", imageBuffer, imageBuffer.reduce(
+    //   (partialSum, a) => partialSum + a,
+    //   0,
+    // ))
     let image0 = convertArrayToImg(imageBuffer, [image.dims[1], image.dims[2]])
-    console.log("image0", image0, image0.bitmap.data.reduce((a,b) => a+b, 0))
+    // console.log("image0", image0, image0.bitmap.data.reduce((a,b) => a+b, 0))
 
     const resizedImage = resize_longer(image0, 1024,true)
-    console.log("resizedImage", resizedImage, resizedImage.bitmap.data.reduce((a,b) => a+b, 0))
+    // console.log("resizedImage", resizedImage, resizedImage.bitmap.data.reduce((a,b) => a+b, 0))
     const normalizedArray = normalize(resizedImage.bitmap.data, [123.675, 116.28, 103.53], [58.395, 57.12, 57.375])
     const paddedImage = padImageToSquare(normalizedArray, resizedImage.bitmap.width, resizedImage.bitmap.height, [0, 0, 0])
-    console.log("paddedImage", paddedImage, paddedImage.reduce((a,b) => a+b, 0))
-    imagedata_to_image(paddedImage)
+    // console.log("paddedImage", paddedImage, paddedImage.reduce((a,b) => a+b, 0))
+    // imagedata_to_image(paddedImage)
     const transposedArray = transposeChannelDim(paddedImage, 3)
     return transposedArray
   }
@@ -248,7 +248,7 @@ export default function Layer(props) {
   function handleOpacity() {
     let idx = image.id;
     let currentOpacity = opacity;
-    console.log(currentOpacity);
+    // console.log(currentOpacity);
     const newOpacity = currentOpacity > 0 ? 0 : 1;
     props.onSetOpacity(idx, newOpacity);
     setOpacity(newOpacity);

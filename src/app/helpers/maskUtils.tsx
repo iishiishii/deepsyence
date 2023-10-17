@@ -17,32 +17,32 @@ function arrayToImageData(input: any, width: number, height: number, sliceId: nu
       input[i] = 1;
     }
   }
-  console.log(
-    `before transposed array: ${input.reduce(
-      (partialSum: number, a: number) => partialSum + a,
-      0,
-    )}`,
-  );
+  // console.log(
+  //   `before transposed array: ${input.reduce(
+  //     (partialSum: number, a: number) => partialSum + a,
+  //     0,
+  //   )}`,
+  // );
   let inputArray = Array.from(input);
-  console.log("inputArray ", inputArray);
+  // console.log("inputArray ", inputArray);
   // Flatten the rotated 2D image back to column-major array
   // arr.push(...rotateImage90CW(input, height, width));
   arr = arr.concat(inputArray);
   let transposedInput = new Float32Array(arr);
-  console.log(
-    "transposedInput ",
-    transposedInput,
-    "height ",
-    height,
-    "width ",
-    width,
-  );
-  console.log(
-    `sum of transposed array: ${transposedInput.reduce(
-      (partialSum, a) => partialSum + a,
-      0,
-    )}`,
-  );
+  // console.log(
+  //   "transposedInput ",
+  //   transposedInput,
+  //   "height ",
+  //   height,
+  //   "width ",
+  //   width,
+  // );
+  // console.log(
+  //   `sum of transposed array: ${transposedInput.reduce(
+  //     (partialSum, a) => partialSum + a,
+  //     0,
+  //   )}`,
+  // );
   return transposedInput;
 }
 
