@@ -15,6 +15,7 @@ export interface modelScaleProps {
 export interface modelInputProps {
   x: number;
   y: number;
+  z: number;
   clickType: number;
 }
 

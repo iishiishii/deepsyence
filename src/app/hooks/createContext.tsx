@@ -12,9 +12,9 @@ interface contextProps {
     clicks: modelInputProps[] | null,
     setClicks: (e: modelInputProps[] | null) => void,
   ];
-  image: [
-    image: HTMLImageElement | null,
-    setImage: (e: HTMLImageElement | null) => void,
+  embedded: [
+    embedded: Array<Float32Array> | null,
+    setEmbedded: (e: Array<Float32Array>  | null) => void,
   ];
   maskImg: [
     maskImg: HTMLImageElement | null,

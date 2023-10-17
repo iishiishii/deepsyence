@@ -7,18 +7,12 @@ import * as _ from "underscore";
 export function NiivuePanel({ nv, volumes }: any) {
   const canvas = React.useRef(null);
   const {
-    image: [image],
-    maskImg: [maskImg, setMaskImg],
+    clicks: [, setClicks]
   } = useContext(AppContext)!;
 
-  const {
-    clicks: [, setClicks],
-  } = useContext(AppContext)!;
-
-  const getClick = (x: number, y: number): modelInputProps => {
+  const getClick = (x: number, y: number, z: number): modelInputProps => {
     const clickType = 1;
-    // console.log("***** CLICK TYPE    ", x, y);
-    return { x, y, clickType };
+    return { x, y, z, clickType };
   };
 
   // // Get mouse position and scale the (x, y) coordinates back to the natural
@@ -26,19 +20,14 @@ export function NiivuePanel({ nv, volumes }: any) {
   // // the ONNX model to run and generate a new mask via a useEffect in App.tsx
   const handleMouseMove = _.throttle((e: any) => {
     let el = canvas.current || e.target;
-    // console.log(
-    //   "***** NATIVE EVENT TARGET    ",
-    //   e.clientX,
-    //   e.clientY,
-    //   window.devicePixelRatio,
-    // );
 
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
-    console.log("***** CANVAS COORDINATE    ", x, y, nv.frac2vox(nv.scene.crosshairPos));
-    const click = getClick(x, y);
+    let x = nv.frac2vox(nv.scene.crosshairPos)[0];
+    let y = nv.frac2vox(nv.scene.crosshairPos)[1];
+    let z = nv.frac2vox(nv.scene.crosshairPos)[2];
+    console.log("***** CANVAS COORDINATE    ", x, y, z);
+    const click = getClick(x, y, z);
     if (click) setClicks([click]);
   }, 15);
 
@@ -57,7 +46,7 @@ export function NiivuePanel({ nv, volumes }: any) {
     <div style={{ width: "75%" }}>
       <canvas
         ref={canvas}
-        onMouseMove={handleMouseMove}
+        onClick={handleMouseMove}
         // onMouseOut={() => _.defer(() => setMaskImg(null))}
         // onTouchStart={handleMouseMove}
       />

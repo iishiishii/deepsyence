@@ -1,12 +1,14 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 // All rights reserved.
 
+import { slice } from "../../../public/js/ort-web";
+
 // This source code is licensed under the license found in the
 // LICENSE file in the root directory of this source tree.
 
 // Convert the onnx model mask prediction to ImageData
-function arrayToImageData(input: any, width: number, height: number) {
-  let arr = Array(width * height * 58).fill(0); // the encoded image using python is at slice 58th
+function arrayToImageData(input: any, width: number, height: number, sliceId: number) {
+  let arr = Array(width * height * sliceId).fill(0); // the encoded image using python is at slice 58th
   for (let i = 0; i < input.length; i++) {
     // Threshold the onnx model mask prediction at 0.0
     if (input[i] <= 0.0) {
@@ -140,6 +142,6 @@ function imageDataToCanvas(imageData: ImageData) {
 }
 
 // Convert the onnx model mask output to an HTMLImageElement
-export function onnxMaskToImage(input: any, width: number, height: number) {
-  return arrayToImageData(input, width, height);
+export function onnxMaskToImage(input: any, width: number, height: number, sliceId: number) {
+  return arrayToImageData(input, width, height, sliceId);
 }

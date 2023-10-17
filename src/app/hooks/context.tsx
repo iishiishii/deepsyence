@@ -12,7 +12,7 @@ const AppContextProvider = (props: {
   children: React.ReactElement<any, string | React.JSXElementConstructor<any>>;
 }) => {
   const [clicks, setClicks] = useState<Array<modelInputProps> | null>(null);
-  const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const [embedded, setEmbedded] = useState<Array<Float32Array> | null>(null);
   const [maskImg, setMaskImg] = useState<HTMLImageElement | null>(null);
   const [penMode, setPenMode] = useState<number>(-1);
   const [filled, setFilled] = useState<boolean>(false);
@@ -21,7 +21,7 @@ const AppContextProvider = (props: {
     <AppContext.Provider
       value={{
         clicks: [clicks, setClicks],
-        image: [image, setImage],
+        embedded: [embedded, setEmbedded],
         maskImg: [maskImg, setMaskImg],
         penMode: [penMode, setPenMode],
         filled: [filled, setFilled],

@@ -10,7 +10,7 @@ import Layer from "./components/Layer";
 import { v4 as uuidv4 } from "uuid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 // import WorkerBuilder from "./components/WorkerBuilder";
-import { handleImageScale } from "./helpers/scaleHelper";
+// import { handleImageScale } from "./helpers/scaleHelper";
 import { modelScaleProps } from "./helpers/Interfaces";
 import { onnxMaskToImage } from "./helpers/maskUtils";
 import { modelData } from "./helpers/onnxModelAPI";

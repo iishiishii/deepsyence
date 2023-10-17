@@ -3,7 +3,7 @@ import { modelInputProps } from "./Interfaces";
 import { modelData } from "./onnxModelAPI";
 import { onnxMaskToImage } from "./maskUtils";
 
-export const samModel = async (
+export const samDecoder = async (
   image: any,
   tensor: ort.TypedTensor<"string">,
   clicks: modelInputProps[],
@@ -66,7 +66,7 @@ export const samModel = async (
     const output = results[session.outputNames[0]].data;
 
     console.log("newImage ", output);
-    const rasImage = onnxMaskToImage(output, w, h);
+    const rasImage = onnxMaskToImage(output, w, h, clicks[0].z);
     onModel(id, name, rasImage);
   } catch (e) {
     console.log(`failed to inference ONNX model: ${e}. `);

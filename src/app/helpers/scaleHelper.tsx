@@ -8,14 +8,14 @@ import { Tensor } from "onnxruntime-web";
 import * as Jimp from 'jimp';
 
 // Helper function for handling image scaling needed for SAM
-const handleImageScale = (image: HTMLImageElement) => {
-  // Input images to SAM must be resized so the longest side is 1024
-  const LONG_SIDE_LENGTH = 1024;
-  let w = image.naturalWidth;
-  let h = image.naturalHeight;
-  const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
-  return { height: h, width: w, samScale };
-};
+// const handleImageScale = (image: HTMLImageElement) => {
+//   // Input images to SAM must be resized so the longest side is 1024
+//   const LONG_SIDE_LENGTH = 1024;
+//   let w = image.naturalWidth;
+//   let h = image.naturalHeight;
+//   const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
+//   return { height: h, width: w, samScale };
+// };
 
 // resize image for SAM
 function bilinearInterpolation(src: any, dst: any) {
@@ -191,4 +191,4 @@ const normalize = (image: Float32Array): Float32Array => {
 //   normalizedImage = (image - pixel_mean) / pixel_std;
 //   return result;
 // }
-export { handleImageScale, resizeImageData, normalize };
+export { resizeImageData, normalize };
