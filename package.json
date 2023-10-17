@@ -44,7 +44,7 @@
   },
   "scripts": {
     "start": "react-app-rewired start",
-    "build": "react-scripts build",
+    "build": "react-app-rewired build",
     "install:copy": "yarn && copyfiles -f node_modules/onnxruntime-web/dist/*.js -f node_modules/onnxruntime-web/dist/*.wasm public/js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
