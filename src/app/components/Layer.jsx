@@ -193,7 +193,7 @@ export default function Layer(props) {
       setEmbedded(embedded => [...embedded, []])
     }
     try {    
-      for (let i = 59; i < 60; i++)
+      for (let i = 59; i < 63; i++)
       {
         const preprocessedImage = preprocess(i)
         //https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
