@@ -129,7 +129,7 @@ module.exports = {
     "no-inner-declarations": "off",
     "no-prototype-builtins": "off",
     "no-control-regex": "warn",
-    "no-undef": "warn",
+    "no-undef": "off",
     "no-case-declarations": "warn",
     "no-useless-escape": "off",
     "prefer-const": "off",
