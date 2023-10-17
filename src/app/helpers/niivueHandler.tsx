@@ -34,7 +34,7 @@ function setImage(
     console.log("image not found");
     return;
   }
-  console.log("model output ", modelOutput);
+  // console.log("model output ", modelOutput);
   let processedImage = modelOutput.clone();
   processedImage.id = uuid();
   processedImage.name = name.split(".")[0] + "_processed.nii.gz";
@@ -72,13 +72,13 @@ function setImage(
   processedImage.trustCalMinMax = false;
   processedImage.calMinMax();
   processedImage.dims = modelOutput.dims;
-  console.log("processed image", processedImage);
-  console.log(
-    processedImage.img.reduce(
-      (partialSum: number, a: number) => partialSum + a,
-      0,
-    ),
-  );
+  // console.log("processed image", processedImage);
+  // console.log(
+  //   processedImage.img.reduce(
+  //     (partialSum: number, a: number) => partialSum + a,
+  //     0,
+  //   ),
+  // );
   return processedImage;
 }
 

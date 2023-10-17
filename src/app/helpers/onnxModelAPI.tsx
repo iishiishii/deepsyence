@@ -13,11 +13,11 @@ const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
   let pointLabels;
   let pointCoordsTensor;
   let pointLabelsTensor;
-  console.log("clicks", clicks, "tensor", tensor, "modelScale", modelScale);
+  // console.log("clicks", clicks, "tensor", tensor, "modelScale", modelScale);
   // Check there are input click prompts
   if (clicks) {
     let n = clicks.length;
-    console.log("n ", n);
+    // console.log("n ", n);
     // If there is no box input, a single padding point with
     // label -1 and coordinates (0.0, 0.0) should be concatenated
     // so initialize the array to support (n + 1) points.
@@ -58,20 +58,20 @@ const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
   // There is no previous mask, so default to 0
   const hasMaskInput = new Tensor("float32", [0]);
 
-  console.log(
-    "imageEmbedding",
-    imageEmbedding,
-    "pointCoordsTensor",
-    pointCoordsTensor,
-    "pointLabelsTensor",
-    pointLabelsTensor,
-    "imageSizeTensor",
-    imageSizeTensor,
-    "maskInput",
-    maskInput,
-    "hasMaskInput",
-    hasMaskInput,
-  );
+  // console.log(
+  //   "imageEmbedding",
+  //   imageEmbedding,
+  //   "pointCoordsTensor",
+  //   pointCoordsTensor,
+  //   "pointLabelsTensor",
+  //   pointLabelsTensor,
+  //   "imageSizeTensor",
+  //   imageSizeTensor,
+  //   "maskInput",
+  //   maskInput,
+  //   "hasMaskInput",
+  //   hasMaskInput,
+  // );
   return {
     image_embeddings: imageEmbedding,
     point_coords: pointCoordsTensor,

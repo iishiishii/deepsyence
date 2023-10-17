@@ -20,7 +20,7 @@ export const samDecoder = async (
     //     setTensor(embedding);
     //   }
     // );
-    console.log("dims ", image.dims, tensor, clicks);
+    // console.log("dims ", image.dims, tensor, clicks);
     const LONG_SIDE_LENGTH = 1024;
     let w = image.dims[1];
     let h = image.dims[2];
@@ -84,12 +84,12 @@ export const samEncoder = async (image: any) => {
     const tensor = new ort.Tensor("float32", array, [1, 3, 1024, 1024]);
     ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
 
-    console.log(ort.env.wasm.wasmPaths);
+    // console.log(ort.env.wasm.wasmPaths);
     // @ts-ignore
 
     let model_url = new URL("./model/encoder-quant-new.onnx", document.baseURI)
       .href;
-    console.log(model_url);
+    // console.log(model_url);
 
     let session = await ort.InferenceSession.create(model_url, {
       executionProviders: ["wasm"],
@@ -108,7 +108,7 @@ export const samEncoder = async (image: any) => {
 
     const output = results[session.outputNames[0]].data;
 
-    console.log("newImage ", output);
+    // console.log("newImage ", output);
     return output;
   } catch (e) {
     console.log(`failed to inference ONNX model: ${e}. `);

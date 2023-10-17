@@ -20,6 +20,7 @@ import { samDecoder, samEncoder } from "../helpers/samModel";
 import { resizeImageData } from "../helpers/scaleHelper";
 import { colToRow } from "../helpers/maskUtils"
 import { convertArrayToImg, convertFloatToImg, convertFloatToInt8, convertImgToFloat, imageToDataURL, normalize, normalizeAndTranspose, padImageToSquare, padToSquare, resize, resize_longer, transposeChannelDim } from "../helpers/imageHelpers"
+import { AlertDialog } from "./Alert";
 
 export default function Layer(props) {
   const image = props.image;
@@ -28,6 +29,7 @@ export default function Layer(props) {
   const [visibilityIcon, setVisibilityIcon] = React.useState(true);
   const [opacity, setOpacity] = React.useState(image.opacity);
   const [selected, setSelected] = React.useState();
+  const [done, setDone] = React.useState(false);
   const {
     clicks: [clicks],
     embedded: [embedded, setEmbedded],
@@ -40,12 +42,9 @@ export default function Layer(props) {
   ) : (
     <KeyboardArrowDownIcon />
   );
-  // let SelectIcon = selected ? <Checkbox checked /> : <Checkbox />;
+  let DoneIcon = done ? <Checkbox checked disabled/> : <Box/>;
 
-  // function handleSelect() {
-  //   setSelected(!selected);
-  //   props.onSelect(image);
-  // }
+
 
   // pre-computed image embedding
   // useEffect(() => {
@@ -194,7 +193,7 @@ export default function Layer(props) {
       setEmbedded(embedded => [...embedded, []])
     }
     try {    
-      for (let i = 59; i < 62; i++)
+      for (let i = 59; i < 60; i++)
       {
         const preprocessedImage = preprocess(i)
         //https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
@@ -202,6 +201,8 @@ export default function Layer(props) {
           setEmbedded(embedded => [...embedded, embedding])
         });
       }
+      setDone(!done);
+      
     }
     catch (error) {
       console.log("error encoder", error)
@@ -210,7 +211,7 @@ export default function Layer(props) {
   }
 
   const runDecoder = async () => {
-    console.log("rundecoder", embedded[clicks[0].z])
+    // console.log("rundecoder", embedded[clicks[0].z])
     let encodedTensor = new ort.Tensor(
       "float32",
       embedded[clicks[0].z],
@@ -299,7 +300,9 @@ export default function Layer(props) {
         <IconButton onClick={handleDetails} style={{ marginRight: "auto" }}>
           {ArrowIcon}
         </IconButton>
-
+        <Box style={{ marginRight: "auto" }}>
+          {DoneIcon}
+        </Box>
       </Box>
       <Box
         sx={{
