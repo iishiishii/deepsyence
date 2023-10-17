@@ -1,45 +1,38 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Deploy React Application
 
+# Controls when the action will run. 
 on:
-  # Runs on pushes targeting the default branch
+  # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: ["test"]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build_test:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x] # We will deploy with only one version of node  
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Set Node.js
-        uses: actions/setup-node@v3
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
         with:
-          node-version: 16.x
-      - name: Run install
-        uses: borales/actions-yarn@v4
+          node-version: ${{ matrix.node-version }}
+      - name: npm ci, build and test
+        run: |
+          npm ci
+          npm run build --if-present
+          npm test      
+      - name: deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          cmd: install
-      - name: Buld production bundle
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: run build
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          publish_dir: ./build    
