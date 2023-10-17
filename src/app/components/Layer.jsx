@@ -20,7 +20,6 @@ import { samDecoder, samEncoder } from "../helpers/samModel";
 import { resizeImageData } from "../helpers/scaleHelper";
 import { colToRow } from "../helpers/maskUtils"
 import { convertArrayToImg, convertFloatToImg, convertFloatToInt8, convertImgToFloat, imageToDataURL, normalize, normalizeAndTranspose, padImageToSquare, padToSquare, resize, resize_longer, transposeChannelDim } from "../helpers/imageHelpers"
-import { AlertDialog } from "./Alert";
 
 export default function Layer(props) {
   const image = props.image;
