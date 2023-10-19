@@ -38,7 +38,7 @@ function setImage(
   let processedImage = modelOutput.clone();
   processedImage.id = uuid();
   processedImage.name = name.split(".")[0] + "_processed.nii.gz";
-  processedImage.permRAS = [1,2,3];
+  processedImage.permRAS = [1, 2, 3];
   if (niimath) {
     processedImage.img = array;
     switch (processedImage.hdr.datatypeCode) {

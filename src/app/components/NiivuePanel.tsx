@@ -1,13 +1,13 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { Box } from "@mui/material";
 import { modelInputProps } from "../helpers/Interfaces";
 import AppContext from "../hooks/createContext";
 import * as _ from "underscore";
 
 export function NiivuePanel({ nv, volumes }: any) {
-  const canvas = React.useRef(null);
+  const canvas = useRef(null);
   const {
-    clicks: [, setClicks]
+    clicks: [, setClicks],
   } = useContext(AppContext)!;
 
   const getClick = (x: number, y: number, z: number): modelInputProps => {
@@ -31,7 +31,7 @@ export function NiivuePanel({ nv, volumes }: any) {
     if (click) setClicks([click]);
   }, 15);
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function fetchData() {
       const niivue = nv;
       niivue.attachToCanvas(canvas.current);

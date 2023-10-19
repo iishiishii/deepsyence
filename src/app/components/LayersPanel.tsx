@@ -1,16 +1,4 @@
-import { FormControl } from "@mui/material";
 import { Box } from "@mui/material";
-import { InputLabel, MenuItem } from "@mui/material";
-import { Select } from "@mui/material";
-import { Button } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import GestureIcon from "@mui/icons-material/Gesture";
-import LayersIcon from "@mui/icons-material/Layers";
-import AddIcon from "@mui/icons-material/Add";
-import React from "react";
-import { styled } from "@mui/material/styles";
-import { outlinedInputClasses } from "@mui/material/OutlinedInput";
-import shadows from "@mui/material/styles/shadows";
 
 export function LayersPanel(props: any) {
   return (

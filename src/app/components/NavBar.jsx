@@ -1,30 +1,21 @@
 /* eslint-disable react/jsx-key*/
-
-import * as React from "react";
-import AppBar from "@mui/material/AppBar";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
+import { useState } from "react";
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import View from "./View";
 import Annotation from "./Annotation";
-import { Box, Link } from "@mui/material";
+import { Box } from "@mui/material";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { Dropdown, DropdownMenuItem, DropdownNestedMenuItem } from "./Dropdown";
-import NestedMenuItem from "./NestedMenuItem";
 import NVTick from "./Tick";
 
 export default function NavBar(props) {
   const nv = props.nv;
 
-  const [color, setColor] = React.useState("Gray");
-  const [sliceType, setSliceType] = React.useState("multi");
-  const [radiological, setRadiological] = React.useState(false);
-  const [crosshair3D, setCrosshair3D] = React.useState(false);
-  const [colorBar, setColorBar] = React.useState(nv.opts.isColorbar);
-  const [clipPlane, setClipPlane] = React.useState(
+  const [color, setColor] = useState("Gray");
+  const [sliceType, setSliceType] = useState("multi");
+  const [radiological, setRadiological] = useState(false);
+  const [crosshair3D, setCrosshair3D] = useState(false);
+  const [colorBar, setColorBar] = useState(nv.opts.isColorbar);
+  const [clipPlane, setClipPlane] = useState(
     nv.currentClipPlaneIndex > 0 ? true : false,
   );
 

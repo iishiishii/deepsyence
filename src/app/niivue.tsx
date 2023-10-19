@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
-import { MenuItem, Select } from "@mui/material";
+import { useState } from "react";
 import { Box } from "@mui/material";
 import { Grid } from "@mui/material";
 import { Niivue, NVImage } from "@niivue/niivue";
@@ -7,19 +6,10 @@ import NavBar from "./components/NavBar";
 import { LayersPanel } from "./components/LayersPanel";
 import { NiivuePanel } from "./components/NiivuePanel";
 import Layer from "./components/Layer";
-import { v4 as uuidv4 } from "uuid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 // import WorkerBuilder from "./components/WorkerBuilder";
-// import { handleImageScale } from "./helpers/scaleHelper";
-import { modelScaleProps } from "./helpers/Interfaces";
-import { onnxMaskToImage } from "./helpers/maskUtils";
-import { modelData } from "./helpers/onnxModelAPI";
-import AppContext from "./hooks/createContext";
-import { InferenceSession, Tensor } from "onnxruntime-web";
 import { viewType } from "./types";
 /* @ts-ignore */
-import npyjs from "npyjs";
-import * as ort from "onnxruntime-web";
 import {
   nvNiimathPostProcess,
   nvPostSam,
@@ -38,8 +28,13 @@ const theme = createTheme({
   },
 });
 
+function handleIntensityChange(data: any) {
+  document.getElementById("intensity")!.innerHTML =
+    data.vox[0] + "×" + data.vox[1] + "×" + data.vox[2];
+}
+
 const nv = new Niivue({
-  loadingText: 'Drag-drop images or Click "+" button',
+  loadingText: "Drag-drop images or Click File then Upload File",
   dragAndDropEnabled: true,
   textHeight: "0.02",
   backColor: [0, 0, 0, 1],
@@ -47,11 +42,6 @@ const nv = new Niivue({
   multiplanarForceRender: false,
   onLocationChange: handleIntensityChange,
 });
-
-function handleIntensityChange(data: any) {
-  document.getElementById("intensity")!.innerHTML =
-  data.vox[0]+'×'+data.vox[1]+'×'+data.vox[2]
-}
 
 // let instance = new WorkerBuilder(Worker);
 
@@ -64,22 +54,6 @@ export default function NiiVue(props: any) {
     setLayers([...nv.volumes]);
   };
   console.log(`layer name ${nv.volumes.length}`);
-
-  const layerList = layers.map((layer: any) => {
-    console.log(`layer list ${layer.name}`);
-    return (
-      <Layer
-        key={layer.name}
-        image={layer}
-        onColorMapChange={nvUpdateColorMap}
-        onRemoveLayer={nvRemoveLayer}
-        onSetOpacity={nvUpdateOpacity}
-        onPreprocess={nvPreprocess}
-        onSelect={nvSelect}
-        onModel={nvModel}
-      />
-    );
-  });
 
   function nvSelect(layer: any) {
     if (layer) {
@@ -127,6 +101,22 @@ export default function NiiVue(props: any) {
   function nvPreprocess(id: any, name: any, array: Float32Array) {
     nvNiimathPostProcess(nv, id, name, array, setLayers);
   }
+
+  const layerList = layers.map((layer: any) => {
+    console.log(`layer list ${layer.name}`);
+    return (
+      <Layer
+        key={layer.name}
+        image={layer}
+        onColorMapChange={nvUpdateColorMap}
+        onRemoveLayer={nvRemoveLayer}
+        onSetOpacity={nvUpdateOpacity}
+        onPreprocess={nvPreprocess}
+        onSelect={nvSelect}
+        onModel={nvModel}
+      />
+    );
+  });
 
   return (
     <ThemeProvider theme={theme}>

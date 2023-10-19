@@ -14,7 +14,7 @@ src/assets/onnxruntime-web
 **/public
 #TypeDoc
 typedoc-theme/
-
+config-overrides.js
 # ms IDE stuff
 .history/
 .vscode/

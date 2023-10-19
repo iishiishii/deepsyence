@@ -13,8 +13,8 @@ module.exports = function override(config) {
     fs: require.resolve("browserify-fs"), // require.resolve("browserify-fs") can be polyfilled here if needed
     zlib: require.resolve("browserify-zlib"), // require.resolve("browserify-zlib") can be polyfilled here if needed
     querystring: require.resolve("querystring-es3"),
-    path: require.resolve("path-browserify")
-});
+    path: require.resolve("path-browserify"),
+  });
   config.resolve.fallback = fallback;
   config.plugins = (config.plugins || []).concat([
     new webpack.ProvidePlugin({

@@ -14,13 +14,6 @@ export const samDecoder = async (
     let id = image.id;
     let name = image.name;
 
-    // Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
-    //   (embedding) => {
-    //     console.log(embedding)
-    //     setTensor(embedding);
-    //   }
-    // );
-    // console.log("dims ", image.dims, tensor, clicks);
     const LONG_SIDE_LENGTH = 1024;
     let w = image.dims[1];
     let h = image.dims[2];
@@ -33,22 +26,14 @@ export const samDecoder = async (
 
     ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
 
-    // console.log(ort.env.wasm.wasmPaths);
     // @ts-ignore
+    let modelUrl = new URL("./model/decoder-quant.onnx", document.baseURI).href;
 
-    let model_url = new URL(
-      "./model/decoder-quant.onnx",
-      document.baseURI,
-    ).href;
-    // console.log(model_url);
-
-    let session = await ort.InferenceSession.create(model_url, {
+    let session = await ort.InferenceSession.create(modelUrl, {
       executionProviders: ["wasm"],
     });
 
     // prepare feeds. use model input names as keys
-    //const feeds = { a: tensorA, b: tensorB }
-    // let feeds = { input_2: input };
     const feeds = modelData({
       clicks,
       tensor,
@@ -59,13 +44,11 @@ export const samDecoder = async (
     // feed inputs and run
     let results = await session.run(feeds);
     const end = new Date();
-    const inferenceTime = (end.getTime() - start.getTime());
-    console.log("inference time ", inferenceTime)
+    const inferenceTime = end.getTime() - start.getTime();
+    console.log("inference time ", inferenceTime);
     // read from results
-    const newImage = results[session.outputNames[0]].data;
     const output = results[session.outputNames[0]].data;
 
-    // console.log("newImage ", output);
     const rasImage = onnxMaskToImage(output, w, h, clicks[0].z);
     onModel(id, name, rasImage);
   } catch (e) {
@@ -76,22 +59,14 @@ export const samDecoder = async (
 export const samEncoder = async (image: any) => {
   const start = new Date();
   try {
-    // let id = image.id;
-    // let name = image.name;
-    const LONG_SIDE_LENGTH = 1024;
-    const array = image;
-
-    const tensor = new ort.Tensor("float32", array, [1, 3, 1024, 1024]);
+    const tensor = new ort.Tensor("float32", image, [1, 3, 1024, 1024]);
     ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
 
-    // console.log(ort.env.wasm.wasmPaths);
     // @ts-ignore
-
-    let model_url = new URL("./model/encoder-quant-new.onnx", document.baseURI)
+    let modelUrl = new URL("./model/encoder-quant-new.onnx", document.baseURI)
       .href;
-    // console.log(model_url);
 
-    let session = await ort.InferenceSession.create(model_url, {
+    let session = await ort.InferenceSession.create(modelUrl, {
       executionProviders: ["wasm"],
     });
 
@@ -103,12 +78,11 @@ export const samEncoder = async (image: any) => {
     // feed inputs and run
     let results = await session.run(feeds);
     const end = new Date();
-    const inferenceTime = (end.getTime() - start.getTime());
-    console.log("inference time ", inferenceTime)
+    const inferenceTime = end.getTime() - start.getTime();
+    console.log("inference time ", inferenceTime);
 
     const output = results[session.outputNames[0]].data;
 
-    // console.log("newImage ", output);
     return output;
   } catch (e) {
     console.log(`failed to inference ONNX model: ${e}. `);

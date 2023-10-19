@@ -1,21 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Box, Grid, Select } from "@mui/material";
-import { MenuItem } from "@mui/material";
-import BrushIcon from "@mui/icons-material/Brush";
-import { BsDot, BsFillEraserFill } from "react-icons/bs";
+import { useContext } from "react";
+import { Grid } from "@mui/material";
+import { BsFillEraserFill } from "react-icons/bs";
 import { RiPaintFill } from "react-icons/ri";
 import { AiOutlineEdit } from "react-icons/ai";
-import { RxDotFilled } from "react-icons/rx";
 import Divider from "@mui/material/Divider";
-import {
-  ColorResult,
-  getContrastingColor,
-  color as handleColor,
-  hexToHsva,
-  HsvaColor,
-  hsvaToHex,
-  validHex,
-} from "@uiw/color-convert";
+import { color as handleColor, hsvaToHex } from "@uiw/color-convert";
 import Swatch from "@uiw/react-color-swatch";
 import { IconContext } from "react-icons";
 import AppContext from "../hooks/createContext";

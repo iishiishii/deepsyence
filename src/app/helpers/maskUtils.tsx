@@ -1,13 +1,15 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 // All rights reserved.
-
-import { slice } from "../../../public/js/ort-web";
-
 // This source code is licensed under the license found in the
 // LICENSE file in the root directory of this source tree.
 
 // Convert the onnx model mask prediction to ImageData
-function arrayToImageData(input: any, width: number, height: number, sliceId: number) {
+function arrayToImageData(
+  input: any,
+  width: number,
+  height: number,
+  sliceId: number,
+) {
   let arr = Array(width * height * sliceId).fill(0); // the encoded image using python is at slice 58th
   for (let i = 0; i < input.length; i++) {
     // Threshold the onnx model mask prediction at 0.0
@@ -17,38 +19,16 @@ function arrayToImageData(input: any, width: number, height: number, sliceId: nu
       input[i] = 1;
     }
   }
-  // console.log(
-  //   `before transposed array: ${input.reduce(
-  //     (partialSum: number, a: number) => partialSum + a,
-  //     0,
-  //   )}`,
-  // );
+
   let inputArray = Array.from(input);
-  // console.log("inputArray ", inputArray);
-  // Flatten the rotated 2D image back to column-major array
-  // arr.push(...rotateImage90CW(input, height, width));
   arr = arr.concat(inputArray);
   let transposedInput = new Float32Array(arr);
-  // console.log(
-  //   "transposedInput ",
-  //   transposedInput,
-  //   "height ",
-  //   height,
-  //   "width ",
-  //   width,
-  // );
-  // console.log(
-  //   `sum of transposed array: ${transposedInput.reduce(
-  //     (partialSum, a) => partialSum + a,
-  //     0,
-  //   )}`,
-  // );
+
   return transposedInput;
 }
 
 export function colToRow(image: any, colArray: any) {
   let dims = image.dimsRAS;
-  // let colArray = image.img
   let rowArray = new Float32Array(dims[1] * dims[2] * dims[3]);
   console.log(dims);
   for (let i = 0; i < dims[1]; i++) {
@@ -65,7 +45,6 @@ export function colToRow(image: any, colArray: any) {
 
 export function rowToCol(image: any, rowArray: any) {
   let dims = image.dimsRAS;
-  // let colArray = image.img
   let colArray = new Float32Array(dims[1] * dims[2] * dims[3]);
   console.log(dims);
   for (let i = 0; i < dims[1]; i++) {
@@ -85,14 +64,14 @@ function rotateImage90CW(arr: any, width: number, height: number) {
 
   for (let col = width - 1; col >= 0; col--) {
     for (let row = 0; row < height; row++) {
-      rotatedArray.push(arr[(col * height) + row]);
+      rotatedArray.push(arr[col * height + row]);
     }
   }
 
   return rotatedArray;
 }
 
-function rotate(arr: any, width: number, height: number) {
+function rotateImage90CCW(arr: any, width: number, height: number) {
   const rotatedArray: any = [];
 
   for (let col = 0; col < width; col++) {
@@ -123,14 +102,6 @@ function arrayToMaskData(input: any, width: number, height: number) {
   return arr;
 }
 
-// Use a Canvas element to produce an image from ImageData
-function imageDataToImage(imageData: ImageData) {
-  const canvas = imageDataToCanvas(imageData);
-  const image = new Image();
-  image.src = canvas.toDataURL();
-  return image;
-}
-
 // Canvas elements can be created from ImageData
 function imageDataToCanvas(imageData: ImageData) {
   const canvas = document.createElement("canvas");
@@ -141,7 +112,20 @@ function imageDataToCanvas(imageData: ImageData) {
   return canvas;
 }
 
+// Use a Canvas element to produce an image from ImageData
+function imageDataToImage(imageData: ImageData) {
+  const canvas = imageDataToCanvas(imageData);
+  const image = new Image();
+  image.src = canvas.toDataURL();
+  return image;
+}
+
 // Convert the onnx model mask output to an HTMLImageElement
-export function onnxMaskToImage(input: any, width: number, height: number, sliceId: number) {
+export function onnxMaskToImage(
+  input: any,
+  width: number,
+  height: number,
+  sliceId: number,
+) {
   return arrayToImageData(input, width, height, sliceId);
 }

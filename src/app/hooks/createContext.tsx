@@ -14,7 +14,7 @@ interface contextProps {
   ];
   embedded: [
     embedded: Array<Float32Array> | null,
-    setEmbedded: (e: Array<Float32Array>  | null) => void,
+    setEmbedded: (e: Array<Float32Array> | null) => void,
   ];
   maskImg: [
     maskImg: HTMLImageElement | null,
