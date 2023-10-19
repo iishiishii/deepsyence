@@ -1,5 +1,5 @@
 import * as ort from "onnxruntime-web";
-import { colToRow, rowToCol } from "./maskUtils";
+import { colToRow, rowToCol } from "./imageHelpers";
 
 export const brainExtractionModel = async (
   image: any,

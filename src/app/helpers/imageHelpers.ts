@@ -1,6 +1,5 @@
 import * as Jimp from "jimp";
 import { Tensor } from "onnxruntime-web";
-import { max, min } from "underscore";
 
 export function transposeChannelDim(
   imageBufferData: Buffer | Float32Array,
@@ -101,45 +100,43 @@ export async function getImageTensorFromPath(
 export function resizeLonger(
   image: Jimp,
   size: number,
-  longer: boolean,
   mode: string = Jimp.default.RESIZE_BILINEAR,
 ): Jimp {
-  if (longer) {
     if (image.bitmap.width > image.bitmap.height) {
       return image.resize(size, Jimp.default.AUTO, mode);
     } else {
       return image.resize(Jimp.default.AUTO, size, mode);
     }
-  } else {
-    if (image.bitmap.width < image.bitmap.height) {
-      return image.resize(size, Jimp.default.AUTO, mode);
-    } else {
-      return image.resize(Jimp.default.AUTO, size, mode);
-    }
-  }
 }
 
-export async function maskImage(
-  path: string,
-  mask: Array<number>,
-  imgWidth: number,
-  imgHeight: number,
-): Promise<Jimp> {
-  // 1. load the image
-  let image = await loadImageFromPath(path);
-  for (let x = 0; x < imgWidth; x++) {
-    for (let y = 0; y < imgHeight; y++) {
-      let i = y + x * imgHeight;
-      let j = x + y * imgWidth;
-      if (mask[j] === 0) {
-        image.bitmap.data[i * 4] = 0;
-        image.bitmap.data[i * 4 + 1] = 0;
-        image.bitmap.data[i * 4 + 2] = 0;
-        image.bitmap.data[i * 4 + 3] = 0;
-      }
-    }
+export function maskImage(
+  input: Float32Array,
+  width: number,
+  height: number,
+  sliceId: number,
+): Uint8Array {
+  let output = new Array(width * height * sliceId).fill(0); // fill to selected slice
+  const threshold = 0.0;
+  
+  for (let i = 0; i < input.length; i++) {
+    input[i] = input[i] > threshold ? 1 : 0;
   }
-  return image;
+
+  output = output.concat(Array.from(input));
+
+  return Uint8Array.from(output);
+}
+
+export function stackSliceToRGB(buffer: Uint8Array): Uint8Array {
+  let bufferLength = buffer.length,
+    result = new Uint8Array(bufferLength * 3);
+
+  for (let i = 0; i < bufferLength; i++) {
+    result[3 * i] = buffer[i];
+    result[3 * i + 1] = buffer[i];
+    result[3 * i + 2] = buffer[i];
+  }
+  return result;
 }
 
 export async function imageToDataURL(img: Jimp): Promise<string> {
@@ -147,6 +144,47 @@ export async function imageToDataURL(img: Jimp): Promise<string> {
   const imgSrc = await img.getBase64Async("image/jpeg");
   return imgSrc;
 }
+
+function addChannelDim(buffer: Float32Array | Uint8Array): Uint8Array {
+  let bufferLength = buffer.length,
+    result = new Uint8Array((bufferLength / 3) * 4);
+
+  for (let i = 0; i < bufferLength; i += 3) {
+    result[(4 * i) / 3] = buffer[i] * 255;
+    result[(4 * i) / 3 + 1] = buffer[i + 1] * 255;
+    result[(4 * i) / 3 + 2] = buffer[i + 2] * 255;
+    result[(4 * i) / 3 + 3] = 255;
+  }
+  return result;
+}
+
+export function imagedataToImage(imagedata: Float32Array | Uint8Array) {
+  let addedChannel = addChannelDim(imagedata);
+  console.log("addedChannel", addedChannel);
+  let imageUint8Clamped = new Uint8ClampedArray(addedChannel);
+  let imageData = new ImageData(imageUint8Clamped, 1024, 1024);
+
+  let canvas = document.createElement("canvas");
+  let ctx = canvas.getContext("2d");
+  canvas.width = imageData.width;
+  canvas.height = imageData.height;
+  ctx!.putImageData(imageData, 0, 0);
+
+  window.location.href = canvas
+  .toDataURL("image/png")
+  .replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+}
+
+const downloadToFile = (content: Float32Array | Uint8Array, filename: string, contentType: string = 'text/plain') => {
+  const a = document.createElement("a");
+  const file = new Blob([content], { type: contentType });
+
+  a.href = URL.createObjectURL(file);
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(a.href);
+};
 
 export function getChannel(image: Jimp, channel: number): Array<number> {
   // 1. Get buffer data from image and create R, G, and B arrays.
@@ -507,3 +545,59 @@ export const overlayMasksOnImage = async (
   // Save or return the result
   return image;
 };
+
+export function colToRow(image: any, colArray: any) {
+  let dims = image.dimsRAS;
+  let rowArray = new Float32Array(dims[1] * dims[2] * dims[3]);
+  console.log(dims);
+  for (let i = 0; i < dims[1]; i++) {
+    for (let j = 0; j < dims[2]; j++) {
+      for (let k = 0; k < dims[3]; k++) {
+        let indexCol = i + j * dims[1] + k * dims[1] * dims[2];
+        let indexRow = i * dims[2] * dims[3] + j * dims[3] + k;
+        rowArray[indexRow] = colArray[indexCol];
+      }
+    }
+  }
+  return rowArray;
+}
+
+export function rowToCol(image: any, rowArray: any) {
+  let dims = image.dimsRAS;
+  let colArray = new Float32Array(dims[1] * dims[2] * dims[3]);
+  console.log(dims);
+  for (let i = 0; i < dims[1]; i++) {
+    for (let j = 0; j < dims[2]; j++) {
+      for (let k = 0; k < dims[3]; k++) {
+        let indexCol = i + j * dims[1] + k * dims[1] * dims[2];
+        let indexRow = i * dims[2] * dims[3] + j * dims[3] + k;
+        colArray[indexCol] = rowArray[indexRow];
+      }
+    }
+  }
+  return colArray;
+}
+
+export function rotateImage90CW(arr: any, width: number, height: number) {
+  const rotatedArray = [];
+
+  for (let col = width - 1; col >= 0; col--) {
+    for (let row = 0; row < height; row++) {
+      rotatedArray.push(arr[col * height + row]);
+    }
+  }
+
+  return rotatedArray;
+}
+
+export function rotateImage90CCW(arr: any, width: number, height: number) {
+  const rotatedArray: any = [];
+
+  for (let col = 0; col < width; col++) {
+    for (let row = height - 1; row >= 0; row--) {
+      rotatedArray.push(arr[row * width + col]);
+    }
+  }
+
+  return rotatedArray;
+}

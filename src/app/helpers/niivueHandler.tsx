@@ -19,7 +19,7 @@ function setImage(
   nv: any,
   id: any,
   name: any,
-  array: Float32Array,
+  array: Float32Array | Uint8Array | Uint16Array | Int16Array | Uint32Array,
   niimath: boolean,
 ) {
   let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
@@ -66,7 +66,7 @@ function setImage(
         throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
     }
   } else {
-    processedImage.hdr.datatypeCode = processedImage.DT_FLOAT;
+    processedImage.hdr.datatypeCode = processedImage.DT_RGB;
     processedImage.img = array;
   }
   processedImage.trustCalMinMax = false;
@@ -82,7 +82,7 @@ function setImage(
   return processedImage;
 }
 
-export function nvPostSam(nv: any, id: any, name: any, array: Float32Array) {
+export function nvPostSam(nv: any, id: any, name: any, array: Uint8Array) {
   let processedImage = setImage(nv, id, name, array, false);
   nv.loadDrawing(processedImage);
   nv.setDrawColormap("$slicer3d");

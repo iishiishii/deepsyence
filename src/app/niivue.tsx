@@ -94,7 +94,7 @@ export default function NiiVue(props: any) {
     nv.updateGLVolume();
   }
 
-  function nvModel(id: any, name: any, array: Float32Array) {
+  function nvModel(id: any, name: any, array: Uint8Array) {
     nvPostSam(nv, id, name, array);
   }
 

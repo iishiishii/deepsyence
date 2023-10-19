@@ -18,9 +18,11 @@ import { brainExtractionModel } from "../helpers/brainExtractionModel";
 import { samDecoder, samEncoder } from "../helpers/samModel";
 import {
   convertArrayToImg,
+  imagedataToImage,
   normalize,
   padToSquare,
   resizeLonger,
+  stackSliceToRGB,
   transposeChannelDim,
 } from "../helpers/imageHelpers";
 
@@ -46,92 +48,24 @@ export default function Layer(props) {
   );
   let DoneIcon = done ? <Checkbox checked disabled /> : <Box />;
 
-  function Float32Concat(buffer) {
-    let bufferLength = buffer.length,
-      result = new Uint8Array(bufferLength * 3);
-
-    for (let i = 0; i < bufferLength; i++) {
-      result[3 * i] = buffer[i];
-      result[3 * i + 1] = buffer[i];
-      result[3 * i + 2] = buffer[i];
-      // result[4*i+3] = 255;
-    }
-    return result;
-  }
-
-  function addChannelDim(buffer) {
-    let bufferLength = buffer.length,
-      result = new Uint8Array((bufferLength / 3) * 4);
-
-    for (let i = 0; i < bufferLength; i += 3) {
-      result[(4 * i) / 3] = buffer[i] * 255;
-      result[(4 * i) / 3 + 1] = buffer[i + 1] * 255;
-      result[(4 * i) / 3 + 2] = buffer[i + 2] * 255;
-      result[(4 * i) / 3 + 3] = 255;
-    }
-    return result;
-  }
-
-  function imagedataToImage(imagedata) {
-    let addedChannel = addChannelDim(imagedata);
-    console.log("addedChannel", addedChannel);
-    let imageUint8Clamped = new Uint8ClampedArray(addedChannel);
-    let imageData = new ImageData(imageUint8Clamped, 1024, 1024);
-
-    let canvas = document.createElement("canvas");
-    let ctx = canvas.getContext("2d");
-    canvas.width = imageData.width;
-    canvas.height = imageData.height;
-    ctx.putImageData(imageData, 0, 0);
-
-    let image = new Image();
-    image = canvas
-      .toDataURL("image/png")
-      .replace("image/png", "image/octet-stream"); // here is the most important part because if you dont replace you will get a DOM 18 exception.
-    window.location.href = image;
-    return image;
-  }
-
-  const downloadToFile = (content, filename, contentType) => {
-    const a = document.createElement("a");
-    const file = new Blob([content], { type: contentType });
-
-    a.href = URL.createObjectURL(file);
-    a.download = filename;
-    a.click();
-
-    URL.revokeObjectURL(a.href);
-  };
 
   const preprocess = (sliceId) => {
+    const MEAN = [123.675, 116.28, 103.53],
+      STD = [58.395, 57.12, 57.375];
     const imageRAS = image.img2RAS();
     const imageArray = imageRAS.slice(
       image.dims[1] * image.dims[2] * sliceId,
       image.dims[1] * image.dims[2] * (sliceId + 1),
     );
-    // console.log("imageArray", imageArray, image.dims, imageArray.reduce(
-    //   (partialSum, a) => partialSum + a,
-    //   0,
-    // ))
-    let imageUint8 = new Uint8Array(imageArray);
-    // console.log("imageUint8", imageUint8.reduce(
-    //   (partialSum, a) => partialSum + a,
-    //   0,
-    // ))
-    let imageBuffer = Float32Concat(imageUint8);
-    // console.log("imageBuffer", imageBuffer, imageBuffer.reduce(
-    //   (partialSum, a) => partialSum + a,
-    //   0,
-    // ))
-    let image0 = convertArrayToImg(imageBuffer, [image.dims[1], image.dims[2]]);
-    // console.log("image0", image0, image0.bitmap.data.reduce((a,b) => a+b, 0))
 
-    const resizedImage = resizeLonger(image0, 1024, true);
-    // console.log("resizedImage", resizedImage, resizedImage.bitmap.data.reduce((a,b) => a+b, 0))
+    const imageUint8 = new Uint8Array(imageArray);
+    const image3Channels = stackSliceToRGB(imageUint8);
+    const arrayToImage = convertArrayToImg(image3Channels, [image.dims[1], image.dims[2]]);
+    const resizedImage = resizeLonger(arrayToImage, 1024);
     const normalizedArray = normalize(
       resizedImage.bitmap.data,
-      [123.675, 116.28, 103.53],
-      [58.395, 57.12, 57.375],
+      MEAN,
+      STD,
     );
     const paddedImage = padToSquare(
       normalizedArray,
@@ -166,8 +100,6 @@ export default function Layer(props) {
   };
 
   const runDecoder = async () => {
-    // console.log("rundecoder", embedded[clicks[0].z])
-
     try {
       let encodedTensor = new ort.Tensor(
         "float32",
