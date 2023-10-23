@@ -578,24 +578,27 @@ export function rowToCol(image: any, rowArray: any) {
   return colArray;
 }
 
-export function rotateImage90CW(arr: any, width: number, height: number) {
-  const rotatedArray = [];
-
+export function rotateImage90CW(arr: Float32Array, width: number, height: number) {
+  let rotatedArray: Float32Array = new Float32Array();
+  let counter = 0;
   for (let col = width - 1; col >= 0; col--) {
     for (let row = 0; row < height; row++) {
-      rotatedArray.push(arr[col * height + row]);
+      rotatedArray[counter] = arr[col * height + row];
+      counter++;
     }
   }
 
   return rotatedArray;
 }
 
-export function rotateImage90CCW(arr: any, width: number, height: number) {
-  const rotatedArray: any = [];
+export function rotateImage90CCW(arr: Float32Array, width: number, height: number) {
+  let rotatedArray: Float32Array = new Float32Array();
+  let counter = 0;
 
   for (let col = 0; col < width; col++) {
     for (let row = height - 1; row >= 0; row--) {
-      rotatedArray.push(arr[row * width + col]);
+      rotatedArray[counter] = arr[row * width + col];
+      counter++;
     }
   }
 

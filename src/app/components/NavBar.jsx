@@ -6,6 +6,12 @@ import { Box } from "@mui/material";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { Dropdown, DropdownMenuItem, DropdownNestedMenuItem } from "./Dropdown";
 import NVTick from "./Tick";
+import ModelSelector from "./ModelSelector";
+import {
+  ModelType
+} from "../browser/modelConfig";
+import { SegmentAnythingModel } from "../browser/samModel";
+import { ImageModel } from "../browser/imageModel";
 
 export default function NavBar(props) {
   const nv = props.nv;
@@ -18,6 +24,20 @@ export default function NavBar(props) {
   const [clipPlane, setClipPlane] = useState(
     nv.currentClipPlaneIndex > 0 ? true : false,
   );
+  const [samModel, setSamModel] = useState(
+    new SegmentAnythingModel({
+      id: "segment-anything-quant",
+      type: ModelType.Segmentation,
+      modelPaths: new Map(),
+      configPath: "",
+      preprocessorPath: "",
+      memEstimateMB: 0,
+    })
+  );
+  const [status, setStatus] = useState({
+    message: "select and load the model",
+    processing: false,
+  });
 
   function nvUpdateCrosshair3D() {
     nv.opts.show3Dcrosshair = !crosshair3D;
@@ -71,7 +91,7 @@ export default function NavBar(props) {
     input.multiple = true;
 
     input.onchange = async function () {
-      for (var i = 0; i < input.files.length; i++) {
+      for (let i = 0; i < input.files.length; i++) {
         props.onAddLayer(input.files[i]);
       }
     };
@@ -82,6 +102,13 @@ export default function NavBar(props) {
   function handleSaveImage() {
     nv.saveImage("draw.nii", false);
   }
+
+  const loadSamModel = async (id) => {
+    setStatus({ message: "loading the model", processing: true });
+    const result = await ImageModel.create(id);
+    setSamModel(result.model);
+    setStatus({ message: "ready", processing: false });
+  };
 
   return (
     <div style={{ width: "100%" }}>
@@ -235,6 +262,19 @@ export default function NavBar(props) {
           trigger={<Button sx={{ color: "white" }}>Annotation</Button>}
           menu={[<Annotation niivue={nv} />]}
         />
+        <Dropdown 
+        trigger={<Button sx={{ color: "white" }}>Model</Button>}
+        menu={[
+          <DropdownMenuItem
+            selected={samModel.id == "quant"}
+            onClick={(e) => {
+              e.stopPropagation();
+              loadSamModel();
+            }
+            }
+          >Quant</DropdownMenuItem>
+        ]} />
+
       </Box>
     </div>
   );

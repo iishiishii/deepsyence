@@ -61,15 +61,17 @@ export const samEncoder = async (image: any) => {
   try {
     const tensor = new ort.Tensor("float32", image, [1, 3, 1024, 1024]);
     ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
-
+    ort.env.wasm.numThreads = 8; //https://github.com/microsoft/onnxruntime/issues/14220
     // @ts-ignore
     let modelUrl = new URL("./model/encoder-quant-new.onnx", document.baseURI)
       .href;
-
+    console.log("modelUrl ", modelUrl);
     let session = await ort.InferenceSession.create(modelUrl, {
       executionProviders: ["wasm"],
+      graphOptimizationLevel: "all",
+      executionMode: "parallel",
     });
-
+    console.log("session ", session);
     const feeds = {
       x: tensor,
     };

@@ -8,7 +8,7 @@ import ArrowRight from "@mui/icons-material/ArrowRight";
 const NestedMenuItem = React.forwardRef((props, ref) => {
   const {
     parentMenuOpen,
-    label,
+    label = '',
     rightIcon = <ArrowRight style={{ fontSize: 16 }} />,
     keepOpen,
     children,
