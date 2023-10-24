@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-key*/
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Button from "@mui/material/Button";
 import Annotation from "./Annotation";
 import { Box } from "@mui/material";
@@ -12,6 +12,7 @@ import {
 } from "../browser/modelConfig";
 import { SegmentAnythingModel } from "../browser/samModel";
 import { ImageModel } from "../browser/imageModel";
+import AppContext from "../hooks/createContext";
 
 export default function NavBar(props) {
   const nv = props.nv;
@@ -24,16 +25,10 @@ export default function NavBar(props) {
   const [clipPlane, setClipPlane] = useState(
     nv.currentClipPlaneIndex > 0 ? true : false,
   );
-  const [samModel, setSamModel] = useState(
-    new SegmentAnythingModel({
-      id: "segment-anything-quant",
-      type: ModelType.Segmentation,
-      modelPaths: new Map(),
-      configPath: "",
-      preprocessorPath: "",
-      memEstimateMB: 0,
-    })
-  );
+  const {
+    model: [, setSamModel],
+  } = useContext(AppContext);
+
   const [status, setStatus] = useState({
     message: "select and load the model",
     processing: false,
@@ -265,14 +260,13 @@ export default function NavBar(props) {
         <Dropdown 
         trigger={<Button sx={{ color: "white" }}>Model</Button>}
         menu={[
-          <DropdownMenuItem
-            selected={samModel.id == "quant"}
-            onClick={(e) => {
-              e.stopPropagation();
-              loadSamModel();
-            }
-            }
-          >Quant</DropdownMenuItem>
+          <DropdownMenuItem>          
+            <ModelSelector
+            tags={undefined}
+            textType={undefined}
+            imageType={ModelType.SegmentAnything}
+            callback={loadSamModel}/>
+        </DropdownMenuItem>
         ]} />
 
       </Box>

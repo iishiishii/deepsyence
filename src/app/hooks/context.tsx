@@ -6,6 +6,7 @@
 
 import React, { useState } from "react";
 import { modelInputProps } from "../helpers/Interfaces";
+import { SegmentAnythingModel } from "../browser/samModel";
 import AppContext from "./createContext";
 
 const AppContextProvider = (props: {
@@ -16,6 +17,7 @@ const AppContextProvider = (props: {
   const [maskImg, setMaskImg] = useState<HTMLImageElement | null>(null);
   const [penMode, setPenMode] = useState<number>(-1);
   const [filled, setFilled] = useState<boolean>(false);
+  const [model, setModel] = useState<SegmentAnythingModel | null>(null);
 
   return (
     <AppContext.Provider
@@ -25,6 +27,7 @@ const AppContextProvider = (props: {
         maskImg: [maskImg, setMaskImg],
         penMode: [penMode, setPenMode],
         filled: [filled, setFilled],
+        model: [model, setModel],
       }}
     >
       {props.children}

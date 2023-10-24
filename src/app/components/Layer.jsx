@@ -11,7 +11,7 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import DeleteIcon from "@mui/icons-material/Delete";
 import * as ort from "onnxruntime-web";
 import AppContext from "../hooks/createContext";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import Checkbox from "@mui/material/Checkbox";
 import { processImage } from "../helpers/niimath";
 import { brainExtractionModel } from "../helpers/brainExtractionModel";
@@ -38,6 +38,7 @@ export default function Layer(props) {
     clicks: [clicks],
     embedded: [embedded, setEmbedded],
     maskImg: [, setMaskImg],
+    model: [samModel],
   } = useContext(AppContext);
 
   let Visibility = visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />;
@@ -86,12 +87,18 @@ export default function Layer(props) {
       setEmbedded((embedded) => [...embedded, []]);
     }
     try {
-      for (let i = 59; i < 63; i++) {
+      for (let i = 59; i < 61; i++) {
         const preprocessedImage = preprocess(i);
-        //https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
-        await samEncoder(preprocessedImage).then((embedding) => {
-          setEmbedded((embedded) => [...embedded, embedding]);
+        console.log("samModel", samModel)
+        await samModel.process(preprocessedImage).then((result) => {
+          console.log("embedding", result.embedding)
+          setEmbedded((embedded) => [...embedded, result.embedding]);
         });
+
+        //https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
+        // await samEncoder(preprocessedImage).then((embedding) => {
+        //   setEmbedded((embedded) => [...embedded, embedding]);
+        // });
       }
       setDone(!done);
     } catch (error) {
@@ -101,6 +108,7 @@ export default function Layer(props) {
 
   const runDecoder = async () => {
     try {
+      console.log("embedded array", embedded[clicks[0].z])
       let encodedTensor = new ort.Tensor(
         "float32",
         embedded[clicks[0].z],

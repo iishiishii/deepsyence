@@ -30,11 +30,14 @@ export class BaseImageModel {
   init = async (proxy = true): Promise<number> => {
     const start = new Date();
     for (const [name, path] of this.metadata.modelPaths) {
+      console.log("init session", name, path)
       if (!this.sessions) {
         this.sessions = new Map<string, Session>();
       }
+      console.log("create session", name, path)
       this.sessions.set(name, await createSession(path, proxy));
     }
+    console.log("session", this.sessions)
     const preprocessorConfig = await PreprocessorConfig.fromFile(
       this.metadata.preprocessorPath
     );

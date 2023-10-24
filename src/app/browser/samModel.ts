@@ -1,7 +1,9 @@
-import * as ort from "onnxruntime-common";
+import * as ort from "onnxruntime-web";
 import Jimp from "jimp";
 import { BaseImageModel } from "./base";
-// import { SegmentationResult } from "./segmentationModel.js";
+import { modelInputProps } from "../helpers/Interfaces";
+import { modelData } from "../helpers/onnxModelAPI";
+import { maskImage } from "../helpers/imageHelpers";
 
 export interface Point {
   x: number;
@@ -11,9 +13,9 @@ export interface Point {
 
 export type SAMResult = {
   elapsed: number;
-  canvas: HTMLCanvasElement | OffscreenCanvas;
-  topLeft: Point;
-  bottomRight: Point;
+  embedding:Float32Array | undefined;
+  // topLeft: Point;
+  // bottomRight: Point;
 };
 
 export type SegmentAnythingPrompt = {
@@ -30,195 +32,189 @@ export class SegmentAnythingModel extends BaseImageModel {
   newHeight: number | undefined;
 
   process = async (
-    input: SegmentAnythingPrompt
+    input: any
   ): Promise<SAMResult | undefined> => {
     const start = new Date();
+    let embedding: Float32Array | undefined;
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       throw Error("the model is not initialized");
     }
-    if (input.image !== undefined) {
-      await this.processEncoder(input.image);
+    if (input !== undefined) {
+      console.log("input ", input)
+      embedding = await this.processEncoder(input) as Float32Array;
+    } else {
+      console.log("didnt run encoder ", input)
     }
-    if (this.encoderResult === undefined && input.image === undefined) {
+
+    if (this.encoderResult === undefined && input === undefined) {
       throw Error("you must provide an image as an input");
     }
-    if (input.boxes === undefined && input.points === undefined) {
+    if (input === undefined) {
       return undefined;
     }
-    const decoderOutput = await this.processDecoder(input.points, input.boxes);
-    const size = decoderOutput.dims[2] * decoderOutput.dims[3] * 4;
-    const arrayBuffer = new ArrayBuffer(size);
-    const pixels = new Uint8ClampedArray(arrayBuffer);
-    const color = [237, 61, 26];
-    const topLeft: Point = {
-      x: Infinity,
-      y: Infinity,
-      positive: false,
-    };
-    const bottomRight: Point = {
-      x: 0,
-      y: 0,
-      positive: false,
-    };
-    for (let y = 0; y < decoderOutput.dims[2]; y++) {
-      for (let x = 0; x < decoderOutput.dims[3]; x++) {
-        const value = decoderOutput.data[y * decoderOutput.dims[3] + x];
-        if ((value as number) > 0) {
-          const idx = (y * decoderOutput.dims[3] + x) * 4;
-          pixels[idx] = color[0];
-          pixels[idx + 1] = color[1];
-          pixels[idx + 2] = color[2];
-          pixels[idx + 3] = 255;
-          if (x < topLeft.x) {
-            topLeft.x = x;
-          }
-          if (y < topLeft.y) {
-            topLeft.y = y;
-          }
-          if (x > bottomRight.x) {
-            bottomRight.x = x;
-          }
-          if (y > bottomRight.y) {
-            bottomRight.y = y;
-          }
-        } else {
-          pixels[y] = 0;
-          pixels[y + 1] = 0;
-          pixels[y + 2] = 0;
-          pixels[y + 3] = 0;
-        }
-      }
-    }
-    const imageData = new ImageData(
-      pixels,
-      decoderOutput.dims[3],
-      decoderOutput.dims[2]
-    );
-    const resCanvas = this.createCanvas(imageData.width, imageData.height);
-    const ctx = resCanvas.getContext("2d");
-    if (
-      ctx instanceof OffscreenCanvasRenderingContext2D ||
-      ctx instanceof CanvasRenderingContext2D
-    ) {
-      ctx.putImageData(imageData, 0, 0);
-    } else {
-      throw new Error("Invalid rendering context");
-    }
+    // const decoderOutput = await this.processDecoder(input.points, input.boxes);
+    // const size = decoderOutput.dims[2] * decoderOutput.dims[3] * 4;
+    // const arrayBuffer = new ArrayBuffer(size);
+    // const pixels = new Uint8ClampedArray(arrayBuffer);
+    // const color = [237, 61, 26];
+    // const topLeft: Point = {
+    //   x: Infinity,
+    //   y: Infinity,
+    //   positive: false,
+    // };
+    // const bottomRight: Point = {
+    //   x: 0,
+    //   y: 0,
+    //   positive: false,
+    // };
+    // for (let y = 0; y < decoderOutput.dims[2]; y++) {
+    //   for (let x = 0; x < decoderOutput.dims[3]; x++) {
+    //     const value = decoderOutput.data[y * decoderOutput.dims[3] + x];
+    //     if ((value as number) > 0) {
+    //       const idx = (y * decoderOutput.dims[3] + x) * 4;
+    //       pixels[idx] = color[0];
+    //       pixels[idx + 1] = color[1];
+    //       pixels[idx + 2] = color[2];
+    //       pixels[idx + 3] = 255;
+    //       if (x < topLeft.x) {
+    //         topLeft.x = x;
+    //       }
+    //       if (y < topLeft.y) {
+    //         topLeft.y = y;
+    //       }
+    //       if (x > bottomRight.x) {
+    //         bottomRight.x = x;
+    //       }
+    //       if (y > bottomRight.y) {
+    //         bottomRight.y = y;
+    //       }
+    //     } else {
+    //       pixels[y] = 0;
+    //       pixels[y + 1] = 0;
+    //       pixels[y + 2] = 0;
+    //       pixels[y + 3] = 0;
+    //     }
+    //   }
+    // }
+    // const imageData = new ImageData(
+    //   pixels,
+    //   decoderOutput.dims[3],
+    //   decoderOutput.dims[2]
+    // );
+    // const resCanvas = this.createCanvas(imageData.width, imageData.height);
+    // const ctx = resCanvas.getContext("2d");
+    // if (
+    //   ctx instanceof OffscreenCanvasRenderingContext2D ||
+    //   ctx instanceof CanvasRenderingContext2D
+    // ) {
+    //   ctx.putImageData(imageData, 0, 0);
+    // } else {
+    //   throw new Error("Invalid rendering context");
+    // }
     const end = new Date();
     const elapsed = (end.getTime() - start.getTime()) / 1000;
     const result: SAMResult = {
-      canvas: resCanvas,
+      embedding: embedding,
       elapsed: elapsed,
-      topLeft: topLeft,
-      bottomRight: bottomRight,
     };
     return result;
   };
-
-  processEncoder = async (input: string | ArrayBuffer) => {
+  // processDecoder = async (
+  //   image: any,
+  //   tensor: ort.TypedTensor<"string">,
+  //   clicks: modelInputProps[],
+  //   onModel: (id: any, name: any, array: any) => void,
+  // ) => {
+  //   const start = new Date();
+  //   try {
+  //     let id = image.id;
+  //     let name = image.name;
+  
+  //     const LONG_SIDE_LENGTH = 1024;
+  //     let w = image.dims[1];
+  //     let h = image.dims[2];
+  //     const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
+  //     const modelScale = {
+  //       samScale: samScale,
+  //       height: h, // swap height and width to get row major order from npy arrayt to column order ?
+  //       width: w,
+  //     };
+  
+  //     ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
+  
+  //     // @ts-ignore
+  //     let modelUrl = new URL("./model/decoder-quant.onnx", document.baseURI).href;
+  
+  //     let session = await ort.InferenceSession.create(modelUrl, {
+  //       executionProviders: ["wasm"],
+  //     });
+  
+  //     // prepare feeds. use model input names as keys
+  //     const feeds = modelData({
+  //       clicks,
+  //       tensor,
+  //       modelScale,
+  //     });
+  //     console.log("feeds ", feeds);
+  //     if (feeds === undefined) return;
+  //     // feed inputs and run
+  //     let results = await session.run(feeds);
+  //     const end = new Date();
+  //     const inferenceTime = end.getTime() - start.getTime();
+  //     console.log("inference time ", inferenceTime);
+  //     // read from results
+  //     const output = results[session.outputNames[0]].data;
+  
+  //     const rasImage = maskImage(output as Float32Array, w, h, clicks[0].z);
+  //     onModel(id, name, rasImage);
+  //   } catch (e) {
+  //     console.log(`failed to inference ONNX model: ${e}. `);
+  //   }
+  // };
+  
+  processEncoder = async (image: any): Promise<string[] | Float32Array | Uint8Array | Int8Array | Uint16Array | Int16Array | Int32Array | BigInt64Array | Float64Array | Uint32Array | BigUint64Array | undefined>  => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       throw Error("the model is not initialized");
     }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const image = await Jimp.read(input);
-    this.originalWidth = image.bitmap.width;
-    this.originalHeight = image.bitmap.height;
-    const result = this.preprocessor.process(image);
-    const session = this.sessions.get("encoder");
-    if (!session) {
-      throw Error("the encoder is absent in the sessions map");
-    }
-    const feeds: Record<string, ort.Tensor> = {};
-    feeds["x"] = result.tensor;
-    const outputData = await session.run(feeds);
-    const outputNames = await session.outputNames();
-    const output = outputData[outputNames[0]];
-    this.encoderResult = output;
-    this.newWidth = result.newWidth;
-    this.newHeight = result.newHeight;
-  };
-
-  processDecoder = async (
-    points: Point[] | undefined,
-    boxes: Point[][] | undefined
-  ): Promise<ort.Tensor> => {
-    if (!this.initialized || !this.preprocessor || !this.sessions) {
-      throw Error("the model is not initialized");
-    }
-    if (
-      this.encoderResult === undefined ||
-      this.originalWidth === undefined ||
-      this.originalHeight === undefined ||
-      this.newWidth === undefined ||
-      this.newHeight === undefined
-    ) {
-      throw Error("you must provide an image as an input");
-    }
-    if (points === undefined && boxes === undefined) {
-      throw Error("you must provide at least one point or box");
-    }
-    const onnx_coord: number[] = [];
-    const onnx_label: number[] = [];
-    if (points !== undefined) {
-      for (const point of points) {
-        onnx_coord.push((point.x / this.originalWidth) * this.newWidth);
-        onnx_coord.push((point.y / this.originalHeight) * this.newHeight);
-        onnx_label.push(point.positive ? 1 : 0);
+    const start = new Date();
+    try {
+      // const result = this.preprocessor.process(image);
+      const tensor = new ort.Tensor("float32", image, [1, 3, 1024, 1024]);
+      const session = this.sessions.get("encoder");
+      if (!session) {
+        throw Error("the encoder is absent in the sessions map");
       }
+      console.log("session ", session)
+    
+      const feeds: Record<string, ort.Tensor> = {};
+      feeds["x"] = tensor;
+      console.log("feeds ", feeds)
+      const outputData = await session.run(feeds);
+      const outputNames = await session.outputNames();
+      const output = outputData[outputNames[0]].data;
+      const end = new Date();
+      const inferenceTime = end.getTime() - start.getTime();
+      console.log("inference time ", inferenceTime);
+  
+      // const output = results[session.outputNames[0]].data;
+      console.log("output ", output)
+      // console.log("output sum ", output.reduce((a: number,b: number) => a+b,0))
+      return output;
+    } catch (e) {
+      console.log(`failed to inference ONNX model: ${e}. `);
     }
-    if (boxes !== undefined) {
-      for (const box of boxes) {
-        onnx_coord.push((box[0].x / this.originalWidth) * this.newWidth);
-        onnx_coord.push((box[0].y / this.originalHeight) * this.newHeight);
-        onnx_label.push(2);
-        onnx_coord.push((box[1].x / this.originalWidth) * this.newWidth);
-        onnx_coord.push((box[1].y / this.originalHeight) * this.newHeight);
-        onnx_label.push(3);
-      }
-    } else {
-      onnx_coord.push(0);
-      onnx_coord.push(0);
-      onnx_label.push(-1);
-    }
-    const session = this.sessions.get("decoder");
-    if (!session) {
-      throw Error("the decoder is absent in the sessions map");
-    }
-    const feeds: Record<string, ort.Tensor> = {};
-    feeds["image_embeddings"] = this.encoderResult;
-    feeds["mask_input"] = new ort.Tensor(
-      new Float32Array(256 * 256).fill(1),
-      [1, 1, 256, 256]
-    );
-    feeds["has_mask_input"] = new ort.Tensor(new Float32Array(1).fill(0), [1]);
-    feeds["orig_im_size"] = new ort.Tensor(
-      new Float32Array([this.originalHeight, this.originalWidth]),
-      [2]
-    );
-    feeds["point_coords"] = new ort.Tensor(new Float32Array(onnx_coord), [
-      1,
-      onnx_coord.length / 2,
-      2,
-    ]);
-    feeds["point_labels"] = new ort.Tensor(new Float32Array(onnx_label), [
-      1,
-      onnx_label.length,
-    ]);
-    const outputData = await session.run(feeds);
-    return outputData["masks"];
-  };
+  };  
 
-  createCanvas = (width: number, height: number) => {
-    if (typeof OffscreenCanvas !== "undefined") {
-      return new OffscreenCanvas(width, height);
-    } else if (typeof document !== "undefined") {
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      return canvas;
-    } else {
-      throw new Error("Canvas creation is not supported in this environment");
-    }
-  };
+  // createCanvas = (width: number, height: number) => {
+  //   if (typeof OffscreenCanvas !== "undefined") {
+  //     return new OffscreenCanvas(width, height);
+  //   } else if (typeof document !== "undefined") {
+  //     const canvas = document.createElement("canvas");
+  //     canvas.width = width;
+  //     canvas.height = height;
+  //     return canvas;
+  //   } else {
+  //     throw new Error("Canvas creation is not supported in this environment");
+  //   }
+  // };
 }

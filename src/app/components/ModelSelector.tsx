@@ -28,6 +28,7 @@ export default function ModelSelector(props: ModelSelectorProps) {
     const id = selectRef.current?.value;
     if (id !== undefined) {
       props.callback(id);
+      console.log(`selected model ${id}`)
     }
   };
 
