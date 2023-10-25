@@ -25,10 +25,7 @@ function setImage(
   let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
   console.log(
     "processed image ",
-    modelOutput.img.reduce(
-      (partialSum: number, a: number) => partialSum + a,
-      0,
-    ),
+    array
   );
   if (!modelOutput) {
     console.log("image not found");

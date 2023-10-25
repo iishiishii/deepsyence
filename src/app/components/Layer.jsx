@@ -92,10 +92,13 @@ export default function Layer(props) {
         console.log("samModel", samModel)
         await samModel.process(preprocessedImage).then((result) => {
           console.log("embedding", result.embedding)
-          setEmbedded((embedded) => [...embedded, result.embedding]);
+          if (i === 60) {
+            setEmbedded((embedded) => [...embedded, ...result.embedding]);
+            console.log("embedded", embedded)
+          }
         });
 
-        //https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
+        // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
         // await samEncoder(preprocessedImage).then((embedding) => {
         //   setEmbedded((embedded) => [...embedded, embedding]);
         // });
@@ -109,12 +112,14 @@ export default function Layer(props) {
   const runDecoder = async () => {
     try {
       console.log("embedded array", embedded[clicks[0].z])
-      let encodedTensor = new ort.Tensor(
-        "float32",
-        embedded[clicks[0].z],
-        [1, 256, 64, 64],
-      );
-      samDecoder(image, encodedTensor, clicks, props.onModel);
+      // let encodedTensor = new ort.Tensor(
+      //   "float32",
+      //   embedded[clicks[0].z],
+      //   [1, 256, 64, 64],
+      // );
+      await samModel.processDecoder(image, embedded[clicks[0].z], clicks).then((result) => {
+        props.onModel(image.id, image.name, result)
+      });
     }
     catch (error) {
       console.log("error decoder", error);

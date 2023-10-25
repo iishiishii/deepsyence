@@ -7,6 +7,7 @@
 import { createContext } from "react";
 import { modelInputProps } from "../helpers/Interfaces";
 import { SegmentAnythingModel } from "../browser/samModel";
+import * as ort from "onnxruntime-web";
 
 interface contextProps {
   clicks: [
@@ -14,8 +15,8 @@ interface contextProps {
     setClicks: (e: modelInputProps[] | null) => void,
   ];
   embedded: [
-    embedded: Array<Float32Array> | null,
-    setEmbedded: (e: Array<Float32Array> | null) => void,
+    embedded: ort.Tensor[] | null,
+    setEmbedded: (e: ort.Tensor[] | null) => void,
   ];
   maskImg: [
     maskImg: HTMLImageElement | null,

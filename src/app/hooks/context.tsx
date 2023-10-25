@@ -8,12 +8,13 @@ import React, { useState } from "react";
 import { modelInputProps } from "../helpers/Interfaces";
 import { SegmentAnythingModel } from "../browser/samModel";
 import AppContext from "./createContext";
+import * as ort from "onnxruntime-web";
 
 const AppContextProvider = (props: {
   children: React.ReactElement<any, string | React.JSXElementConstructor<any>>;
 }) => {
   const [clicks, setClicks] = useState<Array<modelInputProps> | null>(null);
-  const [embedded, setEmbedded] = useState<Array<Float32Array> | null>(null);
+  const [embedded, setEmbedded] = useState<Array<ort.Tensor> | null>(null);
   const [maskImg, setMaskImg] = useState<HTMLImageElement | null>(null);
   const [penMode, setPenMode] = useState<number>(-1);
   const [filled, setFilled] = useState<boolean>(false);
