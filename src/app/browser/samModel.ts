@@ -4,6 +4,7 @@ import { BaseImageModel } from "./base";
 import { modelInputProps } from "../helpers/Interfaces";
 import { modelData } from "../helpers/onnxModelAPI";
 import { maskImage } from "../helpers/imageHelpers";
+import { rotateImage90CCW } from "../helpers/imageHelpers";
 
 export interface Point {
   x: number;
@@ -199,6 +200,8 @@ export class SegmentAnythingModel extends BaseImageModel {
       // const output = results[session.outputNames[0]].data;
       const outputNames = await session.outputNames();
       const output = results[outputNames[0]].data;
+      console.log("output ", output);
+      // let rotated = output.reverse();
       const rasImage = maskImage(output as Float32Array, w, h, clicks[0].z);
       console.log("rasImage ", rasImage);
       // onModel(id, name, rasImage);

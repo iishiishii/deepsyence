@@ -25,6 +25,7 @@ import {
   stackSliceToRGB,
   transposeChannelDim,
 } from "../helpers/imageHelpers";
+import npyjs from "npyjs";
 
 export default function Layer(props) {
   const image = props.image;
@@ -83,16 +84,16 @@ export default function Layer(props) {
   const runEncoder = async () => {
     setEmbedded([]);
 
-    for (let i = 0; i < 59; i++) {
+    for (let i = 0; i < 143; i++) {
       setEmbedded((embedded) => [...embedded, []]);
     }
     try {
-      for (let i = 59; i < 61; i++) {
+      for (let i = 143; i < 149; i++) {
         const preprocessedImage = preprocess(i);
         console.log("samModel", samModel)
         await samModel.process(preprocessedImage).then((result) => {
           console.log("embedding", result.embedding)
-          if (i === 60) {
+          if (i === 148) {
             setEmbedded((embedded) => [...embedded, ...result.embedding]);
             console.log("embedded", embedded)
           }
@@ -134,6 +135,43 @@ export default function Layer(props) {
     }
   }, [clicks]);
 
+  // pre-computed image embedding
+  useEffect(() => {
+    const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w.npy", document.baseURI).href;
+
+    // const click = {
+    //   x: 120,
+    //   y: 120,
+    //   clickType: 1,
+    // }
+    // setClick([click]);
+    // Load the Segment Anything pre-computed embedding
+    Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
+      (embedding) => setEmbedded([...embedding])
+    );
+  }, []);
+
+  // Decode a Numpy file into a tensor.
+  const loadNpyTensor = async (tensorFile, dType) => {
+    let npLoader = new npyjs();
+    let npArray = await npLoader.load(tensorFile).then((npArray) => {
+      console.log("embedding npy", npArray.data, npArray.data.reduce(
+        (partialSum, a) => partialSum + a,
+        0,
+      ),)
+      return npArray;
+    });
+    let tensorArray = [];
+    for (let i = 0; i < npArray.shape[0]; i++) {
+      let slice = npArray.data.slice(i*npArray.shape[1]*npArray.shape[2]*npArray.shape[3], (i+1)*npArray.shape[1]*npArray.shape[2]*npArray.shape[3]);
+      // slice = slice.reverse();
+      tensorArray.push(new ort.Tensor(dType, slice, [1, npArray.shape[1], npArray.shape[2], npArray.shape[3]]))
+    }
+    // const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
+    console.log("tensor ", tensorArray, tensorArray.shape);
+    return tensorArray;
+  };
+  
   const brainExtract = async () => {
     brainExtractionModel(image, props.onModel);
   };
