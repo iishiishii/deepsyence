@@ -9,7 +9,7 @@ function CircularProgressWithLabel(
   props: CircularProgressProps & { value: number },
 ) {
   return (
-    <Box sx={{ position: "relative", display: "inline-flex" }}>
+    <Box sx={{ position: "relative", display: "inline-flex", top: 1}}>
       <CircularProgress variant="determinate" {...props} />
       <Box
         sx={{
@@ -33,19 +33,6 @@ function CircularProgressWithLabel(
   );
 }
 
-export default function CircularWithValueLabel() {
-  const [progress, setProgress] = React.useState(10);
-
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prevProgress) =>
-        prevProgress >= 100 ? 0 : prevProgress + 10,
-      );
-    }, 800);
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
-
-  return <CircularProgressWithLabel value={progress} />;
+export default function CircularWithValueLabel( props: {progress: number}) {
+  return <CircularProgressWithLabel value={props.progress} />;
 }

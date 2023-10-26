@@ -26,6 +26,7 @@ import {
   transposeChannelDim,
 } from "../helpers/imageHelpers";
 import npyjs from "npyjs";
+import CircularWithValueLabel from "./ProgressLoad";
 
 export default function Layer(props) {
   const image = props.image;
@@ -41,6 +42,7 @@ export default function Layer(props) {
     maskImg: [, setMaskImg],
     model: [samModel],
   } = useContext(AppContext);
+  const [progress, setProgress] = useState(0);
 
   let Visibility = visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />;
   let ArrowIcon = detailsOpen ? (
@@ -83,22 +85,27 @@ export default function Layer(props) {
 
   const runEncoder = async () => {
     setEmbedded([]);
+    const start = 140;
+    const end = 149;
 
-    for (let i = 0; i < 143; i++) {
+    for (let i = 0; i < start; i++) {
       setEmbedded((embedded) => [...embedded, []]);
     }
     try {
-      for (let i = 143; i < 149; i++) {
+      for (let i = start; i < end; i++) {
         const preprocessedImage = preprocess(i);
         console.log("samModel", samModel)
         await samModel.process(preprocessedImage).then((result) => {
           console.log("embedding", result.embedding)
-          if (i === 148) {
+          if (i === end-1) {
             setEmbedded((embedded) => [...embedded, ...result.embedding]);
             console.log("embedded", embedded)
           }
-        });
 
+        });
+        setProgress((prevProgress) =>
+          prevProgress >= 100 ? 100 : prevProgress + (1/(end-start)*100),
+        );
         // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
         // await samEncoder(preprocessedImage).then((embedding) => {
         //   setEmbedded((embedded) => [...embedded, embedding]);
@@ -137,7 +144,7 @@ export default function Layer(props) {
 
   // pre-computed image embedding
   useEffect(() => {
-    const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w.npy", document.baseURI).href;
+    const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w_axial.npy", document.baseURI).href;
 
     // const click = {
     //   x: 120,
@@ -155,7 +162,7 @@ export default function Layer(props) {
   const loadNpyTensor = async (tensorFile, dType) => {
     let npLoader = new npyjs();
     let npArray = await npLoader.load(tensorFile).then((npArray) => {
-      console.log("embedding npy", npArray.data, npArray.data.reduce(
+      console.log("embedding npy", npArray.data, npArray.data.slice(111*npArray.shape[1]*npArray.shape[2]*npArray.shape[3], 112*npArray.shape[1]*npArray.shape[2]*npArray.shape[3]).reduce(
         (partialSum, a) => partialSum + a,
         0,
       ),)
@@ -164,11 +171,10 @@ export default function Layer(props) {
     let tensorArray = [];
     for (let i = 0; i < npArray.shape[0]; i++) {
       let slice = npArray.data.slice(i*npArray.shape[1]*npArray.shape[2]*npArray.shape[3], (i+1)*npArray.shape[1]*npArray.shape[2]*npArray.shape[3]);
-      // slice = slice.reverse();
       tensorArray.push(new ort.Tensor(dType, slice, [1, npArray.shape[1], npArray.shape[2], npArray.shape[3]]))
     }
     // const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
-    console.log("tensor ", tensorArray, tensorArray.shape);
+    console.log("tensor ", tensorArray, npArray.shape);
     return tensorArray;
   };
   
@@ -238,7 +244,8 @@ export default function Layer(props) {
         <IconButton onClick={handleDetails} style={{ marginRight: "auto" }}>
           {ArrowIcon}
         </IconButton>
-        <Box style={{ marginRight: "auto" }}>{DoneIcon}</Box>
+        {/* <Box style={{ marginRight: "auto" }}>{DoneIcon}</Box> */}
+        <CircularWithValueLabel progress={progress} />
       </Box>
       <Box
         sx={{

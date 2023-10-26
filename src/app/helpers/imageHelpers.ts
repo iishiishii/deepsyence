@@ -579,20 +579,21 @@ export function rowToCol(image: any, rowArray: any) {
 }
 
 export function rotateImage90CW(arr: Float32Array, width: number, height: number) {
-  let rotatedArray: Float32Array = new Float32Array();
+  let rotatedArray: number[] = [];
   let counter = 0;
+  console.log("arr", arr, width, height);
   for (let col = width - 1; col >= 0; col--) {
     for (let row = 0; row < height; row++) {
       rotatedArray[counter] = arr[col * height + row];
       counter++;
     }
   }
-
+  console.log("rotatedArray", rotatedArray);
   return rotatedArray;
 }
 
 export function rotateImage90CCW(arr: Float32Array, width: number, height: number) {
-  let rotatedArray: Float32Array = new Float32Array();
+  let rotatedArray: number[] = [];
   let counter = 0;
 
   for (let col = 0; col < width; col++) {
@@ -601,6 +602,22 @@ export function rotateImage90CCW(arr: Float32Array, width: number, height: numbe
       counter++;
     }
   }
+
+  return rotatedArray;
+}
+
+export function rotate180(arr: Float32Array, width: number, height: number) {
+  let rotatedArray: number[] = [];
+  let counter = 0;
+  console.log("arr", arr, width, height);
+  for (let row = height - 1; row >= 0; row--) {
+    for (let col = width - 1; col >= 0; col--) {
+      rotatedArray[counter] = arr[row * width + col];
+      // console.log("index ", rotatedArray[counter], arr[row * width + col])
+      counter++;
+    }
+  }
+  console.log(rotatedArray)
 
   return rotatedArray;
 }

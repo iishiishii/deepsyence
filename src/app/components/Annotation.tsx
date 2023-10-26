@@ -22,23 +22,28 @@ export default function Annotation({ niivue }: Props) {
     filled: [filled, setFill],
   } = useContext(AppContext)!;
 
-  const modeValueMaps: number[] = [1, 2, 3, 4, 5];
+  const modeValueMaps: number[] = [1, 2, 3, 4, 5, 12];
   const colors = ["#80AE80", "#F1D691", "#B17A65", "#6FB8D2", "#D8654F"];
 
   function doDrawPen(event: any) {
     console.log(event);
-    let hex = hsvaToHex(event);
-    console.log(hex);
-    let colorIndex = colors.indexOf(hex.toUpperCase());
-    console.log(colorIndex);
-    const mode = modeValueMaps[colorIndex];
-    console.log(mode);
-    nv.setDrawingEnabled(mode >= 0);
-    nv.setPenValue(mode, filled);
-    if (mode === 12)
+    if (event === 12) {
+      console.log("erase")
       //erase selected cluster
       nv.setPenValue(-0);
-    setPenMode(mode);
+      setPenMode(event);
+    }
+    else {
+      let hex = hsvaToHex(event);
+      console.log(hex);
+      let colorIndex = colors.indexOf(hex.toUpperCase());
+      console.log(colorIndex);
+      const mode = modeValueMaps[colorIndex];
+      console.log(mode);
+      nv.setDrawingEnabled(mode >= 0);
+      nv.setPenValue(mode, filled);
+      setPenMode(mode);
+    }
   }
 
   function handleFill(fill: boolean) {
@@ -77,7 +82,12 @@ export default function Annotation({ niivue }: Props) {
       />
       <Grid container spacing={1} alignItems="flex-end">
         <Grid item xs={3} marginLeft={"20px"}>
-          <BsFillEraserFill size={22} />
+          <BsFillEraserFill size={22} 
+            onClick={(e) => {
+              e.stopPropagation();
+              doDrawPen(12)
+            }}
+          />
         </Grid>
         <Grid item xs={3}>
           <IconContext.Provider
