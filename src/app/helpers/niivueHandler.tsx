@@ -1,7 +1,7 @@
-import { viewType } from "../types";
+import { ViewType } from "../types";
 import { v4 as uuid } from "uuid";
 
-export function updateSliceType(nv: any, newSliceType: viewType) {
+export function updateSliceType(nv: any, newSliceType: ViewType) {
   if (newSliceType === "axial") {
     nv.setSliceType(nv.sliceTypeAxial);
   } else if (newSliceType === "coronal") {

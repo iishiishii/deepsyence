@@ -8,13 +8,14 @@ import { NiivuePanel } from "./components/NiivuePanel";
 import Layer from "./components/Layer";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 // import WorkerBuilder from "./components/WorkerBuilder";
-import { viewType } from "./types";
+import { ViewType } from "./types";
 /* @ts-ignore */
 import {
   nvNiimathPostProcess,
   nvPostSam,
   updateSliceType,
 } from "./helpers/niivueHandler";
+import { handleJobNotification } from "./components/Alert";
 
 const theme = createTheme({
   palette: {
@@ -75,7 +76,7 @@ export default function NiiVue(props: any) {
     setOpenLayers(!openLayers);
   }
 
-  function nvUpdateSliceType(newSliceType: viewType) {
+  function nvUpdateSliceType(newSliceType: ViewType) {
     updateSliceType(nv, newSliceType);
   }
 
@@ -114,6 +115,7 @@ export default function NiiVue(props: any) {
         onPreprocess={nvPreprocess}
         onSelect={nvSelect}
         onModel={nvModel}
+        onAlert={handleJobNotification}
       />
     );
   });

@@ -1,45 +1,50 @@
-import * as React from "react";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import { notification } from "antd";
 
-export default function AlertDialog() {
-  const [open, setOpen] = React.useState(false);
+export const handleJobNotification = (
+  error: string,
+) => {
+  // const { job } = jobNotification;
+  // if (job.status === JobStatus.NOT_STARTED) {
+  //   notification.info({
+  //     message: `${job.type} job added to queue`,
+  //     description: (
+  //       <div>
+  //         View the queue in the{" "}
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  return (
-    <div>
-      <Button variant="outlined" onClick={handleClickOpen}>
-        Open alert dialog
-      </Button>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">{"Encoding Done"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            You can now click on the image to segment ROIs.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} autoFocus>
-            Ok
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-  );
-}
+  //       </div>
+  //     ),
+  //     placement: "topRight",
+  //     duration: 6,
+  //   });
+  // } else if (job.status === JobStatus.COMPLETE) {
+  //   let description = <div />;
+  //   if (job.type === JobType.LOAD_MODEL) {
+  //     description = <div>Selected model will now be initialized</div>;
+  //   } else if (
+  //     job.type === JobType.RUN_MODEL
+  //   ) {
+  //     description = (
+  //       <div>
+  //         Model runned succesfully.{" "}
+  //       </div>
+  //     );
+  //   } 
+  //   notification.success({
+  //     message: `${job.type} succesfully finished`,
+  //     description,
+  //     placement: "topRight",
+  //     duration: 6,
+  //   });
+  // } else if (job.status === JobStatus.FAILED) {
+    notification.error({
+      message: `${error} failed`,
+      description: (
+        <div>
+          Job failed with error: {error}
+        </div>
+      ),
+      placement: "topRight",
+      duration: 6,
+    });
+  // }
+};

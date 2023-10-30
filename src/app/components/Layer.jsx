@@ -113,6 +113,7 @@ export default function Layer(props) {
       }
       setDone(!done);
     } catch (error) {
+      props.onAlert("error encoder", error);
       console.log("error encoder", error);
     }
   };
@@ -130,6 +131,7 @@ export default function Layer(props) {
       });
     }
     catch (error) {
+      props.onAlert(`error decoder ${error}`);
       console.log("error decoder", error);
     }
   };
@@ -143,29 +145,31 @@ export default function Layer(props) {
   }, [clicks]);
 
   // pre-computed image embedding
-  useEffect(() => {
-    const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w_axial.npy", document.baseURI).href;
-
-    // const click = {
-    //   x: 120,
-    //   y: 120,
-    //   clickType: 1,
-    // }
-    // setClick([click]);
+  useEffect(async () => {
+    // const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w_axial.npy", document.baseURI).href;
     // Load the Segment Anything pre-computed embedding
-    Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
-      (embedding) => setEmbedded([...embedding])
-    );
+    Promise.resolve(
+      await fetch("https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_rotated.npy").then((IMAGE_EMBEDDING) => 
+        {
+          console.log("IMAGE_EMBEDDING", IMAGE_EMBEDDING)
+          loadNpyTensor(IMAGE_EMBEDDING.url, "float32").then(
+            (embedding) => {
+              console.log("embedding", embedding)
+              setEmbedded([...embedding])
+            }
+        )}
+      )
+    )
   }, []);
 
   // Decode a Numpy file into a tensor.
   const loadNpyTensor = async (tensorFile, dType) => {
     let npLoader = new npyjs();
     let npArray = await npLoader.load(tensorFile).then((npArray) => {
-      console.log("embedding npy", npArray.data, npArray.data.slice(111*npArray.shape[1]*npArray.shape[2]*npArray.shape[3], 112*npArray.shape[1]*npArray.shape[2]*npArray.shape[3]).reduce(
-        (partialSum, a) => partialSum + a,
-        0,
-      ),)
+      // console.log("embedding npy", npArray.data, npArray.data.slice(111*npArray.shape[1]*npArray.shape[2]*npArray.shape[3], 112*npArray.shape[1]*npArray.shape[2]*npArray.shape[3]).reduce(
+      //   (partialSum, a) => partialSum + a,
+      //   0,
+      // ),)
       return npArray;
     });
     let tensorArray = [];

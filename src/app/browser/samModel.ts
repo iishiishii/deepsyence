@@ -4,7 +4,6 @@ import { BaseImageModel } from "./base";
 import { modelInputProps } from "../helpers/Interfaces";
 import { modelData } from "../helpers/onnxModelAPI";
 import { maskImage } from "../helpers/imageHelpers";
-import { rotateImage90CCW } from "../helpers/imageHelpers";
 
 export interface Point {
   x: number;
