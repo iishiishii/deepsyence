@@ -7,7 +7,7 @@ import * as _ from "underscore";
 export function NiivuePanel({ nv, volumes }: any) {
   const canvas = useRef(null);
   const {
-    clicks: [, setClicks],
+    clicks: [clicks, setClicks],
   } = useContext(AppContext)!;
 
   const getClick = (x: number, y: number, z: number): modelInputProps => {
@@ -20,7 +20,8 @@ export function NiivuePanel({ nv, volumes }: any) {
   // // the ONNX model to run and generate a new mask via a useEffect in App.tsx
   const handleMouseMove = _.throttle((e: any) => {
     let el = canvas.current || e.target;
-
+    if (!clicks) setClicks([]);
+    console.log("clicks", clicks)
     if (!el) return;
     const rect = el.getBoundingClientRect();
     let x = nv.frac2vox(nv.scene.crosshairPos)[0];
@@ -28,7 +29,7 @@ export function NiivuePanel({ nv, volumes }: any) {
     let z = nv.frac2vox(nv.scene.crosshairPos)[2];
     console.log("***** CANVAS COORDINATE    ", x, y, z);
     const click = getClick(x, y, z);
-    if (click) setClicks([click]);
+    if (click && clicks) setClicks([...clicks!, click]);
   }, 15);
 
   useEffect(() => {

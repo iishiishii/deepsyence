@@ -41,6 +41,7 @@ export default function Layer(props) {
     embedded: [embedded, setEmbedded],
     maskImg: [, setMaskImg],
     model: [samModel],
+    penMode: [penMode],
   } = useContext(AppContext);
   const [progress, setProgress] = useState(0);
 
@@ -138,28 +139,26 @@ export default function Layer(props) {
 
   // pre-computed image embedding
   useEffect(() => {
-    if (clicks && selected !== null) {
+    console.log("penmode", penMode)
+    if (clicks && selected !== null && penMode <0 ) {
       // Check if clicks changed and selected is not null
       runDecoder();
     }
   }, [clicks]);
 
   // pre-computed image embedding
-  useEffect(async () => {
+  useEffect(() => {
     // const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w_axial.npy", document.baseURI).href;
     // Load the Segment Anything pre-computed embedding
-    Promise.resolve(
-      await fetch("https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_rotated.npy").then((IMAGE_EMBEDDING) => 
-        {
-          console.log("IMAGE_EMBEDDING", IMAGE_EMBEDDING)
-          loadNpyTensor(IMAGE_EMBEDDING.url, "float32").then(
-            (embedding) => {
-              console.log("embedding", embedding)
-              setEmbedded([...embedding])
-            }
-        )}
+    async function fetchEmbedding() {
+      loadNpyTensor("https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_rotated.npy", "float32").then(
+        (embedding) => {
+          console.log("embedding", embedding)
+          setEmbedded([...embedding])
+        }
       )
-    )
+    }
+    fetchEmbedding();
   }, []);
 
   // Decode a Numpy file into a tensor.

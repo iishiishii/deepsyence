@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { Grid } from "@mui/material";
 import { BsFillEraserFill } from "react-icons/bs";
 import { RiPaintFill } from "react-icons/ri";
-import { AiOutlineEdit } from "react-icons/ai";
+import { AiOutlineClose, AiOutlineEdit } from "react-icons/ai";
 import Divider from "@mui/material/Divider";
 import { color as handleColor, hsvaToHex } from "@uiw/color-convert";
 import Swatch from "@uiw/react-color-swatch";
@@ -22,28 +22,23 @@ export default function Annotation({ niivue }: Props) {
     filled: [filled, setFill],
   } = useContext(AppContext)!;
 
-  const modeValueMaps: number[] = [1, 2, 3, 4, 5, 12];
+  const modeValueMaps: number[] = [1, 2, 3, 4, 5];
   const colors = ["#80AE80", "#F1D691", "#B17A65", "#6FB8D2", "#D8654F"];
 
   function doDrawPen(event: any) {
     console.log(event);
-    if (event === 12) {
-      console.log("erase")
-      //erase selected cluster
-      nv.setPenValue(-0);
-      setPenMode(event);
-    }
-    else {
+    let mode = event;
+    if (event !== 0 && event !== -1) {
       let hex = hsvaToHex(event);
       console.log(hex);
       let colorIndex = colors.indexOf(hex.toUpperCase());
       console.log(colorIndex);
-      const mode = modeValueMaps[colorIndex];
+      mode = modeValueMaps[colorIndex];
       console.log(mode);
-      nv.setDrawingEnabled(mode >= 0);
-      nv.setPenValue(mode, filled);
-      setPenMode(mode);
     }
+    nv.setDrawingEnabled(mode >= 0);
+    nv.setPenValue(mode, filled);
+    setPenMode(mode);
   }
 
   function handleFill(fill: boolean) {
@@ -81,19 +76,27 @@ export default function Annotation({ niivue }: Props) {
         sx={{ my: "1px", borderWidth: "1px" }}
       />
       <Grid container spacing={1} alignItems="flex-end">
-        <Grid item xs={3} marginLeft={"20px"}>
-          <BsFillEraserFill size={22} 
-            onClick={(e) => {
-              e.stopPropagation();
-              doDrawPen(12)
+        <Grid item xs={2} marginLeft={"20px"}>
+        <IconContext.Provider
+            value={{
+              style: {
+                boxShadow: penMode == 0 ? "inset 1px 1px 1px #496A81" : "",
+              },
             }}
-          />
+          >
+            <BsFillEraserFill size={22} 
+              onClick={(e) => {
+                e.stopPropagation();
+                doDrawPen(0)
+              }}
+            />
+          </IconContext.Provider>
         </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={2}>
           <IconContext.Provider
             value={{
               style: {
-                boxShadow: filled == true ? "inset 1px 1px 1px #496A81" : "",
+                boxShadow: (filled == true && penMode > 0) ? "inset 1px 1px 1px #496A81" : "",
               },
             }}
           >
@@ -108,11 +111,11 @@ export default function Annotation({ niivue }: Props) {
             />
           </IconContext.Provider>
         </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={2}>
           <IconContext.Provider
             value={{
               style: {
-                boxShadow: filled == false ? "inset 1px 1px 1px #496A81" : "",
+                boxShadow: (filled == false && penMode > 0) ? "inset 1px 1px 1px #496A81" : "",
               },
             }}
           >
@@ -122,6 +125,24 @@ export default function Annotation({ niivue }: Props) {
                 e.stopPropagation();
                 e.preventDefault();
                 handleFill(false);
+              }}
+            />
+          </IconContext.Provider>
+        </Grid>
+        <Grid item xs={2}>
+        <IconContext.Provider
+            value={{
+              style: {
+                boxShadow: penMode < 0 ? "inset 1px 1px 1px #496A81" : "",
+              },
+            }}
+          >
+            <AiOutlineClose
+              size={22}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                doDrawPen(-1)
               }}
             />
           </IconContext.Provider>
