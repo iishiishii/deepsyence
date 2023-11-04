@@ -1,7 +1,8 @@
 import { notification } from "antd";
 
 export const handleJobNotification = (
-  error: string,
+  message: string,
+  error: boolean = true,
 ) => {
   // const { job } = jobNotification;
   // if (job.status === JobStatus.NOT_STARTED) {
@@ -29,22 +30,27 @@ export const handleJobNotification = (
   //       </div>
   //     );
   //   } 
-  //   notification.success({
-  //     message: `${job.type} succesfully finished`,
-  //     description,
-  //     placement: "topRight",
-  //     duration: 6,
-  //   });
-  // } else if (job.status === JobStatus.FAILED) {
+  if (error) {
     notification.error({
-      message: `${error} failed`,
+      message: `${message} failed`,
       description: (
         <div>
-          Job failed with error: {error}
+          Job failed with error: {message}
         </div>
       ),
       placement: "topRight",
       duration: 6,
     });
-  // }
+  } else {
+    notification.success({
+      message: `${message} succesfully finished`,
+      description: (
+              <div>
+                Model runned succesfully.{" "}
+              </div>
+            ),
+      placement: "topRight",
+      duration: 6,
+    });
+  }
 };

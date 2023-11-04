@@ -114,7 +114,7 @@ export default function Layer(props) {
       }
       setDone(!done);
     } catch (error) {
-      props.onAlert("error encoder", error);
+      props.onAlert(`error encoder ${error}`);
       console.log("error encoder", error);
     }
   };
@@ -156,7 +156,9 @@ export default function Layer(props) {
           console.log("embedding", embedding)
           setEmbedded([...embedding])
         }
-      )
+      ).then(() => {
+        props.onAlert("Embedding loaded", false)
+      })
     }
     fetchEmbedding();
   }, []);
