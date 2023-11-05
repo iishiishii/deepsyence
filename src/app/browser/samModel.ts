@@ -198,8 +198,11 @@ export class SegmentAnythingModel extends BaseImageModel {
       // read from results
       // const output = results[session.outputNames[0]].data;
       const outputNames = await session.outputNames();
-      const output = results[outputNames[0]].data;
-      console.log("output ", output);
+      const iou = results['iou_predictions'].data as Float32Array;
+
+      const maxIou = iou.indexOf(Math.max(...Array.from(iou)))
+      const output = results['masks'].data.slice(maxIou*h*w, (maxIou+1)*h*w);
+      console.log("output ", maxIou, output);
       // let rotated = output.reverse();
       const rasImage = maskImage(output as Float32Array, w, h, clicks[0].z);
       console.log("rasImage ", rasImage);
