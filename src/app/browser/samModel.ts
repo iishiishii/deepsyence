@@ -26,10 +26,7 @@ export type SegmentAnythingPrompt = {
 
 export class SegmentAnythingModel extends BaseImageModel {
   encoderResult: ort.Tensor[] | undefined = [];
-  originalWidth: number | undefined;
-  originalHeight: number | undefined;
-  newWidth: number | undefined;
-  newHeight: number | undefined;
+  // decoderResult: Uint8Array[] = new Uint8Array(width * height * sliceId).fill(0);
 
   process = async (
     input: any
@@ -52,65 +49,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     if (input === undefined) {
       return undefined;
     }
-    // const decoderOutput = await this.processDecoder(input.points, input.boxes);
-    // const size = decoderOutput.dims[2] * decoderOutput.dims[3] * 4;
-    // const arrayBuffer = new ArrayBuffer(size);
-    // const pixels = new Uint8ClampedArray(arrayBuffer);
-    // const color = [237, 61, 26];
-    // const topLeft: Point = {
-    //   x: Infinity,
-    //   y: Infinity,
-    //   positive: false,
-    // };
-    // const bottomRight: Point = {
-    //   x: 0,
-    //   y: 0,
-    //   positive: false,
-    // };
-    // for (let y = 0; y < decoderOutput.dims[2]; y++) {
-    //   for (let x = 0; x < decoderOutput.dims[3]; x++) {
-    //     const value = decoderOutput.data[y * decoderOutput.dims[3] + x];
-    //     if ((value as number) > 0) {
-    //       const idx = (y * decoderOutput.dims[3] + x) * 4;
-    //       pixels[idx] = color[0];
-    //       pixels[idx + 1] = color[1];
-    //       pixels[idx + 2] = color[2];
-    //       pixels[idx + 3] = 255;
-    //       if (x < topLeft.x) {
-    //         topLeft.x = x;
-    //       }
-    //       if (y < topLeft.y) {
-    //         topLeft.y = y;
-    //       }
-    //       if (x > bottomRight.x) {
-    //         bottomRight.x = x;
-    //       }
-    //       if (y > bottomRight.y) {
-    //         bottomRight.y = y;
-    //       }
-    //     } else {
-    //       pixels[y] = 0;
-    //       pixels[y + 1] = 0;
-    //       pixels[y + 2] = 0;
-    //       pixels[y + 3] = 0;
-    //     }
-    //   }
-    // }
-    // const imageData = new ImageData(
-    //   pixels,
-    //   decoderOutput.dims[3],
-    //   decoderOutput.dims[2]
-    // );
-    // const resCanvas = this.createCanvas(imageData.width, imageData.height);
-    // const ctx = resCanvas.getContext("2d");
-    // if (
-    //   ctx instanceof OffscreenCanvasRenderingContext2D ||
-    //   ctx instanceof CanvasRenderingContext2D
-    // ) {
-    //   ctx.putImageData(imageData, 0, 0);
-    // } else {
-    //   throw new Error("Invalid rendering context");
-    // }
+
     const end = new Date();
     const elapsed = (end.getTime() - start.getTime()) / 1000;
     const result: SAMResult = {
@@ -158,6 +97,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     image: any,
     tensor: ort.TypedTensor<"string">,
     clicks: modelInputProps[],
+    mask: Uint8Array,
     // onModel: (id: any, name: any, array: any) => void,
   ): Promise<Uint8Array | undefined> => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
@@ -204,7 +144,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       const output = results['masks'].data.slice(maxIou*h*w, (maxIou+1)*h*w);
       console.log("output ", maxIou, output);
       // let rotated = output.reverse();
-      const rasImage = maskImage(output as Float32Array, w, h, clicks[0].z);
+      const rasImage = maskImage(output as Float32Array, w, h, clicks[0].z, mask);
       console.log("rasImage ", rasImage);
       // onModel(id, name, rasImage);
       return rasImage;

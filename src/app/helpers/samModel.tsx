@@ -49,8 +49,8 @@ export const samDecoder = async (
     // read from results
     const output = results[session.outputNames[0]].data;
 
-    const rasImage = maskImage(output as Float32Array, w, h, clicks[0].z);
-    onModel(id, name, rasImage);
+    // const rasImage = maskImage(output as Float32Array, w, h, clicks[0].z);
+    // onModel(id, name, rasImage);
   } catch (e) {
     console.log(`failed to inference ONNX model: ${e}. `);
   }

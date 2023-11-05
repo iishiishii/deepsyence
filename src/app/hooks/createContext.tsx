@@ -19,8 +19,8 @@ interface contextProps {
     setEmbedded: (e: ort.Tensor[] | null) => void,
   ];
   maskImg: [
-    maskImg: HTMLImageElement | null,
-    setMaskImg: (e: HTMLImageElement | null) => void,
+    maskImg: Uint8Array | null,
+    setMaskImg: (e: Uint8Array | null) => void,
   ];
   penMode: [penMode: number, setPenMode: (e: number) => void];
   filled: [filled: boolean, setFilled: (e: boolean) => void];

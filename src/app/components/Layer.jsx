@@ -37,9 +37,9 @@ export default function Layer(props) {
   const [selected, setSelected] = useState();
   const [done, setDone] = useState(false);
   const {
-    clicks: [clicks],
+    clicks: [clicks, setClicks],
     embedded: [embedded, setEmbedded],
-    maskImg: [, setMaskImg],
+    maskImg: [maskImg, setMaskImg],
     model: [samModel],
     penMode: [penMode],
   } = useContext(AppContext);
@@ -121,14 +121,10 @@ export default function Layer(props) {
 
   const runDecoder = async () => {
     try {
-      console.log("embedded array", embedded[clicks[0].z])
-      // let encodedTensor = new ort.Tensor(
-      //   "float32",
-      //   embedded[clicks[0].z],
-      //   [1, 256, 64, 64],
-      // );
-      await samModel.processDecoder(image, embedded[clicks[0].z], clicks).then((result) => {
+      if (clicks.length === 0) return
+      await samModel.processDecoder(image, embedded[clicks[0].z], clicks, maskImg).then((result) => {
         props.onModel(image.id, image.name, result)
+        setMaskImg(result)
       });
     }
     catch (error) {
@@ -148,10 +144,10 @@ export default function Layer(props) {
 
   // pre-computed image embedding
   useEffect(() => {
-    // const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w_axial.npy", document.baseURI).href;
+    const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w_axial.npy", document.baseURI).href;
     // Load the Segment Anything pre-computed embedding
     async function fetchEmbedding() {
-      loadNpyTensor("https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_rotated.npy", "float32").then(
+      loadNpyTensor(IMAGE_EMBEDDING, "float32").then(
         (embedding) => {
           console.log("embedding", embedding)
           setEmbedded([...embedding])
@@ -161,6 +157,8 @@ export default function Layer(props) {
       })
     }
     fetchEmbedding();
+    setClicks([]);
+    setMaskImg(new Uint8Array(image.dims[1] * image.dims[2] * image.dims[3]).fill(0));
   }, []);
 
   // Decode a Numpy file into a tensor.

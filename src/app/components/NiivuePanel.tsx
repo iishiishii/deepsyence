@@ -20,15 +20,22 @@ export function NiivuePanel({ nv, volumes }: any) {
   // // the ONNX model to run and generate a new mask via a useEffect in App.tsx
   const handleMouseMove = _.throttle((e: any) => {
     let el = canvas.current || e.target;
-    if (!clicks) setClicks([]);
-    console.log("clicks", clicks)
     if (!el) return;
-    const rect = el.getBoundingClientRect();
+
     let x = nv.frac2vox(nv.scene.crosshairPos)[0];
     let y = nv.frac2vox(nv.scene.crosshairPos)[1];
     let z = nv.frac2vox(nv.scene.crosshairPos)[2];
-    console.log("***** CANVAS COORDINATE    ", x, y, z);
     const click = getClick(x, y, z);
+
+    if (!clicks || (clicks.length > 0 && z !== clicks[0].z)) {
+      console.log("resetting clicks");
+      setClicks([])
+      return;
+    };
+    console.log("clicks", clicks)
+    const rect = el.getBoundingClientRect();
+
+    console.log("***** CANVAS COORDINATE    ", x, y, z);
     if (click && clicks) setClicks([...clicks!, click]);
   }, 15);
 

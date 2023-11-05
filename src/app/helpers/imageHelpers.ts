@@ -114,17 +114,22 @@ export function maskImage(
   width: number,
   height: number,
   sliceId: number,
+  mask: Uint8Array
 ): Uint8Array {
-  let output = new Array(width * height * sliceId).fill(0); // fill to selected slice
-  const threshold = 0.0;
+  // let output = new Array(width * height * sliceId).fill(0); // fill to selected slice
+  const threshold = 0.5;
+  try {
+    for (let i = 0; i < input.length; i++) {
+      mask[width * height * sliceId + i] = input[i] > threshold ? 1 : 0;
+    }
   
-  for (let i = 0; i < input.length; i++) {
-    input[i] = input[i] > threshold ? 1 : 0;
+    // output = output.concat(Array.from(input));
+  
+  } catch (error) {
+    console.log("error", error)
   }
+  return mask;
 
-  output = output.concat(Array.from(input));
-
-  return Uint8Array.from(output);
 }
 
 export function stackSliceToRGB(buffer: Uint8Array): Uint8Array {
