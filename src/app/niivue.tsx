@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { Grid } from "@mui/material";
 import { Niivue, NVImage } from "@niivue/niivue";
@@ -27,6 +27,22 @@ const theme = createTheme({
       default: "#496A81",
     },
   },
+  components: {
+    MuiIconButton: {
+      styleOverrides: {
+        root:  {
+          color: '#496A81',
+        },
+      },
+    },
+    MuiSvgIcon: {
+      styleOverrides: {
+        root:  {
+          color: '#496A81',
+        },
+      },
+    },
+  },
 });
 
 function handleIntensityChange(data: any) {
@@ -50,11 +66,14 @@ export default function NiiVue(props: any) {
   const [openLayers, setOpenLayers] = useState(false);
   const [layers, setLayers] = useState(nv.volumes);
   const [selectedLayer, setSelectedLayer] = useState([]);
+  
+  useEffect(() => {
+    nv.addVolumeFromUrl({url: new URL("./model/sub-M2054_ses-b1942_T2w.nii", document.baseURI).href})
+  }, []);
 
   nv.onImageLoaded = () => {
     setLayers([...nv.volumes]);
   };
-  console.log(`layer name ${nv.volumes.length}`);
 
   function nvSelect(layer: any) {
     if (layer) {
@@ -63,13 +82,18 @@ export default function NiiVue(props: any) {
   }
 
   async function addLayer(file: File) {
-    const nvimage = await NVImage.loadFromFile({
-      file: file,
-    });
-    console.log(`file imported ${file}`);
+    try {
+      const nvimage = await NVImage.loadFromFile({
+        file: file,
+      });
+      console.log(`file imported ${file}`);
 
-    nv.addVolume(nvimage);
-    setLayers([...nv.volumes]);
+      nv.addVolume(nvimage);
+      setLayers([...nv.volumes]);
+    } catch (err) {
+      handleJobNotification(err!.toString());
+      console.log("add layer", err);
+    }
   }
 
   function toggleLayers() {

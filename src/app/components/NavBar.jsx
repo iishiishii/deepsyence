@@ -109,7 +109,7 @@ export default function NavBar(props) {
     <div style={{ width: "100%" }}>
       <Box sx={{ height: "36px", backgroundColor: "#496A81" }}>
         <Dropdown
-          trigger={<Button sx={{ color: "white" }}>File</Button>}
+          trigger={<Button className="navbar-file" sx={{ color: "white" }}>File</Button>}
           menu={[
             <DropdownMenuItem onClick={handleAddLayer}>
               {"Upload File"}
@@ -254,11 +254,11 @@ export default function NavBar(props) {
           ]}
         />
         <Dropdown
-          trigger={<Button sx={{ color: "white" }}>Annotation</Button>}
+          trigger={<Button className="navbar-draw" sx={{ color: "white" }}>Annotation</Button>}
           menu={[<Annotation niivue={nv} />]}
         />
         <Dropdown 
-        trigger={<Button sx={{ color: "white" }}>Model</Button>}
+        trigger={<Button className="navbar-model" sx={{ color: "white" }}>Model</Button>}
         menu={[
           <DropdownMenuItem>          
             <ModelSelector

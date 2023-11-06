@@ -31,7 +31,7 @@ import CircularWithValueLabel from "./ProgressLoad";
 export default function Layer(props) {
   const image = props.image;
   // const [processedImage, setImage] = React.useState(image.img)
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(true);
   const [visibilityIcon, setVisibilityIcon] = useState(true);
   const [opacity, setOpacity] = useState(image.opacity);
   const [selected, setSelected] = useState();

@@ -45,13 +45,12 @@ export function NiivuePanel({ nv, volumes }: any) {
       niivue.attachToCanvas(canvas.current);
       await niivue.loadVolumes(volumes);
       nv.setSliceType(nv.sliceTypeMultiplanar);
-      // await niivue.loadVolumes(maskImg);
     }
-    fetchData();
+      fetchData();
   }, []);
 
   return (
-    <div style={{ width: "75%" }}>
+    <div className="niivue" style={{ width: "75%" }}>
       <canvas
         ref={canvas}
         onClick={handleMouseMove}

@@ -49,7 +49,7 @@ export default function Annotation({ niivue }: Props) {
   }
 
   return (
-    <div style={{ width: "210px" }}>
+    <div  className="navbar-draw" style={{ width: "210px" }}>
       {/* <Grid container spacing={1} alignItems="flex-end"> */}
       <Grid item xs={10} marginLeft={"10px"}>
         <Swatch
