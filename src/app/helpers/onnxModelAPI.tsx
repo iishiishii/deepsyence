@@ -26,8 +26,8 @@ const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
 
     // Add clicks and scale to what SAM expects
     for (let i = 0; i < n; i++) {
-      pointCoords[2 * i] = clicks[i].x * modelScale.samScale;
-      pointCoords[2 * i + 1] = clicks[i].y * modelScale.samScale;
+      pointCoords[2 * i] = clicks[i].x * (modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
+      pointCoords[2 * i + 1] = clicks[i].y * (modelScale.height * modelScale.samScale + 0.5) / modelScale.height;
       pointLabels[i] = clicks[i].clickType;
     }
 
