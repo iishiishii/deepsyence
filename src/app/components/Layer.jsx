@@ -106,6 +106,18 @@ export default function Layer(props) {
       // async function fetchEmbedding() {
 
         try {
+          let updater = setInterval(() => {
+            let updateAmount = (2/90) * 100
+            setProgress((prevProgress) => {
+              let newProgress = prevProgress + updateAmount;
+              if(newProgress >= 100) {
+                clearInterval(updater);
+                newProgress = 100;
+              }
+              return newProgress;
+            });
+          }, 5000);
+
           loadNpyTensor(IMAGE_EMBEDDING, "float32").then(
             (embedding) => {
               if (embedding) {
@@ -116,6 +128,7 @@ export default function Layer(props) {
               }
             },
           ).then(() => {
+            clearInterval(updater);
             setProgress(100)
             props.onAlert("Embedding loaded", false)
           });
