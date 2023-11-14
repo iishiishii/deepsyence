@@ -8,6 +8,7 @@ export function NiivuePanel({ nv, volumes }: any) {
   const canvas = useRef(null);
   const {
     clicks: [clicks, setClicks],
+    boxes: [boxes, setBoxes]
   } = useContext(AppContext)!;
 
   const getClick = (x: number, y: number, z: number): modelInputProps => {
@@ -33,12 +34,33 @@ export function NiivuePanel({ nv, volumes }: any) {
       return;
     };
     console.log("clicks", clicks)
-    const rect = el.getBoundingClientRect();
 
     console.log("***** CANVAS COORDINATE    ", x, y, z);
     if (click && clicks) setClicks([...clicks!, click]);
   }, 15);
 
+  const doDragRelease = _.throttle((info) => {
+    console.log("DragRelease", info);
+    nv.opts.dragMode = "callbackOnly";
+    setBoxes([]);
+    if (info.tileIdx < 0)
+        console.log("Invalid drag");
+    else
+        console.log(`Tile: ${info.tileIdx} Orient: ${info.axCorSag} Length:${Math.round(info.mmLength)} x:${info.voxStart[0]}..${info.voxEnd[0]} y:${info.voxStart[1]}..${info.voxEnd[1]} z:${info.voxStart[2]}..${info.voxEnd[2]}`)
+        if (info.voxStart[2] !== info.voxEnd[2]) return;
+        // let x = [info.voxStart[0], info.voxEnd[0]];
+        // let y = [info.voxStart[1], info.voxEnd[1]];
+        if (boxes) {
+          let topLeft: modelInputProps = {x: info.voxStart[0], y: info.voxStart[1], z: info.voxStart[2], clickType: 2};
+          let bottomRight: modelInputProps = {x: info.voxEnd[0], y: info.voxEnd[1], z: info.voxEnd[2], clickType: 3};
+          setBoxes([...boxes!,  [topLeft, bottomRight]]);
+          
+          console.log("boxes", [topLeft, bottomRight]) 
+      }
+
+        // return [info.voxStart[0], info.voxEnd[0], info.voxStart[1], info.voxEnd[1], info.voxStart[2], info.voxEnd[2]]
+  }, 15);
+  
   useEffect(() => {
     async function fetchData() {
       const niivue = nv;
@@ -54,6 +76,7 @@ export function NiivuePanel({ nv, volumes }: any) {
       <canvas
         ref={canvas}
         onClick={handleMouseMove}
+        onContextMenu={() => { nv.onDragRelease=doDragRelease}}
         // onMouseOut={() => _.defer(() => setMaskImg(null))}
         // onTouchStart={handleMouseMove}
       />

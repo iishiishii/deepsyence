@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-key*/
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Annotation from "./Annotation";
 import { Box } from "@mui/material";
@@ -104,6 +104,10 @@ export default function NavBar(props) {
     setSamModel(result.model);
     setStatus({ message: "ready", processing: false });
   };
+
+  useEffect(() => {
+    loadSamModel("segment-anything-quant")
+  }, []);
 
   return (
     <div style={{ width: "100%" }}>
@@ -265,7 +269,7 @@ export default function NavBar(props) {
             tags={undefined}
             textType={undefined}
             imageType={ModelType.SegmentAnything}
-            callback={loadSamModel}/>
+            />
         </DropdownMenuItem>
         ]} />
 

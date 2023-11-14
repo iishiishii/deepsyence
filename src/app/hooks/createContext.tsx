@@ -14,6 +14,10 @@ interface contextProps {
     clicks: modelInputProps[] | null,
     setClicks: (e: modelInputProps[] | null) => void,
   ];
+  boxes: [
+    boxes: modelInputProps[][] | null,
+    setBoxes: (e: modelInputProps[][] | null) => void,
+  ];
   embedded: [
     embedded: ort.Tensor[] | null,
     setEmbedded: (e: ort.Tensor[] | null) => void,

@@ -13,7 +13,8 @@ import * as ort from "onnxruntime-web";
 const AppContextProvider = (props: {
   children: React.ReactElement<any, string | React.JSXElementConstructor<any>>;
 }) => {
-  const [clicks, setClicks] = useState<Array<modelInputProps> | null>(null);
+  const [clicks, setClicks] = useState<modelInputProps[] | null>(null);
+  const [boxes, setBoxes] = useState<modelInputProps[][] | null>(null);
   const [embedded, setEmbedded] = useState<Array<ort.Tensor> | null>(null);
   const [maskImg, setMaskImg] = useState<Uint8Array | null>(null);
   const [penMode, setPenMode] = useState<number>(-1);
@@ -24,6 +25,7 @@ const AppContextProvider = (props: {
     <AppContext.Provider
       value={{
         clicks: [clicks, setClicks],
+        boxes: [boxes, setBoxes],
         embedded: [embedded, setEmbedded],
         maskImg: [maskImg, setMaskImg],
         penMode: [penMode, setPenMode],

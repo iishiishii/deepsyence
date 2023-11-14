@@ -20,11 +20,8 @@ export interface modelInputProps {
 }
 
 export interface modeDataProps {
-  clicks?: Array<modelInputProps>;
+  clicks?: modelInputProps[];
+  boxes?: modelInputProps[][];
   tensor: Tensor;
   modelScale: modelScaleProps;
-}
-
-export interface ToolProps {
-  handleMouseMove: (e: any) => void;
 }

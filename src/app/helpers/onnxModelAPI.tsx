@@ -8,13 +8,15 @@
 import { Tensor } from "onnxruntime-web";
 import { modeDataProps } from "./Interfaces";
 
-const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
+const modelData = ({ clicks, boxes, tensor, modelScale }: modeDataProps) => {
   const imageEmbedding = tensor;
   let pointCoords;
   let pointLabels;
   let pointCoordsTensor;
   let pointLabelsTensor;
-  // console.log("clicks", clicks, "tensor", tensor, "modelScale", modelScale);
+  const widthScale = (modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
+  const heightScale = (modelScale.height * modelScale.samScale + 0.5) / modelScale.height;
+  console.log("clicks", clicks, "tensor", tensor, "modelScale", modelScale, "boxes", boxes);
   // Check there are input click prompts
   if (clicks) {
     let n = clicks.length;
@@ -26,8 +28,8 @@ const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
 
     // Add clicks and scale to what SAM expects
     for (let i = 0; i < n; i++) {
-      pointCoords[2 * i] = clicks[i].x * (modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
-      pointCoords[2 * i + 1] = clicks[i].y * (modelScale.height * modelScale.samScale + 0.5) / modelScale.height;
+      pointCoords[2 * i] = clicks[i].x * widthScale;
+      pointCoords[2 * i + 1] = clicks[i].y * heightScale;
       pointLabels[i] = clicks[i].clickType;
     }
 
@@ -41,6 +43,17 @@ const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
     pointCoordsTensor = new Tensor("float32", pointCoords, [1, n + 1, 2]);
     pointLabelsTensor = new Tensor("float32", pointLabels, [1, n + 1]);
   }
+  if (boxes) {
+    for (const box of boxes) {
+      console.log("box", box)
+      for (let i = 0; i < box.length; i++) {
+        pointCoords[2 * i] = box[i].x * widthScale;
+        pointCoords[2 * i + 1] = box[i].y * heightScale;
+        pointLabels[i] = 2+i;
+      }
+    }
+  }
+
   const imageSizeTensor = new Tensor("float32", [
     modelScale.height,
     modelScale.width,

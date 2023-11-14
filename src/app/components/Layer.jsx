@@ -38,6 +38,7 @@ export default function Layer(props) {
   const [done, setDone] = useState(false);
   const {
     clicks: [clicks, setClicks],
+    boxes: [boxes, setBoxes],
     embedded: [embedded, setEmbedded],
     maskImg: [maskImg, setMaskImg],
     model: [samModel],
@@ -53,6 +54,18 @@ export default function Layer(props) {
   );
   let DoneIcon = done ? <Checkbox checked disabled /> : <Box />;
 
+  async function waitForDuration(duration) {
+
+    return new Promise((resolve) => {
+      for (let i = 0; i < duration; i+=100) {
+        console.log("i", i/duration*100)
+        setProgress(i/duration*100);
+      }
+      setTimeout(() => {        
+        resolve();
+      }, duration);
+    });
+  }
 
   const preprocess = (sliceId) => {
     const MEAN = [123.675, 116.28, 103.53],
@@ -85,44 +98,76 @@ export default function Layer(props) {
   };
 
   const runEncoder = async () => {
-    setEmbedded([]);
-    const start = 140;
-    const end = 149;
+    console.log("image name", image.name)
+    if (image.name === "sub-M2054_ses-b1942_T2w.nii" ) {
+      const IMAGE_EMBEDDING = "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_rotated.npy";
+      // const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w_axial_finetuned.npy", document.baseURI).href;
+      // Load the Segment Anything pre-computed embedding
+      // async function fetchEmbedding() {
 
-    for (let i = 0; i < start; i++) {
-      setEmbedded((embedded) => [...embedded, []]);
-    }
-    try {
-      for (let i = start; i < end; i++) {
-        const preprocessedImage = preprocess(i);
-        console.log("samModel", samModel)
-        await samModel.process(preprocessedImage).then((result) => {
-          console.log("embedding", result.embedding)
-          if (i === end-1) {
-            setEmbedded((embedded) => [...embedded, ...result.embedding]);
-            console.log("embedded", embedded)
-          }
+        try {
+          loadNpyTensor(IMAGE_EMBEDDING, "float32").then(
+            (embedding) => {
+              if (embedding) {
+                console.log("embedding", embedding)
+                setEmbedded([...embedding])
+            } else {
+                console.debug("Server didn't start in time");
+              }
+            },
+          ).then(() => {
+            setProgress(100)
+            props.onAlert("Embedding loaded", false)
+          });
 
-        });
-        setProgress((prevProgress) =>
-          prevProgress >= 100 ? 100 : prevProgress + (1/(end-start)*100),
-        );
-        // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
-        // await samEncoder(preprocessedImage).then((embedding) => {
-        //   setEmbedded((embedded) => [...embedded, embedding]);
-        // });
+          setClicks([]);
+          setBoxes([]);
+          setMaskImg(new Uint8Array(image.dims[1] * image.dims[2] * image.dims[3]).fill(0));
+        } catch (error) {
+          props.onAlert(`error embedding ${error}`);
+          console.log("error embedding", error);
+        }
+
+    } else {
+      setEmbedded([]);
+      const start = 140;
+      const end = 149;
+  
+      for (let i = 0; i < start; i++) {
+        setEmbedded((embedded) => [...embedded, []]);
       }
-      setDone(!done);
-    } catch (error) {
-      props.onAlert(`error encoder ${error}`);
-      console.log("error encoder", error);
+      try {
+        for (let i = start; i < end; i++) {
+          const preprocessedImage = preprocess(i);
+          console.log("samModel", samModel)
+          await samModel.process(preprocessedImage).then((result) => {
+            console.log("embedding", result.embedding)
+            if (i === end-1) {
+              setEmbedded((embedded) => [...embedded, ...result.embedding]);
+              console.log("embedded", embedded)
+            }
+  
+          });
+          setProgress((prevProgress) =>
+            prevProgress >= 100 ? 100 : prevProgress + (1/(end-start)*100),
+          );
+          // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
+          // await samEncoder(preprocessedImage).then((embedding) => {
+          //   setEmbedded((embedded) => [...embedded, embedding]);
+          // });
+        }
+        setDone(!done);
+      } catch (error) {
+        props.onAlert(`error encoder ${error}`);
+        console.log("error encoder", error);
+      }
     }
   };
 
   const runDecoder = async () => {
     try {
-      if (clicks.length === 0) return
-      await samModel.processDecoder(image, embedded[clicks[0].z], clicks, maskImg).then((result) => {
+      if (clicks.length === 0 && boxes.length === 0) return
+      await samModel.processDecoder(image, embedded[clicks[0].z], clicks, boxes, maskImg).then((result) => {
         props.onModel(image.id, image.name, result)
         setMaskImg(result)
       });
@@ -136,6 +181,8 @@ export default function Layer(props) {
   // pre-computed image embedding
   useEffect(() => {
     console.log("penmode", penMode)
+    // console.log("boxes", boxes)
+
     if (clicks && selected !== null && penMode <0 ) {
       // Check if clicks changed and selected is not null
       runDecoder();
@@ -143,23 +190,23 @@ export default function Layer(props) {
   }, [clicks]);
 
   // pre-computed image embedding
-  useEffect(() => {
-    const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w_axial.npy", document.baseURI).href;
-    // Load the Segment Anything pre-computed embedding
-    async function fetchEmbedding() {
-      loadNpyTensor(IMAGE_EMBEDDING, "float32").then(
-        (embedding) => {
-          console.log("embedding", embedding)
-          setEmbedded([...embedding])
-        }
-      ).then(() => {
-        props.onAlert("Embedding loaded", false)
-      })
-    }
-    fetchEmbedding();
-    setClicks([]);
-    setMaskImg(new Uint8Array(image.dims[1] * image.dims[2] * image.dims[3]).fill(0));
-  }, []);
+  // useEffect(() => {
+  //   const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w_axial.npy", document.baseURI).href;
+  //   // Load the Segment Anything pre-computed embedding
+  //   async function fetchEmbedding() {
+  //     loadNpyTensor(IMAGE_EMBEDDING, "float32").then(
+  //       (embedding) => {
+  //         console.log("embedding", embedding)
+  //         setEmbedded([...embedding])
+  //       }
+  //     ).then(() => {
+  //       props.onAlert("Embedding loaded", false)
+  //     })
+  //   }
+  //   fetchEmbedding();
+  //   setClicks([]);
+  //   setMaskImg(new Uint8Array(image.dims[1] * image.dims[2] * image.dims[3]).fill(0));
+  // }, []);
 
   // Decode a Numpy file into a tensor.
   const loadNpyTensor = async (tensorFile, dType) => {
