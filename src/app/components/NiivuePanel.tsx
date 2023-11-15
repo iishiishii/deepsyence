@@ -30,7 +30,7 @@ export function NiivuePanel({ nv, volumes }: any) {
 
     if (!clicks || (clicks.length > 0 && z !== clicks[0].z)) {
       console.log("resetting clicks");
-      setClicks([])
+      setClicks([click])
       return;
     };
     console.log("clicks", clicks)
@@ -42,7 +42,7 @@ export function NiivuePanel({ nv, volumes }: any) {
   const doDragRelease = _.throttle((info) => {
     console.log("DragRelease", info);
     nv.opts.dragMode = "callbackOnly";
-    setBoxes([]);
+    // setBoxes([]);
     if (info.tileIdx < 0)
         console.log("Invalid drag");
     else
@@ -53,7 +53,9 @@ export function NiivuePanel({ nv, volumes }: any) {
         if (boxes) {
           let topLeft: modelInputProps = {x: info.voxStart[0], y: info.voxStart[1], z: info.voxStart[2], clickType: 2};
           let bottomRight: modelInputProps = {x: info.voxEnd[0], y: info.voxEnd[1], z: info.voxEnd[2], clickType: 3};
-          setBoxes([...boxes!,  [topLeft, bottomRight]]);
+          let box: modelInputProps[] = [topLeft, bottomRight];
+          boxes.push(box);
+          setBoxes(boxes);
           
           console.log("boxes", [topLeft, bottomRight]) 
       }

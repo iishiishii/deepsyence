@@ -14,17 +14,18 @@ const modelData = ({ clicks, boxes, tensor, modelScale }: modeDataProps) => {
   let pointLabels;
   let pointCoordsTensor;
   let pointLabelsTensor;
+  let n = clicks!.length;
+  
   const widthScale = (modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
   const heightScale = (modelScale.height * modelScale.samScale + 0.5) / modelScale.height;
   console.log("clicks", clicks, "tensor", tensor, "modelScale", modelScale, "boxes", boxes);
   // Check there are input click prompts
   if (clicks) {
-    let n = clicks.length;
     // If there is no box input, a single padding point with
     // label -1 and coordinates (0.0, 0.0) should be concatenated
     // so initialize the array to support (n + 1) points.
-    pointCoords = new Float32Array(2 * (n + 1));
-    pointLabels = new Float32Array(n + 1);
+    pointCoords = new Float32Array(2 * (n + 2));
+    pointLabels = new Float32Array(n + 2);
 
     // Add clicks and scale to what SAM expects
     for (let i = 0; i < n; i++) {
@@ -33,26 +34,27 @@ const modelData = ({ clicks, boxes, tensor, modelScale }: modeDataProps) => {
       pointLabels[i] = clicks[i].clickType;
     }
 
+  }
+  if (boxes) {
+    for (const box of boxes) {
+      for (let i = n; i < (n + box.length); i++) {
+        pointCoords[2 * i] = box[i-n].x * widthScale;
+        pointCoords[2 * i + 1] = box[i-n].y * heightScale;
+        pointLabels[i] = 2+i-n;
+      }
+    }
+  } else {
     // Add in the extra point/label when only clicks and no box
     // The extra point is at (0, 0) with label -1
     pointCoords[2 * n] = 0.0;
     pointCoords[2 * n + 1] = 0.0;
     pointLabels[n] = -1.0;
 
-    // Create the tensor
-    pointCoordsTensor = new Tensor("float32", pointCoords, [1, n + 1, 2]);
-    pointLabelsTensor = new Tensor("float32", pointLabels, [1, n + 1]);
   }
-  if (boxes) {
-    for (const box of boxes) {
-      console.log("box", box)
-      for (let i = 0; i < box.length; i++) {
-        pointCoords[2 * i] = box[i].x * widthScale;
-        pointCoords[2 * i + 1] = box[i].y * heightScale;
-        pointLabels[i] = 2+i;
-      }
-    }
-  }
+
+  // Create the tensor
+  pointCoordsTensor = new Tensor("float32", pointCoords, [1, n + 2, 2]);
+  pointLabelsTensor = new Tensor("float32", pointLabels, [1, n + 2]);
 
   const imageSizeTensor = new Tensor("float32", [
     modelScale.height,
