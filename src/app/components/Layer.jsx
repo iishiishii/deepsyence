@@ -85,11 +85,11 @@ export default function Layer(props) {
   const runEncoder = async () => {
     console.log("image name", image.name);
     if (image.name === "sub-M2054_ses-b1942_T2w.nii") {
-      // const IMAGE_EMBEDDING = "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_rotated.npy";
-      const IMAGE_EMBEDDING = new URL(
-        "./model/sub-M2054_ses-b1942_T2w_axial_finetuned.npy",
-        document.baseURI,
-      ).href;
+      const IMAGE_EMBEDDING = "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_finetuned.npy";
+      // const IMAGE_EMBEDDING = new URL(
+      //   "./model/sub-M2054_ses-b1942_T2w_axial_finetuned.npy",
+      //   document.baseURI,
+      // ).href;
       // Load the Segment Anything pre-computed embedding
 
       try {
