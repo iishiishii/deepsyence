@@ -24,8 +24,11 @@ interface contextProps {
   ];
   penMode: [penMode: number, setPenMode: (e: number) => void];
   filled: [filled: boolean, setFilled: (e: boolean) => void];
-  model: [model: SegmentAnythingModel | null, setModel: (e: SegmentAnythingModel | null) => void];
-  modelLoading: [loading: boolean, setLoading: (e: boolean) => void]
+  model: [
+    model: SegmentAnythingModel | null,
+    setModel: (e: SegmentAnythingModel | null) => void,
+  ];
+  modelLoading: [loading: boolean, setLoading: (e: boolean) => void];
 }
 
 const AppContext = createContext<contextProps | null>(null);

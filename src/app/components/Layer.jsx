@@ -42,7 +42,7 @@ export default function Layer(props) {
     maskImg: [maskImg, setMaskImg],
     model: [samModel],
     penMode: [penMode],
-    modelLoading: [loading]
+    modelLoading: [loading],
   } = useContext(AppContext);
   const [progress, setProgress] = useState(0);
   const [embedded, setEmbedded] = useState(null);
@@ -64,13 +64,12 @@ export default function Layer(props) {
 
     const imageUint8 = new Uint8Array(imageArray);
     const image3Channels = stackSliceToRGB(imageUint8);
-    const arrayToImage = convertArrayToImg(image3Channels, [image.dims[1], image.dims[2]]);
+    const arrayToImage = convertArrayToImg(image3Channels, [
+      image.dims[1],
+      image.dims[2],
+    ]);
     const resizedImage = resizeLonger(arrayToImage, 1024);
-    const normalizedArray = normalize(
-      resizedImage.bitmap.data,
-      MEAN,
-      STD,
-    );
+    const normalizedArray = normalize(resizedImage.bitmap.data, MEAN, STD);
     const paddedImage = padToSquare(
       normalizedArray,
       resizedImage.bitmap.width,
@@ -84,71 +83,76 @@ export default function Layer(props) {
   };
 
   const runEncoder = async () => {
-    console.log("image name", image.name)
-    if (image.name === "sub-M2054_ses-b1942_T2w.nii" ) {
+    console.log("image name", image.name);
+    if (image.name === "sub-M2054_ses-b1942_T2w.nii") {
       // const IMAGE_EMBEDDING = "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_rotated.npy";
-      const IMAGE_EMBEDDING = new URL("./model/sub-M2054_ses-b1942_T2w_axial_finetuned.npy", document.baseURI).href;
+      const IMAGE_EMBEDDING = new URL(
+        "./model/sub-M2054_ses-b1942_T2w_axial_finetuned.npy",
+        document.baseURI,
+      ).href;
       // Load the Segment Anything pre-computed embedding
 
-        try {
-          let updater = setInterval(() => {
-            let updateAmount = (2/90) * 100
-            setProgress((prevProgress) => {
-              let newProgress = prevProgress + updateAmount;
-              if(newProgress >= 100) {
-                clearInterval(updater);
-                newProgress = 100;
-              }
-              return newProgress;
-            });
-          }, 5000);
+      try {
+        let updater = setInterval(() => {
+          let updateAmount = (2 / 90) * 100;
+          setProgress((prevProgress) => {
+            let newProgress = prevProgress + updateAmount;
+            if (newProgress >= 100) {
+              clearInterval(updater);
+              newProgress = 100;
+            }
+            return newProgress;
+          });
+        }, 5000);
 
-          loadNpyTensor(IMAGE_EMBEDDING, "float32").then(
-            (embedding) => {
-              if (embedding) {
-                console.log("embedding", embedding)
-                setEmbedded([...embedding])
+        loadNpyTensor(IMAGE_EMBEDDING, "float32")
+          .then((embedding) => {
+            if (embedding) {
+              console.log("embedding", embedding);
+              setEmbedded([...embedding]);
             } else {
-                console.debug("Server didn't start in time");
-              }
-            },
-          ).then(() => {
+              console.debug("Server didn't start in time");
+            }
+          })
+          .then(() => {
             clearInterval(updater);
-            setProgress(100)
-            props.onAlert("Embedding loaded", false)
+            setProgress(100);
+            props.onAlert("Embedding loaded", false);
           });
 
-          let topLeft = {x: 0, y: 226, z: 0, clickType: 2};
-          let bottomRight = {x: 157, y: 0, z: 0, clickType: 3};
-          setBoxes([[topLeft, bottomRight]]);
-          setMaskImg(new Uint8Array(image.dims[1] * image.dims[2] * image.dims[3]).fill(0));
-        } catch (error) {
-          props.onAlert(`error embedding ${error}`);
-          console.log("error embedding", error);
-        }
-
+        let topLeft = { x: 0, y: 226, z: 0, clickType: 2 };
+        let bottomRight = { x: 157, y: 0, z: 0, clickType: 3 };
+        setBoxes([[topLeft, bottomRight]]);
+        setMaskImg(
+          new Uint8Array(image.dims[1] * image.dims[2] * image.dims[3]).fill(0),
+        );
+      } catch (error) {
+        props.onAlert(`error embedding ${error}`);
+        console.log("error embedding", error);
+      }
     } else {
       setEmbedded([]);
       const start = 140;
       const end = 149;
-  
+
       for (let i = 0; i < start; i++) {
         setEmbedded((embedded) => [...embedded, []]);
       }
       try {
         for (let i = start; i < end; i++) {
           const preprocessedImage = preprocess(i);
-          console.log("samModel", samModel)
+          console.log("samModel", samModel);
           await samModel.process(preprocessedImage).then((result) => {
-            console.log("embedding", result.embedding)
-            if (i === end-1) {
+            console.log("embedding", result.embedding);
+            if (i === end - 1) {
               setEmbedded((embedded) => [...embedded, ...result.embedding]);
-              console.log("embedded", embedded)
+              console.log("embedded", embedded);
             }
-  
           });
           setProgress((prevProgress) =>
-            prevProgress >= 100 ? 100 : prevProgress + (1/(end-start)*100),
+            prevProgress >= 100
+              ? 100
+              : prevProgress + (1 / (end - start)) * 100,
           );
           // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
           // await samEncoder(preprocessedImage).then((embedding) => {
@@ -165,10 +169,12 @@ export default function Layer(props) {
 
   const runDecoder = async () => {
     try {
-      if (clicks.length === 0 && boxes.length === 0) return
+      if (clicks.length === 0 && boxes.length === 0) return;
       if (embedded === undefined || embedded == null) {
         console.log(`No embedding found for ${image.name}`);
-        throw new Error(`No embedding found for ${image.name}. Please click the play button to run encoder.`);
+        throw new Error(
+          `No embedding found for ${image.name}. Please click the play button to run encoder.`,
+        );
       }
       if (loading) {
         throw new Error("Model is loading. Please wait.");
@@ -178,12 +184,13 @@ export default function Layer(props) {
         throw new Error("No model found. Select one in the top bar.");
       }
 
-      await samModel.processDecoder(image, embedded[clicks[0].z], clicks, boxes, maskImg).then((result) => {
-        props.onModel(image.id, image.name, result)
-        setMaskImg(result)
-      });
-    }
-    catch (error) {
+      await samModel
+        .processDecoder(image, embedded[clicks[0].z], clicks, boxes, maskImg)
+        .then((result) => {
+          props.onModel(image.id, image.name, result);
+          setMaskImg(result);
+        });
+    } catch (error) {
       props.onAlert(`Decoder ${error}`);
       console.log("error decoder", error);
     }
@@ -191,9 +198,9 @@ export default function Layer(props) {
 
   // pre-computed image embedding
   useEffect(() => {
-    console.log("penmode", penMode)
+    console.log("penmode", penMode);
 
-    if (clicks && penMode <0 ) {
+    if (clicks && penMode < 0) {
       // Check if clicks changed and selected is not null
       runDecoder();
     }
@@ -211,14 +218,24 @@ export default function Layer(props) {
     });
     let tensorArray = [];
     for (let i = 0; i < npArray.shape[0]; i++) {
-      let slice = npArray.data.slice(i*npArray.shape[1]*npArray.shape[2]*npArray.shape[3], (i+1)*npArray.shape[1]*npArray.shape[2]*npArray.shape[3]);
-      tensorArray.push(new ort.Tensor(dType, slice, [1, npArray.shape[1], npArray.shape[2], npArray.shape[3]]))
+      let slice = npArray.data.slice(
+        i * npArray.shape[1] * npArray.shape[2] * npArray.shape[3],
+        (i + 1) * npArray.shape[1] * npArray.shape[2] * npArray.shape[3],
+      );
+      tensorArray.push(
+        new ort.Tensor(dType, slice, [
+          1,
+          npArray.shape[1],
+          npArray.shape[2],
+          npArray.shape[3],
+        ]),
+      );
     }
     // const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
     console.log("tensor ", tensorArray, npArray.shape);
     return tensorArray;
   };
-  
+
   const brainExtract = async () => {
     brainExtractionModel(image, props.onModel);
   };

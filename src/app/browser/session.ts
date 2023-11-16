@@ -40,11 +40,11 @@ export class Session {
   };
 
   run = async (
-    input: ort.InferenceSession.OnnxValueMapType
+    input: ort.InferenceSession.OnnxValueMapType,
   ): Promise<ort.InferenceSession.OnnxValueMapType> => {
     if (!this.ortSession) {
       throw Error(
-        "the session is not initialized. Call `init()` method first."
+        "the session is not initialized. Call `init()` method first.",
       );
     }
     return await this.ortSession.run(input);
@@ -53,7 +53,7 @@ export class Session {
   inputNames = (): readonly string[] => {
     if (!this.ortSession) {
       throw Error(
-        "the session is not initialized. Call `init()` method first."
+        "the session is not initialized. Call `init()` method first.",
       );
     }
     return this.ortSession.inputNames;
@@ -62,7 +62,7 @@ export class Session {
   outputNames = (): readonly string[] => {
     if (!this.ortSession) {
       throw Error(
-        "the session is not initialized. Call `init()` method first."
+        "the session is not initialized. Call `init()` method first.",
       );
     }
     return this.ortSession.outputNames;

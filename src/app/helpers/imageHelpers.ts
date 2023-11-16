@@ -102,11 +102,11 @@ export function resizeLonger(
   size: number,
   mode: string = Jimp.default.RESIZE_BILINEAR,
 ): Jimp {
-    if (image.bitmap.width > image.bitmap.height) {
-      return image.resize(size, Jimp.default.AUTO, mode);
-    } else {
-      return image.resize(Jimp.default.AUTO, size, mode);
-    }
+  if (image.bitmap.width > image.bitmap.height) {
+    return image.resize(size, Jimp.default.AUTO, mode);
+  } else {
+    return image.resize(Jimp.default.AUTO, size, mode);
+  }
 }
 
 export function maskImage(
@@ -114,7 +114,7 @@ export function maskImage(
   width: number,
   height: number,
   sliceId: number,
-  mask: Uint8Array
+  mask: Uint8Array,
 ): Uint8Array {
   // let output = new Array(width * height * sliceId).fill(0); // fill to selected slice
   const threshold = 0.5;
@@ -122,14 +122,12 @@ export function maskImage(
     for (let i = 0; i < input.length; i++) {
       mask[width * height * sliceId + i] = input[i] > threshold ? 1 : 0;
     }
-  
+
     // output = output.concat(Array.from(input));
-  
   } catch (error) {
-    console.log("error", error)
+    console.log("error", error);
   }
   return mask;
-
 }
 
 export function stackSliceToRGB(buffer: Uint8Array): Uint8Array {
@@ -176,11 +174,15 @@ export function imagedataToImage(imagedata: Float32Array | Uint8Array) {
   ctx!.putImageData(imageData, 0, 0);
 
   window.location.href = canvas
-  .toDataURL("image/png")
-  .replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+    .toDataURL("image/png")
+    .replace("image/png", "image/octet-stream"); // here is the most important part because if you dont replace you will get a DOM 18 exception.
 }
 
-const downloadToFile = (content: Float32Array | Uint8Array, filename: string, contentType: string = 'text/plain') => {
+const downloadToFile = (
+  content: Float32Array | Uint8Array,
+  filename: string,
+  contentType: string = "text/plain",
+) => {
   const a = document.createElement("a");
   const file = new Blob([content], { type: contentType });
 
@@ -583,7 +585,11 @@ export function rowToCol(image: any, rowArray: any) {
   return colArray;
 }
 
-export function rotateImage90CW(arr: Float32Array, width: number, height: number) {
+export function rotateImage90CW(
+  arr: Float32Array,
+  width: number,
+  height: number,
+) {
   let rotatedArray: number[] = [];
   let counter = 0;
   console.log("arr", arr, width, height);
@@ -597,7 +603,11 @@ export function rotateImage90CW(arr: Float32Array, width: number, height: number
   return rotatedArray;
 }
 
-export function rotateImage90CCW(arr: Float32Array, width: number, height: number) {
+export function rotateImage90CCW(
+  arr: Float32Array,
+  width: number,
+  height: number,
+) {
   let rotatedArray: number[] = [];
   let counter = 0;
 
@@ -622,7 +632,7 @@ export function rotate180(arr: Float32Array, width: number, height: number) {
       counter++;
     }
   }
-  console.log(rotatedArray)
+  console.log(rotatedArray);
 
   return rotatedArray;
 }

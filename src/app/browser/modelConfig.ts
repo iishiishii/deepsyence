@@ -1,18 +1,18 @@
 import { ImageMetadata } from "./metadata";
 
 export enum ModelType {
-    Unknown = 1,
-    Classification,
-    Segmentation,
-    ObjectDetection,
-    Img2Img,
-    FeatureExtraction,
-    SegmentAnything,
-  }
+  Unknown = 1,
+  Classification,
+  Segmentation,
+  ObjectDetection,
+  Img2Img,
+  FeatureExtraction,
+  SegmentAnything,
+}
 
 export const ListImageModels = (
   tags?: string[],
-  type?: ModelType
+  type?: ModelType,
 ): ImageMetadata[] => {
   if (!tags && !type) {
     return models;
@@ -65,13 +65,11 @@ export const models: ImageMetadata[] = [
     configPath:
       "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
     modelPaths: new Map<string, string>([
-      [
-        "encoder",
-        new URL("./model/encoder-quant.onnx", document.baseURI).href,
-      ],
+      ["encoder", new URL("./model/encoder-quant.onnx", document.baseURI).href],
       [
         "decoder",
-        new URL("./model/sam_finetuned_decoder_quant.onnx", document.baseURI).href,
+        new URL("./model/sam_finetuned_decoder_quant.onnx", document.baseURI)
+          .href,
       ],
     ]),
     preprocessorPath:

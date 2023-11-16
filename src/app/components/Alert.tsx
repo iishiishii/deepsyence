@@ -29,26 +29,18 @@ export const handleJobNotification = (
   //         Model runned succesfully.{" "}
   //       </div>
   //     );
-  //   } 
+  //   }
   if (error) {
     notification.error({
       message: `Error`,
-      description: (
-        <div>
-          {message}
-        </div>
-      ),
+      description: <div>{message}</div>,
       placement: "topRight",
       duration: 8,
     });
   } else {
     notification.success({
       message: `Success`,
-      description: (
-              <div>
-                {message} succesfully finished
-              </div>
-            ),
+      description: <div>{message} succesfully finished</div>,
       placement: "topRight",
       duration: 6,
     });

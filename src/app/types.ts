@@ -9,7 +9,7 @@ export enum ViewType {
 
 export enum JobType {
   LOAD_MODEL = "load model",
-  LOAD_IMAGE = "load image",    //wrong image format, or image too large
+  LOAD_IMAGE = "load image", //wrong image format, or image too large
   RUN_MODEL = "run model",
 }
 

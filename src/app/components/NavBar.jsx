@@ -7,9 +7,7 @@ import ArrowRight from "@mui/icons-material/ArrowRight";
 import { Dropdown, DropdownMenuItem, DropdownNestedMenuItem } from "./Dropdown";
 import NVTick from "./Tick";
 import ModelSelector from "./ModelSelector";
-import {
-  ModelType
-} from "../browser/modelConfig";
+import { ModelType } from "../browser/modelConfig";
 import { SegmentAnythingModel } from "../browser/samModel";
 import { ImageModel } from "../browser/imageModel";
 import AppContext from "../hooks/createContext";
@@ -28,9 +26,8 @@ export default function NavBar(props) {
   const {
     clicks: [, setClicks],
     model: [, setSamModel],
-    modelLoading: [, setLoading]
+    modelLoading: [, setLoading],
   } = useContext(AppContext);
-
 
   function nvUpdateCrosshair3D() {
     nv.opts.show3Dcrosshair = !crosshair3D;
@@ -99,10 +96,9 @@ export default function NavBar(props) {
 
   const loadSamModel = async (id) => {
     setLoading(true);
-    const result = await ImageModel.create(id)
+    const result = await ImageModel.create(id);
     setSamModel(result.model);
-    setLoading(false); 
-
+    setLoading(false);
   };
 
   // useEffect(() => {
@@ -113,7 +109,11 @@ export default function NavBar(props) {
     <div style={{ width: "100%" }}>
       <Box sx={{ height: "36px", backgroundColor: "#496A81" }}>
         <Dropdown
-          trigger={<Button className="navbar-file" sx={{ color: "white" }}>File</Button>}
+          trigger={
+            <Button className="navbar-file" sx={{ color: "white" }}>
+              File
+            </Button>
+          }
           menu={[
             <DropdownMenuItem onClick={handleAddLayer}>
               {"Upload File"}
@@ -258,22 +258,30 @@ export default function NavBar(props) {
           ]}
         />
         <Dropdown
-          trigger={<Button className="navbar-draw" sx={{ color: "white" }}>Annotation</Button>}
+          trigger={
+            <Button className="navbar-draw" sx={{ color: "white" }}>
+              Annotation
+            </Button>
+          }
           menu={[<Annotation niivue={nv} />]}
         />
-        <Dropdown 
-        trigger={<Button className="navbar-model" sx={{ color: "white" }}>Model</Button>}
-        menu={[
-          <DropdownMenuItem>          
-            <ModelSelector
-            tags={undefined}
-            textType={undefined}
-            imageType={ModelType.SegmentAnything}
-            callback={loadSamModel}
-            />
-        </DropdownMenuItem>
-        ]} />
-
+        <Dropdown
+          trigger={
+            <Button className="navbar-model" sx={{ color: "white" }}>
+              Model
+            </Button>
+          }
+          menu={[
+            <DropdownMenuItem>
+              <ModelSelector
+                tags={undefined}
+                textType={undefined}
+                imageType={ModelType.SegmentAnything}
+                callback={loadSamModel}
+              />
+            </DropdownMenuItem>,
+          ]}
+        />
       </Box>
     </div>
   );

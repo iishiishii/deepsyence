@@ -49,7 +49,7 @@ export default function Annotation({ niivue }: Props) {
   }
 
   return (
-    <div  className="navbar-draw" style={{ width: "210px" }}>
+    <div className="navbar-draw" style={{ width: "210px" }}>
       {/* <Grid container spacing={1} alignItems="flex-end"> */}
       <Grid item xs={10} marginLeft={"10px"}>
         <Swatch
@@ -77,17 +77,18 @@ export default function Annotation({ niivue }: Props) {
       />
       <Grid container spacing={1} alignItems="flex-end">
         <Grid item xs={2} marginLeft={"20px"}>
-        <IconContext.Provider
+          <IconContext.Provider
             value={{
               style: {
                 boxShadow: penMode == 0 ? "inset 1px 1px 1px #496A81" : "",
               },
             }}
           >
-            <BsFillEraserFill size={22} 
+            <BsFillEraserFill
+              size={22}
               onClick={(e) => {
                 e.stopPropagation();
-                doDrawPen(0)
+                doDrawPen(0);
               }}
             />
           </IconContext.Provider>
@@ -96,7 +97,10 @@ export default function Annotation({ niivue }: Props) {
           <IconContext.Provider
             value={{
               style: {
-                boxShadow: (filled == true && penMode > 0) ? "inset 1px 1px 1px #496A81" : "",
+                boxShadow:
+                  filled == true && penMode > 0
+                    ? "inset 1px 1px 1px #496A81"
+                    : "",
               },
             }}
           >
@@ -115,7 +119,10 @@ export default function Annotation({ niivue }: Props) {
           <IconContext.Provider
             value={{
               style: {
-                boxShadow: (filled == false && penMode > 0) ? "inset 1px 1px 1px #496A81" : "",
+                boxShadow:
+                  filled == false && penMode > 0
+                    ? "inset 1px 1px 1px #496A81"
+                    : "",
               },
             }}
           >
@@ -130,7 +137,7 @@ export default function Annotation({ niivue }: Props) {
           </IconContext.Provider>
         </Grid>
         <Grid item xs={2}>
-        <IconContext.Provider
+          <IconContext.Provider
             value={{
               style: {
                 boxShadow: penMode < 0 ? "inset 1px 1px 1px #496A81" : "",
@@ -142,7 +149,7 @@ export default function Annotation({ niivue }: Props) {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                doDrawPen(-1)
+                doDrawPen(-1);
               }}
             />
           </IconContext.Provider>

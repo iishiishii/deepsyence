@@ -15,10 +15,21 @@ const modelData = ({ clicks, boxes, tensor, modelScale }: modeDataProps) => {
   let pointCoordsTensor;
   let pointLabelsTensor;
   let n = clicks!.length;
-  
-  const widthScale = (modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
-  const heightScale = (modelScale.height * modelScale.samScale + 0.5) / modelScale.height;
-  console.log("clicks", clicks, "tensor", tensor, "modelScale", modelScale, "boxes", boxes);
+
+  const widthScale =
+    (modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
+  const heightScale =
+    (modelScale.height * modelScale.samScale + 0.5) / modelScale.height;
+  console.log(
+    "clicks",
+    clicks,
+    "tensor",
+    tensor,
+    "modelScale",
+    modelScale,
+    "boxes",
+    boxes,
+  );
   // Check there are input click prompts
   if (clicks) {
     // If there is no box input, a single padding point with
@@ -33,14 +44,13 @@ const modelData = ({ clicks, boxes, tensor, modelScale }: modeDataProps) => {
       pointCoords[2 * i + 1] = clicks[i].y * heightScale;
       pointLabels[i] = clicks[i].clickType;
     }
-
   }
   if (boxes) {
     for (const box of boxes) {
-      for (let i = n; i < (n + box.length); i++) {
-        pointCoords[2 * i] = box[i-n].x * widthScale;
-        pointCoords[2 * i + 1] = box[i-n].y * heightScale;
-        pointLabels[i] = 2+i-n;
+      for (let i = n; i < n + box.length; i++) {
+        pointCoords[2 * i] = box[i - n].x * widthScale;
+        pointCoords[2 * i + 1] = box[i - n].y * heightScale;
+        pointLabels[i] = 2 + i - n;
       }
     }
   } else {
@@ -49,7 +59,6 @@ const modelData = ({ clicks, boxes, tensor, modelScale }: modeDataProps) => {
     pointCoords[2 * n] = 0.0;
     pointCoords[2 * n + 1] = 0.0;
     pointLabels[n] = -1.0;
-
   }
 
   // Create the tensor

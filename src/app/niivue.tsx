@@ -30,15 +30,15 @@ const theme = createTheme({
   components: {
     MuiIconButton: {
       styleOverrides: {
-        root:  {
-          color: '#496A81',
+        root: {
+          color: "#496A81",
         },
       },
     },
     MuiSvgIcon: {
       styleOverrides: {
-        root:  {
-          color: '#496A81',
+        root: {
+          color: "#496A81",
         },
       },
     },
@@ -66,9 +66,12 @@ export default function NiiVue(props: any) {
   const [openLayers, setOpenLayers] = useState(false);
   const [layers, setLayers] = useState(nv.volumes);
   const [selectedLayer, setSelectedLayer] = useState([]);
-  
+
   useEffect(() => {
-    nv.addVolumeFromUrl({url: new URL("./model/sub-M2054_ses-b1942_T2w.nii", document.baseURI).href})
+    nv.addVolumeFromUrl({
+      url: new URL("./model/sub-M2054_ses-b1942_T2w.nii", document.baseURI)
+        .href,
+    });
   }, []);
 
   nv.onImageLoaded = () => {

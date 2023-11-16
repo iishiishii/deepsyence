@@ -30,7 +30,7 @@ export class Preprocessor {
         image = image.resize(
           this.config.size,
           this.config.size,
-          "bicubicInterpolation"
+          "bicubicInterpolation",
         );
       }
     }
@@ -43,7 +43,7 @@ export class Preprocessor {
         startX,
         startY,
         this.config.cropSize,
-        this.config.cropSize
+        this.config.cropSize,
       );
     }
     const tensor = this.imageDataToTensor(image);
