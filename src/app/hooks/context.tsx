@@ -15,22 +15,23 @@ const AppContextProvider = (props: {
 }) => {
   const [clicks, setClicks] = useState<modelInputProps[] | null>(null); // set empty array in layer instead of context to avoid wrong appending if new image is added
   const [boxes, setBoxes] = useState<modelInputProps[][] | null>(null);
-  const [embedded, setEmbedded] = useState<Array<ort.Tensor> | null>(null);
+  // const [embedded, setEmbedded] = useState<Array<ort.Tensor> | null>(null);
   const [maskImg, setMaskImg] = useState<Uint8Array | null>(null);
   const [penMode, setPenMode] = useState<number>(-1);
   const [filled, setFilled] = useState<boolean>(false);
   const [model, setModel] = useState<SegmentAnythingModel | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   return (
     <AppContext.Provider
       value={{
         clicks: [clicks, setClicks],
         boxes: [boxes, setBoxes],
-        embedded: [embedded, setEmbedded],
         maskImg: [maskImg, setMaskImg],
         penMode: [penMode, setPenMode],
         filled: [filled, setFilled],
         model: [model, setModel],
+        modelLoading: [loading, setLoading],
       }}
     >
       {props.children}

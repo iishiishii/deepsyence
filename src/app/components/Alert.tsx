@@ -32,21 +32,21 @@ export const handleJobNotification = (
   //   } 
   if (error) {
     notification.error({
-      message: `${message} failed`,
+      message: `Error`,
       description: (
         <div>
-          Job failed with error: {message}
+          {message}
         </div>
       ),
       placement: "topRight",
-      duration: 6,
+      duration: 8,
     });
   } else {
     notification.success({
-      message: `${message} succesfully finished`,
+      message: `Success`,
       description: (
               <div>
-                Model runned succesfully.{" "}
+                {message} succesfully finished
               </div>
             ),
       placement: "topRight",

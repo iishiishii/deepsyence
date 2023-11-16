@@ -26,13 +26,11 @@ export default function NavBar(props) {
     nv.currentClipPlaneIndex > 0 ? true : false,
   );
   const {
+    clicks: [, setClicks],
     model: [, setSamModel],
+    modelLoading: [, setLoading]
   } = useContext(AppContext);
 
-  const [status, setStatus] = useState({
-    message: "select and load the model",
-    processing: false,
-  });
 
   function nvUpdateCrosshair3D() {
     nv.opts.show3Dcrosshair = !crosshair3D;
@@ -92,6 +90,7 @@ export default function NavBar(props) {
     };
 
     input.click();
+    setClicks(null);
   }
 
   function handleSaveImage() {
@@ -99,15 +98,16 @@ export default function NavBar(props) {
   }
 
   const loadSamModel = async (id) => {
-    setStatus({ message: "loading the model", processing: true });
-    const result = await ImageModel.create(id);
+    setLoading(true);
+    const result = await ImageModel.create(id)
     setSamModel(result.model);
-    setStatus({ message: "ready", processing: false });
+    setLoading(false); 
+
   };
 
-  useEffect(() => {
-    loadSamModel("segment-anything-quant")
-  }, []);
+  // useEffect(() => {
+  //   loadSamModel("segment-anything-quant")
+  // }, []);
 
   return (
     <div style={{ width: "100%" }}>
@@ -269,6 +269,7 @@ export default function NavBar(props) {
             tags={undefined}
             textType={undefined}
             imageType={ModelType.SegmentAnything}
+            callback={loadSamModel}
             />
         </DropdownMenuItem>
         ]} />

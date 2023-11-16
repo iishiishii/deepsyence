@@ -37,35 +37,21 @@ export default function Layer(props) {
   const [selected, setSelected] = useState();
   const [done, setDone] = useState(false);
   const {
-    clicks: [clicks, setClicks],
+    clicks: [clicks],
     boxes: [boxes, setBoxes],
-    embedded: [embedded, setEmbedded],
     maskImg: [maskImg, setMaskImg],
     model: [samModel],
     penMode: [penMode],
+    modelLoading: [loading]
   } = useContext(AppContext);
   const [progress, setProgress] = useState(0);
-
+  const [embedded, setEmbedded] = useState(null);
   let Visibility = visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />;
   let ArrowIcon = detailsOpen ? (
     <KeyboardArrowUpIcon />
   ) : (
     <KeyboardArrowDownIcon />
   );
-  let DoneIcon = done ? <Checkbox checked disabled /> : <Box />;
-
-  async function waitForDuration(duration) {
-
-    return new Promise((resolve) => {
-      for (let i = 0; i < duration; i+=100) {
-        console.log("i", i/duration*100)
-        setProgress(i/duration*100);
-      }
-      setTimeout(() => {        
-        resolve();
-      }, duration);
-    });
-  }
 
   const preprocess = (sliceId) => {
     const MEAN = [123.675, 116.28, 103.53],
@@ -171,7 +157,7 @@ export default function Layer(props) {
         }
         setDone(!done);
       } catch (error) {
-        props.onAlert(`error encoder ${error}`);
+        props.onAlert(`Encoder ${error}`);
         console.log("error encoder", error);
       }
     }
@@ -180,13 +166,25 @@ export default function Layer(props) {
   const runDecoder = async () => {
     try {
       if (clicks.length === 0 && boxes.length === 0) return
+      if (embedded === undefined || embedded == null) {
+        console.log(`No embedding found for ${image.name}`);
+        throw new Error(`No embedding found for ${image.name}. Please click the play button to run encoder.`);
+      }
+      if (loading) {
+        throw new Error("Model is loading. Please wait.");
+      }
+      if (samModel === undefined || samModel == null) {
+        console.log("No model found");
+        throw new Error("No model found. Select one in the top bar.");
+      }
+
       await samModel.processDecoder(image, embedded[clicks[0].z], clicks, boxes, maskImg).then((result) => {
         props.onModel(image.id, image.name, result)
         setMaskImg(result)
       });
     }
     catch (error) {
-      props.onAlert(`error decoder ${error}`);
+      props.onAlert(`Decoder ${error}`);
       console.log("error decoder", error);
     }
   };
@@ -194,9 +192,8 @@ export default function Layer(props) {
   // pre-computed image embedding
   useEffect(() => {
     console.log("penmode", penMode)
-    // console.log("boxes", boxes)
 
-    if (clicks && selected !== null && penMode <0 ) {
+    if (clicks && penMode <0 ) {
       // Check if clicks changed and selected is not null
       runDecoder();
     }

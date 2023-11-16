@@ -65,18 +65,18 @@ export class SegmentAnythingModel extends BaseImageModel {
       throw Error("the model is not initialized");
     }
     const start = new Date();
+    // const result = this.preprocessor.process(image);
+    const tensor = new ort.Tensor("float32", image, [1, 3, 1024, 1024]);
+    const session = this.sessions.get("encoder");
+    if (!session) {
+      throw Error("the encoder is absent in the sessions map");
+    }
+    console.log("session ", session)
+  
+    const feeds: Record<string, ort.Tensor> = {};
+    feeds["x"] = tensor;
+    console.log("feeds ", feeds)
     try {
-      // const result = this.preprocessor.process(image);
-      const tensor = new ort.Tensor("float32", image, [1, 3, 1024, 1024]);
-      const session = this.sessions.get("encoder");
-      if (!session) {
-        throw Error("the encoder is absent in the sessions map");
-      }
-      console.log("session ", session)
-    
-      const feeds: Record<string, ort.Tensor> = {};
-      feeds["x"] = tensor;
-      console.log("feeds ", feeds)
       const outputData = await session.run(feeds);
       const outputNames = await session.outputNames();
       const output = outputData[outputNames[0]];
@@ -103,11 +103,11 @@ export class SegmentAnythingModel extends BaseImageModel {
     // onModel: (id: any, name: any, array: any) => void,
   ): Promise<Uint8Array | undefined> => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
+      console.log("the model is not initialized")
       throw Error("the model is not initialized");
     }
 
     const start = new Date();
-    try {
       let id = image.id;
       let name = image.name;
   
@@ -122,6 +122,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       };
       const session = this.sessions.get("decoder");
       if (!session) {
+        console.log("the decoder is absent in the sessions map")
         throw Error("the decoder is absent in the sessions map");
       }
       // prepare feeds. use model input names as keys
@@ -133,26 +134,31 @@ export class SegmentAnythingModel extends BaseImageModel {
       });
       console.log("feeds ", feeds);
       if (feeds === undefined) return;
-      // feed inputs and run
-      let results = await session.run(feeds);
-      const end = new Date();
-      const inferenceTime = end.getTime() - start.getTime();
-      console.log("inference time ", inferenceTime);
-      // read from results
-      // const output = results[session.outputNames[0]].data;
-      const outputNames = await session.outputNames();
-      const iou = results['iou_predictions'].data as Float32Array;
 
-      const maxIou = iou.indexOf(Math.max(...Array.from(iou)))
-      const output = results['masks'].data.slice(maxIou*h*w, (maxIou+1)*h*w);
-      console.log("output ", maxIou, output);
-      // let rotated = output.reverse();
-      const rasImage = maskImage(output as Float32Array, w, h, clicks[0].z, mask);
-      console.log("rasImage ", rasImage);
-      // onModel(id, name, rasImage);
-      return rasImage;
-    } catch (e) {
-      console.log(`failed to inference ONNX model: ${e}. `);
-    }
+      try {
+        // feed inputs and run
+        let results = await session.run(feeds);
+        
+        const end = new Date();
+        const inferenceTime = end.getTime() - start.getTime();
+        console.log("inference time ", inferenceTime);
+        // read from results
+        // const output = results[session.outputNames[0]].data;
+        const outputNames = await session.outputNames();
+        const iou = results['iou_predictions'].data as Float32Array;
+
+        const maxIou = iou.indexOf(Math.max(...Array.from(iou)))
+        const output = results['masks'].data.slice(maxIou*h*w, (maxIou+1)*h*w);
+        console.log("output ", maxIou, output);
+        // let rotated = output.reverse();
+        const rasImage = maskImage(output as Float32Array, w, h, clicks[0].z, mask);
+        console.log("rasImage ", rasImage);
+        // onModel(id, name, rasImage);
+        return rasImage;
+      } catch (e) {
+        console.log(`failed to inference ONNX model: ${e}. `);
+        throw Error(`failed to inference ONNX model: ${e}. `);
+      }
+
   };
 }
