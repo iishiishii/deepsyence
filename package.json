@@ -8,7 +8,7 @@
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.6",
     "@niivue/niimath-js": "^0.0.1643874671203",
-    "@niivue/niivue": "^0.35.1",
+    "@niivue/niivue": "^0.38.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
