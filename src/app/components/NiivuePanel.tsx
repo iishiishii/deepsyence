@@ -92,7 +92,7 @@ export function NiivuePanel({ nv, volumes }: any) {
     <div className="niivue" style={{ width: "75%" }}>
       <canvas
         ref={canvas}
-        onClick={handleMouseMove}
+        onMouseDown={handleMouseMove}
         onContextMenu={() => {
           nv.onDragRelease = doDragRelease;
         }}
