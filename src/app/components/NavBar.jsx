@@ -101,9 +101,9 @@ export default function NavBar(props) {
     setLoading(false);
   };
 
-  // useEffect(() => {
-  //   loadSamModel("segment-anything-quant")
-  // }, []);
+  useEffect(() => {
+    loadSamModel("segment-anything-quant")
+  }, []);
 
   return (
     <div style={{ width: "100%" }}>
