@@ -73,7 +73,7 @@ export class SegmentAnythingModel extends BaseImageModel {
 
     const feeds: Record<string, ort.Tensor> = {};
     feeds["x"] = tensor;
-    console.log("feeds ", feeds);
+    // console.log("feeds ", feeds);
     try {
       const outputData = await session.run(feeds);
       const outputNames = await session.outputNames();
@@ -84,7 +84,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log("inference time ", inferenceTime);
 
       // const output = results[session.outputNames[0]].data;
-      console.log("output ", this.encoderResult);
+      // console.log("output ", this.encoderResult);
       // console.log("output sum ", output.reduce((a: number,b: number) => a+b,0))
       // return output;
     } catch (e) {
@@ -130,7 +130,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       tensor,
       modelScale,
     });
-    console.log("feeds ", feeds);
+    // console.log("feeds ", feeds);
     if (feeds === undefined) return;
 
     try {
@@ -150,7 +150,7 @@ export class SegmentAnythingModel extends BaseImageModel {
         maxIou * h * w,
         (maxIou + 1) * h * w,
       );
-      console.log("output ", maxIou, output);
+      // console.log("output ", maxIou, output);
       // let rotated = output.reverse();
       const rasImage = maskImage(
         output as Float32Array,
@@ -159,7 +159,7 @@ export class SegmentAnythingModel extends BaseImageModel {
         clicks[0].z,
         mask,
       );
-      console.log("rasImage ", rasImage);
+      // console.log("rasImage ", rasImage);
       // onModel(id, name, rasImage);
       return rasImage;
     } catch (e) {
