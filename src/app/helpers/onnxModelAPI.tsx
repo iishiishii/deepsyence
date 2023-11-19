@@ -20,16 +20,16 @@ const modelData = ({ clicks, boxes, tensor, modelScale }: modeDataProps) => {
     (modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
   const heightScale =
     (modelScale.height * modelScale.samScale + 0.5) / modelScale.height;
-  console.log(
-    "clicks",
-    clicks,
-    "tensor",
-    tensor,
-    "modelScale",
-    modelScale,
-    "boxes",
-    boxes,
-  );
+  // console.log(
+  //   "clicks",
+  //   clicks,
+  //   "tensor",
+  //   tensor,
+  //   "modelScale",
+  //   modelScale,
+  //   "boxes",
+  //   boxes,
+  // );
   // Check there are input click prompts
   if (clicks) {
     // If there is no box input, a single padding point with

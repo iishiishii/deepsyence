@@ -26,15 +26,11 @@ export default function Annotation({ niivue }: Props) {
   const colors = ["#80AE80", "#F1D691", "#B17A65", "#6FB8D2", "#D8654F"];
 
   function doDrawPen(event: any) {
-    console.log(event);
     let mode = event;
     if (event !== 0 && event !== -1) {
       let hex = hsvaToHex(event);
-      console.log(hex);
       let colorIndex = colors.indexOf(hex.toUpperCase());
-      console.log(colorIndex);
       mode = modeValueMaps[colorIndex];
-      console.log(mode);
     }
     nv.setDrawingEnabled(mode >= 0);
     nv.setPenValue(mode, filled);
@@ -42,10 +38,15 @@ export default function Annotation({ niivue }: Props) {
   }
 
   function handleFill(fill: boolean) {
-    console.log(fill);
-    nv.setPenValue(penMode, fill);
+    nv.setDrawingEnabled(true);
+    if (penMode < 0) {
+      nv.setPenValue(1, fill);
+      setPenMode(1);
+    } else {
+      nv.setPenValue(penMode, fill);
+    }
     setFill(fill);
-    console.log(filled);
+    // console.log(filled);
   }
 
   return (

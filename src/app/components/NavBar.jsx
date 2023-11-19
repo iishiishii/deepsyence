@@ -102,7 +102,7 @@ export default function NavBar(props) {
   };
 
   useEffect(() => {
-    loadSamModel("segment-anything-quant")
+    loadSamModel("segment-anything-quant");
   }, []);
 
   return (

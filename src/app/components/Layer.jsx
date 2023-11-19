@@ -83,9 +83,10 @@ export default function Layer(props) {
   };
 
   const runEncoder = async () => {
-    console.log("image name", image.name);
+    // console.log("image name", image);
     if (image.name === "sub-M2054_ses-b1942_T2w.nii") {
-      const IMAGE_EMBEDDING = "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_finetuned.npy";
+      const IMAGE_EMBEDDING =
+        "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_finetuned.npy";
       // const IMAGE_EMBEDDING = new URL(
       //   "./model/sub-M2054_ses-b1942_T2w_axial_finetuned.npy",
       //   document.baseURI,
@@ -108,7 +109,6 @@ export default function Layer(props) {
         loadNpyTensor(IMAGE_EMBEDDING, "float32")
           .then((embedding) => {
             if (embedding) {
-              console.log("embedding", embedding);
               setEmbedded([...embedding]);
             } else {
               console.debug("Server didn't start in time");
@@ -132,8 +132,8 @@ export default function Layer(props) {
       }
     } else {
       setEmbedded([]);
-      const start = 140;
-      const end = 149;
+      const start = 0;
+      const end = image.dims[2];
 
       for (let i = 0; i < start; i++) {
         setEmbedded((embedded) => [...embedded, []]);
@@ -141,12 +141,12 @@ export default function Layer(props) {
       try {
         for (let i = start; i < end; i++) {
           const preprocessedImage = preprocess(i);
-          console.log("samModel", samModel);
+          // console.log("samModel", samModel);
           await samModel.process(preprocessedImage).then((result) => {
-            console.log("embedding", result.embedding);
+            // console.log("embedding", result.embedding);
             if (i === end - 1) {
               setEmbedded((embedded) => [...embedded, ...result.embedding]);
-              console.log("embedded", embedded);
+              // console.log("embedded", embedded);
             }
           });
           setProgress((prevProgress) =>
@@ -198,8 +198,6 @@ export default function Layer(props) {
 
   // pre-computed image embedding
   useEffect(() => {
-    console.log("penmode", penMode);
-
     if (clicks && penMode < 0) {
       // Check if clicks changed and selected is not null
       runDecoder();
@@ -231,8 +229,6 @@ export default function Layer(props) {
         ]),
       );
     }
-    // const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
-    console.log("tensor ", tensorArray, npArray.shape);
     return tensorArray;
   };
 

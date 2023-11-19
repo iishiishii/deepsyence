@@ -29,30 +29,27 @@ export function NiivuePanel({ nv, volumes }: any) {
     const click = getClick(x, y, z);
 
     if (!clicks || (clicks.length > 0 && z !== clicks[0].z)) {
-      console.log("resetting clicks");
+      // console.log("resetting clicks");
       setClicks([click]);
       return;
     }
-    console.log("clicks", clicks);
+    // console.log("clicks", clicks);
 
-    console.log("***** CANVAS COORDINATE    ", x, y, z);
     if (click && clicks) setClicks([...clicks!, click]);
   }, 15);
 
   const doDragRelease = _.throttle((info) => {
-    console.log("DragRelease", info);
     nv.opts.dragMode = "callbackOnly";
     // setBoxes([]);
     if (info.tileIdx < 0) console.log("Invalid drag");
-    else
-      console.log(
-        `Tile: ${info.tileIdx} Orient: ${info.axCorSag} Length:${Math.round(
-          info.mmLength,
-        )} x:${info.voxStart[0]}..${info.voxEnd[0]} y:${info.voxStart[1]}..${
-          info.voxEnd[1]
-        } z:${info.voxStart[2]}..${info.voxEnd[2]}`,
-      );
-    if (info.voxStart[2] !== info.voxEnd[2]) return;
+    // console.log(
+    //   `Tile: ${info.tileIdx} Orient: ${info.axCorSag} Length:${Math.round(
+    //     info.mmLength,
+    //   )} x:${info.voxStart[0]}..${info.voxEnd[0]} y:${info.voxStart[1]}..${
+    //     info.voxEnd[1]
+    //   } z:${info.voxStart[2]}..${info.voxEnd[2]}`,
+    // );
+    else if (info.voxStart[2] !== info.voxEnd[2]) return;
     // let x = [info.voxStart[0], info.voxEnd[0]];
     // let y = [info.voxStart[1], info.voxEnd[1]];
     if (boxes) {
