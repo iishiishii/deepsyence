@@ -14,7 +14,7 @@ const AppContextProvider = (props: {
   children: React.ReactElement<any, string | React.JSXElementConstructor<any>>;
 }) => {
   const [clicks, setClicks] = useState<modelInputProps[] | null>(null); // set empty array in layer instead of context to avoid wrong appending if new image is added
-  const [boxes, setBoxes] = useState<boundingBox | null>(null);
+  const [bbox, setBbox] = useState<boundingBox | null>(null);
   // const [embedded, setEmbedded] = useState<Array<ort.Tensor> | null>(null);
   const [maskImg, setMaskImg] = useState<Uint8Array | null>(null);
   const [penMode, setPenMode] = useState<number>(-1);
@@ -26,7 +26,7 @@ const AppContextProvider = (props: {
     <AppContext.Provider
       value={{
         clicks: [clicks, setClicks],
-        boxes: [boxes, setBoxes],
+        bbox: [bbox, setBbox],
         maskImg: [maskImg, setMaskImg],
         penMode: [penMode, setPenMode],
         filled: [filled, setFilled],

@@ -14,7 +14,7 @@ interface contextProps {
     clicks: modelInputProps[] | null,
     setClicks: (e: modelInputProps[] | null) => void,
   ];
-  boxes: [boxes: boundingBox | null, setBoxes: (e: boundingBox | null) => void];
+  bbox: [bbox: boundingBox | null, setBbox: (e: boundingBox | null) => void];
   maskImg: [
     maskImg: Uint8Array | null,
     setMaskImg: (e: Uint8Array | null) => void,

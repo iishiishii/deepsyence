@@ -38,7 +38,7 @@ export default function Layer(props) {
   const [done, setDone] = useState(false);
   const {
     clicks: [clicks],
-    boxes: [boxes, setBoxes],
+    bbox: [bbox, setBbox],
     maskImg: [maskImg, setMaskImg],
     model: [samModel],
     penMode: [penMode],
@@ -125,7 +125,7 @@ export default function Layer(props) {
               return newProgress;
             });
           },
-          922747008 / fetchRate / 30,
+          922747008 / fetchRate / 20,
         );
 
         loadNpyTensor(IMAGE_EMBEDDING, "float32")
@@ -144,7 +144,7 @@ export default function Layer(props) {
 
         let topLeft = { x: 0, y: 226, z: 0, clickType: 2 };
         let bottomRight = { x: 157, y: 0, z: 0, clickType: 3 };
-        setBoxes({ topLeft, bottomRight });
+        setBbox({ topLeft, bottomRight });
         setMaskImg(
           new Uint8Array(image.dims[1] * image.dims[2] * image.dims[3]).fill(0),
         );
@@ -165,10 +165,9 @@ export default function Layer(props) {
           const preprocessedImage = preprocess(i);
           // console.log("samModel", samModel);
           await samModel.process(preprocessedImage).then((result) => {
-            // console.log("embedding", result.embedding);
             if (i === end - 1) {
+              // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
               setEmbedded((embedded) => [...embedded, ...result.embedding]);
-              // console.log("embedded", embedded);
             }
           });
           setProgress((prevProgress) =>
@@ -176,10 +175,6 @@ export default function Layer(props) {
               ? 100
               : prevProgress + (1 / (end - start)) * 100,
           );
-          // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
-          // await samEncoder(preprocessedImage).then((embedding) => {
-          //   setEmbedded((embedded) => [...embedded, embedding]);
-          // });
         }
         setDone(!done);
       } catch (error) {
@@ -191,7 +186,7 @@ export default function Layer(props) {
 
   const runDecoder = async () => {
     try {
-      if (clicks.length === 0 && boxes.length === 0) return;
+      if (clicks.length === 0 && bbox.length === 0) return;
       if (embedded === undefined || embedded == null) {
         console.log(`No embedding found for ${image.name}`);
         throw new Error(
@@ -207,7 +202,7 @@ export default function Layer(props) {
       }
 
       await samModel
-        .processDecoder(image, embedded[clicks[0].z], clicks, boxes, maskImg)
+        .processDecoder(image, embedded[clicks[0].z], clicks, bbox, maskImg)
         .then((result) => {
           props.onModel(image.id, image.name, result);
           setMaskImg(result);
