@@ -12,10 +12,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import * as ort from "onnxruntime-web";
 import AppContext from "../hooks/createContext";
 import { useContext, useEffect, useMemo, useState } from "react";
-import Checkbox from "@mui/material/Checkbox";
+import Tooltip from "@mui/material/Tooltip";
 import { processImage } from "../helpers/niimath";
 import { brainExtractionModel } from "../helpers/brainExtractionModel";
-import { samDecoder, samEncoder } from "../helpers/samModel";
 import {
   convertArrayToImg,
   imagedataToImage,
@@ -95,8 +94,7 @@ export default function Layer(props) {
       resizedImage.bitmap.height,
       [0, 0, 0],
     );
-    // console.log("paddedImage", paddedImage, paddedImage.reduce((a,b) => a+b, 0))
-    // imagedataToImage(paddedImage)
+
     const transposedArray = transposeChannelDim(paddedImage, 3);
     return transposedArray;
   };
@@ -111,11 +109,11 @@ export default function Layer(props) {
       //   document.baseURI,
       // ).href;
       // Load the Segment Anything pre-computed embedding
-
+      let updateAmount = (1 / 90) * 100;
+      setProgress(updateAmount);
       try {
         let updater = setInterval(
           () => {
-            let updateAmount = (1 / 90) * 100;
             setProgress((prevProgress) => {
               let newProgress = prevProgress + updateAmount;
               if (newProgress >= 90) {
@@ -225,10 +223,6 @@ export default function Layer(props) {
   const loadNpyTensor = async (tensorFile, dType) => {
     let npLoader = new npyjs();
     let npArray = await npLoader.load(tensorFile).then((npArray) => {
-      // console.log("embedding npy", npArray.data, npArray.data.slice(111*npArray.shape[1]*npArray.shape[2]*npArray.shape[3], 112*npArray.shape[1]*npArray.shape[2]*npArray.shape[3]).reduce(
-      //   (partialSum, a) => partialSum + a,
-      //   0,
-      // ),)
       return npArray;
     });
     let tensorArray = [];
@@ -332,9 +326,11 @@ export default function Layer(props) {
           }}
           m={1}
         >
-          <IconButton onClick={runEncoder}>
-            <PlayCircleFilledWhiteIcon />
-          </IconButton>
+          <Tooltip title="Image Encoder">
+            <IconButton onClick={runEncoder}>
+              <PlayCircleFilledWhiteIcon />
+            </IconButton>
+          </Tooltip>
           <IconButton onClick={handleDelete}>
             <DeleteIcon />
           </IconButton>

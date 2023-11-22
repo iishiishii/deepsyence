@@ -8,8 +8,6 @@ import { maskImage } from "../helpers/imageHelpers";
 export type SAMResult = {
   elapsed: number;
   embedding: ort.Tensor[] | undefined;
-  // topLeft: Point;
-  // bottomRight: Point;
 };
 
 export class SegmentAnythingModel extends BaseImageModel {

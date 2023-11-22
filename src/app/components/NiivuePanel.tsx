@@ -9,10 +9,16 @@ export function NiivuePanel({ nv, volumes }: any) {
   const {
     clicks: [clicks, setClicks],
     bbox: [bbox, setBbox],
+    positivePoints: [positivePoints],
   } = useContext(AppContext)!;
 
   const getClick = (x: number, y: number, z: number): modelInputProps => {
-    const clickType = 1;
+    let clickType: number;
+    if (positivePoints) {
+      clickType = 1;
+    } else {
+      clickType = 0;
+    }
     return { x, y, z, clickType };
   };
 
@@ -40,11 +46,9 @@ export function NiivuePanel({ nv, volumes }: any) {
 
   const doDragRelease = _.throttle((info) => {
     nv.opts.dragMode = "callbackOnly";
-    // setBbox([]);
     if (info.tileIdx < 0) console.log("Invalid drag");
     else if (info.voxStart[2] !== info.voxEnd[2]) return;
-    // let x = [info.voxStart[0], info.voxEnd[0]];
-    // let y = [info.voxStart[1], info.voxEnd[1]];
+
     if (bbox) {
       let topLeft: modelInputProps = {
         x: info.voxStart[0],

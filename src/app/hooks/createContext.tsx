@@ -26,6 +26,10 @@ interface contextProps {
     setModel: (e: SegmentAnythingModel | null) => void,
   ];
   modelLoading: [loading: boolean, setLoading: (e: boolean) => void];
+  positivePoints: [
+    positivePoints: boolean,
+    setPositivePoints: (e: boolean) => void,
+  ];
 }
 
 const AppContext = createContext<contextProps | null>(null);

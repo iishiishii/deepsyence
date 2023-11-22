@@ -11,6 +11,9 @@ import { ModelType } from "../browser/modelConfig";
 import { SegmentAnythingModel } from "../browser/samModel";
 import { ImageModel } from "../browser/imageModel";
 import AppContext from "../hooks/createContext";
+import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { IconButton } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 
 export default function NavBar(props) {
   const nv = props.nv;
@@ -27,6 +30,7 @@ export default function NavBar(props) {
     clicks: [, setClicks],
     model: [, setSamModel],
     modelLoading: [, setLoading],
+    positivePoints: [, setPositivePoints],
   } = useContext(AppContext);
 
   function nvUpdateCrosshair3D() {
@@ -265,6 +269,26 @@ export default function NavBar(props) {
           }
           menu={[<Annotation niivue={nv} />]}
         />
+        <Tooltip title="Region of Interest point">
+          <IconButton
+            sx={{ color: "white" }}
+            onClick={(e) => {
+              setPositivePoints(true);
+            }}
+          >
+            <PlusCircleOutlined />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Background point">
+          <IconButton
+            sx={{ color: "white" }}
+            onClick={(e) => {
+              setPositivePoints(false);
+            }}
+          >
+            <MinusCircleOutlined />
+          </IconButton>
+        </Tooltip>
       </Box>
     </div>
   );

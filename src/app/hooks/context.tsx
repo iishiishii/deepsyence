@@ -21,6 +21,7 @@ const AppContextProvider = (props: {
   const [filled, setFilled] = useState<boolean>(false);
   const [model, setModel] = useState<SegmentAnythingModel | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [positivePoints, setPositivePoints] = useState<boolean>(true);
 
   return (
     <AppContext.Provider
@@ -32,6 +33,7 @@ const AppContextProvider = (props: {
         filled: [filled, setFilled],
         model: [model, setModel],
         modelLoading: [loading, setLoading],
+        positivePoints: [positivePoints, setPositivePoints],
       }}
     >
       {props.children}
