@@ -1,28 +1,15 @@
 import * as ort from "onnxruntime-web";
 import Jimp from "jimp";
 import { BaseImageModel } from "./base";
-import { modelInputProps } from "../helpers/Interfaces";
+import { boundingBox, modelInputProps } from "../helpers/Interfaces";
 import { modelData } from "../helpers/onnxModelAPI";
 import { maskImage } from "../helpers/imageHelpers";
-
-export interface Point {
-  x: number;
-  y: number;
-  z: number;
-  positive: boolean;
-}
 
 export type SAMResult = {
   elapsed: number;
   embedding: ort.Tensor[] | undefined;
   // topLeft: Point;
   // bottomRight: Point;
-};
-
-export type SegmentAnythingPrompt = {
-  image: string | ArrayBuffer | undefined;
-  points: Point[] | undefined;
-  boxes: Point[][] | undefined;
 };
 
 export class SegmentAnythingModel extends BaseImageModel {
@@ -96,7 +83,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     image: any,
     tensor: ort.TypedTensor<"string">,
     clicks: modelInputProps[],
-    bbox: modelInputProps[][],
+    bbox: boundingBox,
     mask: Uint8Array,
     // onModel: (id: any, name: any, array: any) => void,
   ): Promise<Uint8Array | undefined> => {

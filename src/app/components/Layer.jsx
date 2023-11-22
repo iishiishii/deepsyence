@@ -119,7 +119,7 @@ export default function Layer(props) {
             setProgress((prevProgress) => {
               let newProgress = prevProgress + updateAmount;
               if (newProgress >= 90) {
-                // clearInterval(updater);
+                clearInterval(updater);
                 newProgress = 90;
               }
               return newProgress;
@@ -144,7 +144,7 @@ export default function Layer(props) {
 
         let topLeft = { x: 0, y: 226, z: 0, clickType: 2 };
         let bottomRight = { x: 157, y: 0, z: 0, clickType: 3 };
-        setBoxes([[topLeft, bottomRight]]);
+        setBoxes({ topLeft, bottomRight });
         setMaskImg(
           new Uint8Array(image.dims[1] * image.dims[2] * image.dims[3]).fill(0),
         );

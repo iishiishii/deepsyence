@@ -49,18 +49,13 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
     }
 
     if (bbox) {
-      console.log("bbox loop", bbox);
-      for (let j = 0; j < bbox.length; j++) {
-        // for (let i = n; i < clickLength + bbox.length; i++) {
-        console.log("box ", j, bbox[j]);
-        pointCoords[2 * clickLength + j * 4] = bbox[j][0].x * widthScale;
-        pointCoords[2 * clickLength + j * 4 + 1] = bbox[j][0].y * heightScale;
-        pointLabels[clickLength + j * 2] = bbox[j][0].clickType;
-        pointCoords[2 * clickLength + j * 4 + 2] = bbox[j][1].x * widthScale;
-        pointCoords[2 * clickLength + j * 4 + 3] = bbox[j][1].y * heightScale;
-        pointLabels[clickLength + j * 2 + 1] = bbox[j][1].clickType;
-        // }
-      }
+      // console.log("bbox loop", bbox);
+      pointCoords[2 * clickLength] = bbox.topLeft.x * widthScale;
+      pointCoords[2 * clickLength + 1] = bbox.topLeft.y * heightScale;
+      pointLabels[clickLength] = bbox.topLeft.clickType;
+      pointCoords[2 * clickLength + 2] = bbox.bottomRight.x * widthScale;
+      pointCoords[2 * clickLength + 3] = bbox.bottomRight.y * heightScale;
+      pointLabels[clickLength + 1] = bbox.bottomRight.clickType;
     } else {
       // Add in the extra point/label when only clicks and no box
       // The extra point is at (0, 0) with label -1
@@ -68,7 +63,7 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
       pointCoords[2 * clickLength + 1] = 0.0;
       pointLabels[clickLength] = -1.0;
     }
-    console.log("bbox length", bbox!.length, pointCoords, pointLabels);
+    // console.log("bbox length", pointCoords, pointLabels);
 
     // Create the tensor
     pointCoordsTensor = new Tensor("float32", pointCoords, [

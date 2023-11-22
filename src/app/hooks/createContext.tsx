@@ -5,7 +5,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import { createContext } from "react";
-import { modelInputProps } from "../helpers/Interfaces";
+import { boundingBox, modelInputProps } from "../helpers/Interfaces";
 import { SegmentAnythingModel } from "../browser/samModel";
 import * as ort from "onnxruntime-web";
 
@@ -14,10 +14,7 @@ interface contextProps {
     clicks: modelInputProps[] | null,
     setClicks: (e: modelInputProps[] | null) => void,
   ];
-  boxes: [
-    boxes: modelInputProps[][] | null,
-    setBoxes: (e: modelInputProps[][] | null) => void,
-  ];
+  boxes: [boxes: boundingBox | null, setBoxes: (e: boundingBox | null) => void];
   maskImg: [
     maskImg: Uint8Array | null,
     setMaskImg: (e: Uint8Array | null) => void,

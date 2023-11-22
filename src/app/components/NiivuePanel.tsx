@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
 import { Box } from "@mui/material";
-import { modelInputProps } from "../helpers/Interfaces";
+import { boundingBox, modelInputProps } from "../helpers/Interfaces";
 import AppContext from "../hooks/createContext";
 import * as _ from "underscore";
 
@@ -58,8 +58,8 @@ export function NiivuePanel({ nv, volumes }: any) {
         z: info.voxEnd[2],
         clickType: 3,
       };
-      let box: modelInputProps[] = [topLeft, bottomRight];
-      setBoxes([box]);
+      let box: boundingBox = { topLeft, bottomRight };
+      setBoxes(box);
 
       console.log("boxes", [topLeft, bottomRight]);
     }
