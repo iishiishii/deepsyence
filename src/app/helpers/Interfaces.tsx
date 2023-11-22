@@ -21,7 +21,7 @@ export interface modelInputProps {
 
 export interface modeDataProps {
   clicks?: modelInputProps[];
-  boxes?: modelInputProps[][];
+  bbox?: modelInputProps[][];
   tensor: Tensor;
   modelScale: modelScaleProps;
 }

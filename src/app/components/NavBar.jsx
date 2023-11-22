@@ -265,23 +265,6 @@ export default function NavBar(props) {
           }
           menu={[<Annotation niivue={nv} />]}
         />
-        <Dropdown
-          trigger={
-            <Button className="navbar-model" sx={{ color: "white" }}>
-              Model
-            </Button>
-          }
-          menu={[
-            <DropdownMenuItem>
-              <ModelSelector
-                tags={undefined}
-                textType={undefined}
-                imageType={ModelType.SegmentAnything}
-                callback={loadSamModel}
-              />
-            </DropdownMenuItem>,
-          ]}
-        />
       </Box>
     </div>
   );

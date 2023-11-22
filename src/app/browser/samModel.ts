@@ -96,7 +96,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     image: any,
     tensor: ort.TypedTensor<"string">,
     clicks: modelInputProps[],
-    boxes: modelInputProps[][],
+    bbox: modelInputProps[][],
     mask: Uint8Array,
     // onModel: (id: any, name: any, array: any) => void,
   ): Promise<Uint8Array | undefined> => {
@@ -126,7 +126,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     // prepare feeds. use model input names as keys
     const feeds = modelData({
       clicks,
-      boxes,
+      bbox,
       tensor,
       modelScale,
     });

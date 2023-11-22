@@ -42,13 +42,6 @@ export function NiivuePanel({ nv, volumes }: any) {
     nv.opts.dragMode = "callbackOnly";
     // setBoxes([]);
     if (info.tileIdx < 0) console.log("Invalid drag");
-    // console.log(
-    //   `Tile: ${info.tileIdx} Orient: ${info.axCorSag} Length:${Math.round(
-    //     info.mmLength,
-    //   )} x:${info.voxStart[0]}..${info.voxEnd[0]} y:${info.voxStart[1]}..${
-    //     info.voxEnd[1]
-    //   } z:${info.voxStart[2]}..${info.voxEnd[2]}`,
-    // );
     else if (info.voxStart[2] !== info.voxEnd[2]) return;
     // let x = [info.voxStart[0], info.voxEnd[0]];
     // let y = [info.voxStart[1], info.voxEnd[1]];
@@ -66,8 +59,7 @@ export function NiivuePanel({ nv, volumes }: any) {
         clickType: 3,
       };
       let box: modelInputProps[] = [topLeft, bottomRight];
-      boxes.push(box);
-      setBoxes(boxes);
+      setBoxes([box]);
 
       console.log("boxes", [topLeft, bottomRight]);
     }
@@ -80,7 +72,7 @@ export function NiivuePanel({ nv, volumes }: any) {
       const niivue = nv;
       niivue.attachToCanvas(canvas.current);
       await niivue.loadVolumes(volumes);
-      nv.setSliceType(nv.sliceTypeMultiplanar);
+      nv.setSliceType(nv.sliceTypeAxial);
     }
     fetchData();
   }, []);
@@ -89,12 +81,12 @@ export function NiivuePanel({ nv, volumes }: any) {
     <div className="niivue" style={{ width: "75%" }}>
       <canvas
         ref={canvas}
-        onMouseDown={handleMouseMove}
+        onClick={handleMouseMove}
         onContextMenu={() => {
           nv.onDragRelease = doDragRelease;
         }}
         // onMouseOut={() => _.defer(() => setMaskImg(null))}
-        onTouchStart={handleMouseMove}
+        // onTouchStart={handleMouseMove}
       />
       <div
         id="intensity"

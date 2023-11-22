@@ -8,18 +8,19 @@
 import { Tensor } from "onnxruntime-web";
 import { modeDataProps } from "./Interfaces";
 
-const modelData = ({ clicks, boxes, tensor, modelScale }: modeDataProps) => {
+const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
   const imageEmbedding = tensor;
-  let pointCoords;
-  let pointLabels;
   let pointCoordsTensor;
   let pointLabelsTensor;
-  let n = clicks!.length;
+  let pointCoords;
+  let pointLabels;
 
   const widthScale =
-    (modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
+    Math.floor(modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
   const heightScale =
-    (modelScale.height * modelScale.samScale + 0.5) / modelScale.height;
+  Math.floor(modelScale.height * modelScale.samScale + 0.5) / modelScale.height;
+
+  console.log("Math.floor(modelScale.width * modelScale.samScale + 0.5)", Math.floor(modelScale.width * modelScale.samScale + 0.5), Math.floor(modelScale.height * modelScale.samScale + 0.5))
   // console.log(
   //   "clicks",
   //   clicks,
@@ -27,43 +28,53 @@ const modelData = ({ clicks, boxes, tensor, modelScale }: modeDataProps) => {
   //   tensor,
   //   "modelScale",
   //   modelScale,
-  //   "boxes",
-  //   boxes,
+  //   "bbox",
+  //   bbox,
   // );
   // Check there are input click prompts
   if (clicks) {
+    let clickLength = clicks.length;
+    const padding = bbox ? 2 : 1;
+    pointCoords = new Float32Array(2 * (clickLength + padding));
+    pointLabels = new Float32Array(clickLength + padding);
     // If there is no box input, a single padding point with
     // label -1 and coordinates (0.0, 0.0) should be concatenated
     // so initialize the array to support (n + 1) points.
-    pointCoords = new Float32Array(2 * (n + 2));
-    pointLabels = new Float32Array(n + 2);
 
     // Add clicks and scale to what SAM expects
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < clickLength; i++) {
       pointCoords[2 * i] = clicks[i].x * widthScale;
       pointCoords[2 * i + 1] = clicks[i].y * heightScale;
       pointLabels[i] = clicks[i].clickType;
     }
-  }
-  if (boxes) {
-    for (const box of boxes) {
-      for (let i = n; i < n + box.length; i++) {
-        pointCoords[2 * i] = box[i - n].x * widthScale;
-        pointCoords[2 * i + 1] = box[i - n].y * heightScale;
-        pointLabels[i] = 2 + i - n;
-      }
-    }
-  } else {
-    // Add in the extra point/label when only clicks and no box
-    // The extra point is at (0, 0) with label -1
-    pointCoords[2 * n] = 0.0;
-    pointCoords[2 * n + 1] = 0.0;
-    pointLabels[n] = -1.0;
-  }
 
-  // Create the tensor
-  pointCoordsTensor = new Tensor("float32", pointCoords, [1, n + 2, 2]);
-  pointLabelsTensor = new Tensor("float32", pointLabels, [1, n + 2]);
+    if (bbox) {
+      console.log("bbox loop", bbox)
+      for (let j = 0; j < bbox.length; j++) {
+        // for (let i = n; i < clickLength + bbox.length; i++) {
+          console.log("box ",j, bbox[j])
+          pointCoords[2 * clickLength + j*4] = bbox[j][0].x * widthScale;
+          pointCoords[2 * clickLength + j*4 + 1] = bbox[j][0].y * heightScale;
+          pointLabels[clickLength+j*2] = bbox[j][0].clickType;
+          pointCoords[2 * clickLength + j*4 + 2] = bbox[j][1].x * widthScale;
+          pointCoords[2 * clickLength + j*4 + 3] = bbox[j][1].y * heightScale;
+          pointLabels[clickLength+j*2+1] =  bbox[j][1].clickType;
+        // }
+      }
+    } else {
+      // Add in the extra point/label when only clicks and no box
+      // The extra point is at (0, 0) with label -1
+      pointCoords[2 * clickLength] = 0.0;
+      pointCoords[2 * clickLength + 1] = 0.0;
+      pointLabels[clickLength] = -1.0;
+    }
+    console.log("bbox length", bbox!.length, pointCoords, pointLabels);
+  
+    // Create the tensor
+    pointCoordsTensor = new Tensor("float32", pointCoords, [1, clickLength + padding, 2]);
+    pointLabelsTensor = new Tensor("float32", pointLabels, [1, clickLength + padding]);
+  
+  }
 
   const imageSizeTensor = new Tensor("float32", [
     modelScale.height,

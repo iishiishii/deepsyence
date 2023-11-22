@@ -115,9 +115,9 @@ export default function Layer(props) {
           let updateAmount = (1 / 90) * 100;
           setProgress((prevProgress) => {
             let newProgress = prevProgress + updateAmount;
-            if (newProgress >= 100) {
-              clearInterval(updater);
-              newProgress = 100;
+            if (newProgress >= 90) {
+              // clearInterval(updater);
+              newProgress = 90;
             }
             return newProgress;
           });
@@ -334,12 +334,6 @@ export default function Layer(props) {
         >
           <IconButton onClick={runEncoder}>
             <PlayCircleFilledWhiteIcon />
-          </IconButton>
-          <IconButton
-            sx={{ fontSize: "13px", borderRadius: "5px" }}
-            onClick={handleNiimath}
-          >
-            NiiMath
           </IconButton>
           <IconButton onClick={handleDelete}>
             <DeleteIcon />
