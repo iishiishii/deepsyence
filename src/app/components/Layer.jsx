@@ -59,15 +59,17 @@ export default function Layer(props) {
       let time1 = performance.now();
       await fetch(testURL);
       let time2 = performance.now();
-      return 43783/(time2 - time1);
+      return 43783 / (time2 - time1);
     }
-    
+
     (async () => {
-        // for the purpose of this snippet example, some host with CORS response
-        let rate = await checkResponseTime('https://iishiishii.github.io/deepsyence/process-image.wasm');
-        console.log(rate);
-        setFetchRate(rate);
-      })();
+      // for the purpose of this snippet example, some host with CORS response
+      let rate = await checkResponseTime(
+        "https://iishiishii.github.io/deepsyence/process-image.wasm",
+      );
+      console.log(rate);
+      setFetchRate(rate);
+    })();
   }, []);
 
   const preprocess = (sliceId) => {
@@ -111,17 +113,20 @@ export default function Layer(props) {
       // Load the Segment Anything pre-computed embedding
 
       try {
-        let updater = setInterval(() => {
-          let updateAmount = (1 / 90) * 100;
-          setProgress((prevProgress) => {
-            let newProgress = prevProgress + updateAmount;
-            if (newProgress >= 90) {
-              // clearInterval(updater);
-              newProgress = 90;
-            }
-            return newProgress;
-          });
-        }, (922747008/fetchRate)/30);
+        let updater = setInterval(
+          () => {
+            let updateAmount = (1 / 90) * 100;
+            setProgress((prevProgress) => {
+              let newProgress = prevProgress + updateAmount;
+              if (newProgress >= 90) {
+                // clearInterval(updater);
+                newProgress = 90;
+              }
+              return newProgress;
+            });
+          },
+          922747008 / fetchRate / 30,
+        );
 
         loadNpyTensor(IMAGE_EMBEDDING, "float32")
           .then((embedding) => {

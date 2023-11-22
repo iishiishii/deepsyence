@@ -35,7 +35,13 @@ export default function ModelSelector(props: ModelSelectorProps) {
   return (
     <div className="row mb-2">
       <div className="col-md-10 col-sm-12 mt-1">
-        <select onClick={(e) => {e.stopPropagation()}} ref={selectRef} className="form-select">
+        <select
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          ref={selectRef}
+          className="form-select"
+        >
           {metadata.models.map((model) => (
             <option key={model.id} value={model.id}>
               {model.title}

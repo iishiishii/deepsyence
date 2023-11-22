@@ -18,9 +18,9 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
   const widthScale =
     Math.floor(modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
   const heightScale =
-  Math.floor(modelScale.height * modelScale.samScale + 0.5) / modelScale.height;
+    Math.floor(modelScale.height * modelScale.samScale + 0.5) /
+    modelScale.height;
 
-  console.log("Math.floor(modelScale.width * modelScale.samScale + 0.5)", Math.floor(modelScale.width * modelScale.samScale + 0.5), Math.floor(modelScale.height * modelScale.samScale + 0.5))
   // console.log(
   //   "clicks",
   //   clicks,
@@ -49,16 +49,16 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
     }
 
     if (bbox) {
-      console.log("bbox loop", bbox)
+      console.log("bbox loop", bbox);
       for (let j = 0; j < bbox.length; j++) {
         // for (let i = n; i < clickLength + bbox.length; i++) {
-          console.log("box ",j, bbox[j])
-          pointCoords[2 * clickLength + j*4] = bbox[j][0].x * widthScale;
-          pointCoords[2 * clickLength + j*4 + 1] = bbox[j][0].y * heightScale;
-          pointLabels[clickLength+j*2] = bbox[j][0].clickType;
-          pointCoords[2 * clickLength + j*4 + 2] = bbox[j][1].x * widthScale;
-          pointCoords[2 * clickLength + j*4 + 3] = bbox[j][1].y * heightScale;
-          pointLabels[clickLength+j*2+1] =  bbox[j][1].clickType;
+        console.log("box ", j, bbox[j]);
+        pointCoords[2 * clickLength + j * 4] = bbox[j][0].x * widthScale;
+        pointCoords[2 * clickLength + j * 4 + 1] = bbox[j][0].y * heightScale;
+        pointLabels[clickLength + j * 2] = bbox[j][0].clickType;
+        pointCoords[2 * clickLength + j * 4 + 2] = bbox[j][1].x * widthScale;
+        pointCoords[2 * clickLength + j * 4 + 3] = bbox[j][1].y * heightScale;
+        pointLabels[clickLength + j * 2 + 1] = bbox[j][1].clickType;
         // }
       }
     } else {
@@ -69,11 +69,17 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
       pointLabels[clickLength] = -1.0;
     }
     console.log("bbox length", bbox!.length, pointCoords, pointLabels);
-  
+
     // Create the tensor
-    pointCoordsTensor = new Tensor("float32", pointCoords, [1, clickLength + padding, 2]);
-    pointLabelsTensor = new Tensor("float32", pointLabels, [1, clickLength + padding]);
-  
+    pointCoordsTensor = new Tensor("float32", pointCoords, [
+      1,
+      clickLength + padding,
+      2,
+    ]);
+    pointLabelsTensor = new Tensor("float32", pointLabels, [
+      1,
+      clickLength + padding,
+    ]);
   }
 
   const imageSizeTensor = new Tensor("float32", [
