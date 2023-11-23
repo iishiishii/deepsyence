@@ -14,6 +14,8 @@ import AppContext from "../hooks/createContext";
 import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
+import Tutorial from "./Tutorial";
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 
 export default function NavBar(props) {
   const nv = props.nv;
@@ -26,6 +28,8 @@ export default function NavBar(props) {
   const [clipPlane, setClipPlane] = useState(
     nv.currentClipPlaneIndex > 0 ? true : false,
   );
+  const [tutorialRun, setTutorialRun] = useState(false);
+  let tutorial = tutorialRun ? <Tutorial/> : null;
   const {
     clicks: [, setClicks],
     model: [, setSamModel],
@@ -108,6 +112,11 @@ export default function NavBar(props) {
   useEffect(() => {
     loadSamModel("segment-anything-quant");
   }, []);
+
+  function handleTutorialRun() {
+    console.log("tutorial run", tutorialRun);
+    setTutorialRun(!tutorialRun);
+  }
 
   return (
     <div style={{ width: "100%" }}>
@@ -289,6 +298,17 @@ export default function NavBar(props) {
             <MinusCircleOutlined />
           </IconButton>
         </Tooltip>
+        <Tooltip title="Tutorial">
+          <IconButton
+            sx={{ color: "white" }}
+            onClick={(e) => {
+              handleTutorialRun();
+            }}
+          >
+            <MenuBookIcon sx={{ color: "white" }}/>
+          </IconButton>
+        </Tooltip>
+        {tutorial}
       </Box>
     </div>
   );
