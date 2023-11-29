@@ -128,11 +128,11 @@ export default function NavBar(props) {
             </Button>
           }
           menu={[
-            <DropdownMenuItem onClick={handleAddLayer}>
-              {"Upload File"}
-            </DropdownMenuItem>,
+            // <DropdownMenuItem onClick={handleAddLayer}>
+            //   {"Upload File"}
+            // </DropdownMenuItem>,
             <DropdownMenuItem onClick={handleSaveImage}>
-              {"Download File"}
+              {"Download Annotation"}
             </DropdownMenuItem>,
           ]}
         />

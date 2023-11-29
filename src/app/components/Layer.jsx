@@ -31,7 +31,7 @@ export default function Layer(props) {
   const image = props.image;
   // const [processedImage, setImage] = React.useState(image.img)
   const [detailsOpen, setDetailsOpen] = useState(true);
-  const [visibilityIcon, setVisibilityIcon] = useState(true);
+  const [visibilityIcon, setVisibilityIcon] = useState(image.opacity != 0);
   const [opacity, setOpacity] = useState(image.opacity);
   const [selected, setSelected] = useState();
   const [done, setDone] = useState(false);
@@ -104,10 +104,10 @@ export default function Layer(props) {
     if (image.name === "sub-M2002_ses-a1440_T2w.nii") {
       const IMAGE_EMBEDDING =
         "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2002_ses-a1440_T2w.npy";
-      //   const IMAGE_EMBEDDING = new URL(
-      //     "./model/sub-M2002_ses-a1440_T2w.npy",
-      //     document.baseURI,
-      //   ).href;
+      // const IMAGE_EMBEDDING = new URL(
+      //   "./model/sub-M2002_ses-a1440_T2w.npy",
+      //   document.baseURI,
+      // ).href;
       // Load the Segment Anything pre-computed embedding
       let updateAmount = (1 / 90) * 100;
       setProgress(updateAmount);
@@ -184,6 +184,7 @@ export default function Layer(props) {
 
   const runDecoder = async () => {
     try {
+      if (image.name === "lesion_mask.nii") return;
       if (clicks.length === 0 && bbox.length === 0) return;
       if (embedded === undefined || embedded == null) {
         console.log(`No embedding found for ${image.name}`);
