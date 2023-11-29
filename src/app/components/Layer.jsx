@@ -102,12 +102,12 @@ export default function Layer(props) {
   const runEncoder = async () => {
     // console.log("image name", image);
     if (image.name === "sub-M2002_ses-a1440_T2w.nii") {
-    const IMAGE_EMBEDDING =
-      "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2002_ses-a1440_T2w.npy";
-    //   const IMAGE_EMBEDDING = new URL(
-    //     "./model/sub-M2002_ses-a1440_T2w.npy",
-    //     document.baseURI,
-    //   ).href;
+      const IMAGE_EMBEDDING =
+        "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2002_ses-a1440_T2w.npy";
+      //   const IMAGE_EMBEDDING = new URL(
+      //     "./model/sub-M2002_ses-a1440_T2w.npy",
+      //     document.baseURI,
+      //   ).href;
       // Load the Segment Anything pre-computed embedding
       let updateAmount = (1 / 90) * 100;
       setProgress(updateAmount);

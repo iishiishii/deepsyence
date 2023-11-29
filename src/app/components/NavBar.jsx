@@ -15,7 +15,7 @@ import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import Tutorial from "./Tutorial";
-import MenuBookIcon from '@mui/icons-material/MenuBook';
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 
 export default function NavBar(props) {
   const nv = props.nv;
@@ -29,7 +29,7 @@ export default function NavBar(props) {
     nv.currentClipPlaneIndex > 0 ? true : false,
   );
   const [tutorialRun, setTutorialRun] = useState(false);
-  let tutorial = tutorialRun ? <Tutorial/> : null;
+  let tutorial = tutorialRun ? <Tutorial /> : null;
   const {
     clicks: [, setClicks],
     model: [, setSamModel],
@@ -305,7 +305,7 @@ export default function NavBar(props) {
               handleTutorialRun();
             }}
           >
-            <MenuBookIcon sx={{ color: "white" }}/>
+            <MenuBookIcon sx={{ color: "white" }} />
           </IconButton>
         </Tooltip>
         {tutorial}
