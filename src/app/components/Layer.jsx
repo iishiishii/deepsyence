@@ -101,13 +101,13 @@ export default function Layer(props) {
 
   const runEncoder = async () => {
     // console.log("image name", image);
-    if (image.name === "sub-M2054_ses-b1942_T2w.nii") {
-      const IMAGE_EMBEDDING =
-        "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2054_ses-b1942_T2w_axial_finetuned.npy";
-      // const IMAGE_EMBEDDING = new URL(
-      //   "./model/sub-M2054_ses-b1942_T2w_axial_finetuned.npy",
-      //   document.baseURI,
-      // ).href;
+    if (image.name === "sub-M2002_ses-a1440_T2w.nii") {
+    const IMAGE_EMBEDDING =
+      "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2002_ses-a1440_T2w.npy";
+    //   const IMAGE_EMBEDDING = new URL(
+    //     "./model/sub-M2002_ses-a1440_T2w.npy",
+    //     document.baseURI,
+    //   ).href;
       // Load the Segment Anything pre-computed embedding
       let updateAmount = (1 / 90) * 100;
       setProgress(updateAmount);
@@ -140,8 +140,8 @@ export default function Layer(props) {
             props.onAlert("Embedding loaded", false);
           });
 
-        let topLeft = { x: 0, y: 226, z: 0, clickType: 2 };
-        let bottomRight = { x: 157, y: 0, z: 0, clickType: 3 };
+        let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
+        let bottomRight = { x: 153, y: 214, z: 0, clickType: 3 };
         setBbox({ topLeft, bottomRight });
         setMaskImg(
           new Uint8Array(image.dims[1] * image.dims[2] * image.dims[3]).fill(0),

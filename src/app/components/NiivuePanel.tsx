@@ -52,13 +52,13 @@ export function NiivuePanel({ nv, volumes }: any) {
     if (bbox) {
       let topLeft: modelInputProps = {
         x: info.voxStart[0],
-        y: info.voxStart[1],
+        y: info.voxEnd[1],
         z: info.voxStart[2],
         clickType: 2,
       };
       let bottomRight: modelInputProps = {
         x: info.voxEnd[0],
-        y: info.voxEnd[1],
+        y: info.voxStart[1],
         z: info.voxEnd[2],
         clickType: 3,
       };

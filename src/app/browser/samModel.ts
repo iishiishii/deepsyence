@@ -115,7 +115,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       tensor,
       modelScale,
     });
-    // console.log("feeds ", feeds);
+    // console.log("feeds ", feeds, modelScale);
     if (feeds === undefined) return;
 
     try {
@@ -130,12 +130,13 @@ export class SegmentAnythingModel extends BaseImageModel {
       const outputNames = await session.outputNames();
       const iou = results["iou_predictions"].data as Float32Array;
 
-      const maxIou = iou.indexOf(Math.max(...Array.from(iou)));
+      // const maxIou = iou.indexOf(Math.max(...Array.from(iou)));
+      const maxIou = 0;
       const output = results["masks"].data.slice(
         maxIou * h * w,
         (maxIou + 1) * h * w,
       );
-      // console.log("output ", maxIou, output);
+      // console.log("output ", maxIou, (output as Float32Array).reduce((a, b) => a + b, 0));
       // let rotated = output.reverse();
       const rasImage = maskImage(
         output as Float32Array,

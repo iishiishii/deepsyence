@@ -68,7 +68,7 @@ export const models: ImageMetadata[] = [
       ["encoder", new URL("./model/encoder-quant.onnx", document.baseURI).href],
       [
         "decoder",
-        new URL("./model/sam_finetuned_decoder_quant.onnx", document.baseURI)
+        new URL("./model/sam_finetuned_M2002_decoder_quant_masksigmoid.onnx", document.baseURI)
           .href,
       ],
     ]),

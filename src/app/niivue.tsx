@@ -69,7 +69,7 @@ export default function NiiVue(props: any) {
 
   useEffect(() => {
     nv.addVolumeFromUrl({
-      url: new URL("./model/sub-M2054_ses-b1942_T2w.nii", document.baseURI)
+      url: new URL("./model/sub-M2002_ses-a1440_T2w.nii", document.baseURI)
         .href,
     });
   }, []);
