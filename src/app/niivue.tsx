@@ -71,11 +71,12 @@ export default function NiiVue(props: any) {
     nv.addVolumeFromUrl({
       url: new URL("./model/sub-M2002_ses-a1440_T2w.nii", document.baseURI)
         .href,
-    });
-    nv.addVolumeFromUrl({
-      url: new URL("./model/lesion_mask.nii", document.baseURI).href,
-      colormap: "bluegrn",
-      opacity: 0,
+    }).then(() => {
+      nv.addVolumeFromUrl({
+        url: new URL("./model/lesion_mask.nii", document.baseURI).href,
+        colormap: "bluegrn",
+        opacity: 0,
+      });
     });
   }, []);
 

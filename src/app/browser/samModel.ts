@@ -95,8 +95,8 @@ export class SegmentAnythingModel extends BaseImageModel {
     let name = image.name;
 
     const LONG_SIDE_LENGTH = 1024;
-    let w = image.dims[1];
-    let h = image.dims[2];
+    let w = image.dimsRAS[1];
+    let h = image.dimsRAS[2];
     const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
     const modelScale = {
       samScale: samScale,

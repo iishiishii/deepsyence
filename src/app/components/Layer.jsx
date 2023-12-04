@@ -30,7 +30,7 @@ import CircularWithValueLabel from "./ProgressLoad";
 export default function Layer(props) {
   const image = props.image;
   // const [processedImage, setImage] = React.useState(image.img)
-  const [detailsOpen, setDetailsOpen] = useState(true);
+  const [detailsOpen, setDetailsOpen] = useState(image.opacity != 0);
   const [visibilityIcon, setVisibilityIcon] = useState(image.opacity != 0);
   const [opacity, setOpacity] = useState(image.opacity);
   const [selected, setSelected] = useState();
@@ -144,7 +144,9 @@ export default function Layer(props) {
         let bottomRight = { x: 153, y: 214, z: 0, clickType: 3 };
         setBbox({ topLeft, bottomRight });
         setMaskImg(
-          new Uint8Array(image.dims[1] * image.dims[2] * image.dims[3]).fill(0),
+          new Uint8Array(
+            image.dimsRAS[1] * image.dimsRAS[2] * image.dimsRAS[3],
+          ).fill(0),
         );
       } catch (error) {
         props.onAlert(`error embedding ${error}`);
