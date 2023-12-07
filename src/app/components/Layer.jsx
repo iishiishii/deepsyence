@@ -155,7 +155,7 @@ export default function Layer(props) {
     } else {
       setEmbedded([]);
       const start = 50;
-      const end = Math.floor(image.dims[2]/3*2);
+      const end = Math.floor((image.dims[2] / 3) * 2);
 
       for (let i = 0; i < start; i++) {
         setEmbedded((embedded) => [...embedded, []]);
