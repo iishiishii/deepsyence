@@ -123,7 +123,7 @@ export default function Layer(props) {
               return newProgress;
             });
           },
-          922747008 / fetchRate / 20,
+          922747008 / fetchRate / 10,
         );
 
         loadNpyTensor(IMAGE_EMBEDDING, "float32")
@@ -154,8 +154,8 @@ export default function Layer(props) {
       }
     } else {
       setEmbedded([]);
-      const start = 0;
-      const end = image.dims[2];
+      const start = 50;
+      const end = Math.floor(image.dims[2]/3*2);
 
       for (let i = 0; i < start; i++) {
         setEmbedded((embedded) => [...embedded, []]);
