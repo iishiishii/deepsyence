@@ -703,21 +703,23 @@ iframe {
 
 /* convert hex to filter: https://isotropic.co/tool/hex-color-to-css-filter/ */
 .image-color {
-  filter: invert(75%) sepia(14%) saturate(1112%) hue-rotate(129deg) brightness(82%) contrast(86%);
-  -webkit-filter: invert(75%) sepia(14%) saturate(1112%) hue-rotate(129deg) brightness(82%) contrast(86%);
+  filter: invert(75%) sepia(14%) saturate(1112%) hue-rotate(129deg)
+    brightness(82%) contrast(86%);
+  -webkit-filter: invert(75%) sepia(14%) saturate(1112%) hue-rotate(129deg)
+    brightness(82%) contrast(86%);
 }
 
 @keyframes drag-left-right {
   to {
     left: 30%;
     top: 30%;
-    transform:translate(60%,60%);
+    transform: translate(60%, 60%);
   }
 }
 
 #pic1 {
   position: relative;
-  display:inline-block; /* don't forget this to be able to apply a transform */
+  display: inline-block; /* don't forget this to be able to apply a transform */
   top: 10vh;
   left: 10vh;
   animation: drag-left-right 2s infinite;
@@ -725,7 +727,7 @@ iframe {
 }
 #pic2 {
   position: relative;
-  display:inline-block; 
+  display: inline-block;
   top: 20vh;
   -webkit-animation: appear 1s infinite;
   animation: appear 1s infinite;

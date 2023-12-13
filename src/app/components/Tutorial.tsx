@@ -1,4 +1,10 @@
-import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS, Step } from 'react-joyride';
+import Joyride, {
+  ACTIONS,
+  CallBackProps,
+  EVENTS,
+  STATUS,
+  Step,
+} from "react-joyride";
 import { useState } from "react";
 
 interface State {
@@ -91,13 +97,25 @@ export default function Tutorial() {
     console.log("index", index);
     if (([STATUS.FINISHED, STATUS.SKIPPED] as string[]).includes(status)) {
       // Need to set our running state to false, so we can restart if we click start again.
-      setState({ run: false, mouseClick:mouseClick, stepIndex: 0, steps: steps }); 
-    } else if (([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND] as string[]).includes(type)) {
+      setState({
+        run: false,
+        mouseClick: mouseClick,
+        stepIndex: 0,
+        steps: steps,
+      });
+    } else if (
+      ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND] as string[]).includes(type)
+    ) {
       const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
 
       if (mouseClick && index === 6) {
         setTimeout(() => {
-          setState({ run: true, mouseClick:mouseClick, stepIndex: stepIndex, steps: steps });
+          setState({
+            run: true,
+            mouseClick: mouseClick,
+            stepIndex: stepIndex,
+            steps: steps,
+          });
         }, 400);
       } else if (mouseClick && index === 1) {
         setState({
@@ -108,18 +126,28 @@ export default function Tutorial() {
         });
 
         setTimeout(() => {
-          setState({ run: true, mouseClick:mouseClick, stepIndex: stepIndex, steps: steps });
+          setState({
+            run: true,
+            mouseClick: mouseClick,
+            stepIndex: stepIndex,
+            steps: steps,
+          });
         }, 400);
       } else if (index === 2 && action === ACTIONS.PREV) {
         setState({
           run: false,
           mouseClick: true,
           stepIndex: nextStepIndex,
-          steps: steps
+          steps: steps,
         });
 
         setTimeout(() => {
-          setState({ run: true, mouseClick:false, stepIndex: 0, steps: steps });
+          setState({
+            run: true,
+            mouseClick: false,
+            stepIndex: 0,
+            steps: steps,
+          });
         }, 400);
       } else {
         // Update state to advance the tour
@@ -131,7 +159,6 @@ export default function Tutorial() {
         });
       }
     }
-
   };
 
   const right_click = new URL("./right-click.png", document.baseURI).href;
@@ -139,8 +166,16 @@ export default function Tutorial() {
 
   return (
     <div>
-        {stepIndex === 6 ?  <div className='box'><img className="image-color" id="pic1" width="90" src={right_click}/> </div>: null}
-        {stepIndex === 7 ?  <div className='box'><img className="image-color" id="pic2" width="90" src={left_click}/> </div>: null}
+      {stepIndex === 6 ? (
+        <div className="box">
+          <img className="image-color" id="pic1" width="90" src={right_click} />{" "}
+        </div>
+      ) : null}
+      {stepIndex === 7 ? (
+        <div className="box">
+          <img className="image-color" id="pic2" width="90" src={left_click} />{" "}
+        </div>
+      ) : null}
       <Joyride
         steps={steps}
         continuous={true}
