@@ -688,3 +688,36 @@ iframe {
   cursor: pointer;
   user-select: none;
 }
+
+.box {
+  /* border: solid; */
+  height: 85vmin;
+  width: 85vmin;
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.mouse-guide {
+  position: relative;
+  display:inline-block; /* don't forget this to be able to apply a transform */
+  animation: drag-left-right 2s linear ;
+  left: 10px;
+  top: 10px;
+}
+
+.image-color {
+  filter: invert(100%);
+  -webkit-filter: invert(100%);
+}
+
+@keyframes drag-left-right {
+  to {
+    left: 60%;
+    top: 60%;
+    transform:translate(-60%,-60%);
+  }
+}
