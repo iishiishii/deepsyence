@@ -63,8 +63,13 @@ export default function Tutorial() {
         target: ".niivue",
         title: "Select an ROI for Segmentation",
         content:
-          "Once the processing is done, you can right-drag to create a bounding box. Then, simply left-click on any Region of Interest (ROI) within the image.",
-
+          "Once the processing is done, you can right-drag to create a bounding box.",
+      },
+      {
+        target: ".niivue",
+        title: "Select an ROI for Segmentation",
+        content:
+          "Then, simply left-click on any Region of Interest (ROI) within the image.",
       },
       {
         target: ".navbar-draw",
@@ -133,8 +138,9 @@ export default function Tutorial() {
   const left_click = new URL("./left-click.png", document.baseURI).href;
 
   return (
-    <div className={stepIndex === 6 ? 'box' : ''}>
-        {stepIndex === 6 ? <div className="mouse-guide"> <img className="image-color" width="90" src={right_click} /> </div>  : null}
+    <div>
+        {stepIndex === 6 ?  <div className='box'><img className="image-color" id="pic1" width="90" src={right_click}/> </div>: null}
+        {stepIndex === 7 ?  <div className='box'><img className="image-color" id="pic2" width="90" src={left_click}/> </div>: null}
       <Joyride
         steps={steps}
         continuous={true}

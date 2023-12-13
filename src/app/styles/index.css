@@ -691,33 +691,59 @@ iframe {
 
 .box {
   /* border: solid; */
-  height: 85vmin;
-  width: 85vmin;
+  height: 55vmin;
+  width: 55vmin;
   margin: auto;
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 90px;
+  left: -190px;
   bottom: 0;
   right: 0;
 }
 
-.mouse-guide {
-  position: relative;
-  display:inline-block; /* don't forget this to be able to apply a transform */
-  animation: drag-left-right 2s linear ;
-  left: 10px;
-  top: 10px;
-}
-
+/* convert hex to filter: https://isotropic.co/tool/hex-color-to-css-filter/ */
 .image-color {
-  filter: invert(100%);
-  -webkit-filter: invert(100%);
+  filter: invert(75%) sepia(14%) saturate(1112%) hue-rotate(129deg) brightness(82%) contrast(86%);
+  -webkit-filter: invert(75%) sepia(14%) saturate(1112%) hue-rotate(129deg) brightness(82%) contrast(86%);
 }
 
 @keyframes drag-left-right {
   to {
-    left: 60%;
-    top: 60%;
-    transform:translate(-60%,-60%);
+    left: 30%;
+    top: 30%;
+    transform:translate(60%,60%);
+  }
+}
+
+#pic1 {
+  position: relative;
+  display:inline-block; /* don't forget this to be able to apply a transform */
+  top: 10vh;
+  left: 10vh;
+  animation: drag-left-right 2s infinite;
+  -webkit-animation: drag-left-right 2s infinite;
+}
+#pic2 {
+  position: relative;
+  display:inline-block; 
+  top: 20vh;
+  -webkit-animation: appear 1s infinite;
+  animation: appear 1s infinite;
+}
+
+@-webkit-keyframes appear {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes appear {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }
