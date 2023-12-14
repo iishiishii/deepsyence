@@ -114,7 +114,7 @@ export default function NavBar(props) {
   }, []);
 
   function handleTutorialRun() {
-    console.log("tutorial run", tutorialRun);
+    // console.log("tutorial run", tutorialRun);
     setTutorialRun(!tutorialRun);
   }
 
@@ -280,6 +280,7 @@ export default function NavBar(props) {
         />
         <Tooltip title="Region of Interest point">
           <IconButton
+            className="navbar-foreground-point"
             sx={{ color: "white" }}
             onClick={(e) => {
               setPositivePoints(true);
@@ -290,6 +291,7 @@ export default function NavBar(props) {
         </Tooltip>
         <Tooltip title="Background point">
           <IconButton
+            className="navbar-background-point"
             sx={{ color: "white" }}
             onClick={(e) => {
               setPositivePoints(false);

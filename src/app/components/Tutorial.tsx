@@ -8,23 +8,19 @@ import Joyride, {
 import { useState } from "react";
 
 interface State {
-  run: boolean;
-  mouseClick: boolean;
   stepIndex: number;
   steps: Step[];
 }
 
 export default function Tutorial() {
-  const [{ run, mouseClick, stepIndex, steps }, setState] = useState<State>({
-    run: false,
-    mouseClick: false,
+  const [{ stepIndex, steps }, setState] = useState<State>({
     stepIndex: 0,
     steps: [
       {
         target: "body",
         title: "Welcome to niivue-segmentation",
         content:
-          "This tool allows you to generate Region of Interest (ROI) segmentations and customize labels using the built-in drawing tool.",
+          "This tool allows you to generate lesion segmentations and customize labels using the built-in drawing tool.",
         disableBeacon: true,
         placement: "center",
         styles: {
@@ -33,26 +29,26 @@ export default function Tutorial() {
           },
         },
       },
-      {
-        target: ".niivue",
-        title: "Upload an Image",
-        content: "Drag and drop an image here to get started",
-      },
-      {
-        target: ".navbar-file",
-        title: "Upload an Image",
-        placement: "bottom-start",
-        content:
-          "You can also click the Upload button in the navigation bar to select an image from your computer",
-        disableBeacon: true,
-      },
-      {
-        target: ".navbar-model",
-        title: "Select the Segmentation Model",
-        placement: "bottom-start",
-        content:
-          "Once you have your image loaded, you need to select a segmentation model to process the image.",
-      },
+      // {
+      //   target: ".niivue",
+      //   title: "Upload an Image",
+      //   content: "Drag and drop an image here to get started",
+      // },
+      // {
+      //   target: ".navbar-file",
+      //   title: "Upload an Image",
+      //   placement: "bottom-start",
+      //   content:
+      //     "You can also click the Upload button in the navigation bar to select an image from your computer",
+      //   disableBeacon: true,
+      // },
+      // {
+      //   target: ".navbar-model",
+      //   title: "Select the Segmentation Model",
+      //   placement: "bottom-start",
+      //   content:
+      //     "Once you have your image loaded, you need to select a segmentation model to process the image.",
+      // },
       {
         target: '[data-testid="PlayCircleFilledWhiteIcon"]',
         title: "Start Image Processing",
@@ -67,39 +63,49 @@ export default function Tutorial() {
       },
       {
         target: ".niivue",
-        title: "Select an ROI for Segmentation",
+        title: "Select a region of interest",
         content:
           "Once the processing is done, you can right-drag to create a bounding box.",
       },
       {
         target: ".niivue",
-        title: "Select an ROI for Segmentation",
+        title: "Select a region of interest",
         content:
-          "Then, simply left-click on any Region of Interest (ROI) within the image.",
+          "Then, simply left-click on any region of interest within the image.",
+      },
+      {
+        target: ".navbar-foreground-point",
+        title: "Refine Segmentation",
+        content:
+          "By default, clicking will select the region of interest. Use this button to set clicking for selecting the region of interest.",
+      },
+      {
+        target: ".navbar-background-point",
+        title: "Refine Segmentation",
+        content:
+          "Use this button to set clicking for selecting the background.",
       },
       {
         target: ".navbar-draw",
         title: "Refine Segmentation",
         content:
-          "To customize or refine the segmentation of the selected ROI, use the drawing tools. These tools allow you to add or remove labels, adjust boundaries.",
+          "To customize or refine the segmentation of the selected region of interest, use the drawing tools. These tools allow you to add or remove labels, adjust boundaries.",
       },
       {
         target: ".navbar-file",
         title: "Save Your Segmentation",
         content:
-          "Once you are satisfied with the segmentation and labeling, you can save your work. Click the Download button to save the customized ROI segmentation.",
+          "Once you are satisfied with the segmentation and labeling, you can save your work. Click the Download button to save the customized segmentation.",
       },
     ],
   });
 
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { action, index, status, type } = data;
-    console.log("index", index);
+
     if (([STATUS.FINISHED, STATUS.SKIPPED] as string[]).includes(status)) {
       // Need to set our running state to false, so we can restart if we click start again.
       setState({
-        run: false,
-        mouseClick: mouseClick,
         stepIndex: 0,
         steps: steps,
       });
@@ -108,56 +114,11 @@ export default function Tutorial() {
     ) {
       const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
 
-      if (mouseClick && index === 6) {
-        setTimeout(() => {
-          setState({
-            run: true,
-            mouseClick: mouseClick,
-            stepIndex: stepIndex,
-            steps: steps,
-          });
-        }, 400);
-      } else if (mouseClick && index === 1) {
-        setState({
-          run: false,
-          mouseClick: false,
-          stepIndex: nextStepIndex,
-          steps: steps,
-        });
-
-        setTimeout(() => {
-          setState({
-            run: true,
-            mouseClick: mouseClick,
-            stepIndex: stepIndex,
-            steps: steps,
-          });
-        }, 400);
-      } else if (index === 2 && action === ACTIONS.PREV) {
-        setState({
-          run: false,
-          mouseClick: true,
-          stepIndex: nextStepIndex,
-          steps: steps,
-        });
-
-        setTimeout(() => {
-          setState({
-            run: true,
-            mouseClick: false,
-            stepIndex: 0,
-            steps: steps,
-          });
-        }, 400);
-      } else {
         // Update state to advance the tour
         setState({
-          run: run,
-          mouseClick: false,
           stepIndex: nextStepIndex,
           steps: steps,
         });
-      }
     }
   };
 
@@ -166,12 +127,12 @@ export default function Tutorial() {
 
   return (
     <div>
-      {stepIndex === 6 ? (
+      {stepIndex === 3 ? (
         <div className="box">
           <img className="image-color" id="pic1" width="90" src={right_click} />{" "}
         </div>
       ) : null}
-      {stepIndex === 7 ? (
+      {stepIndex === 4 ? (
         <div className="box">
           <img className="image-color" id="pic2" width="90" src={left_click} />{" "}
         </div>
