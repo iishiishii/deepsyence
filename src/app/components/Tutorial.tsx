@@ -114,11 +114,11 @@ export default function Tutorial() {
     ) {
       const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
 
-        // Update state to advance the tour
-        setState({
-          stepIndex: nextStepIndex,
-          steps: steps,
-        });
+      // Update state to advance the tour
+      setState({
+        stepIndex: nextStepIndex,
+        steps: steps,
+      });
     }
   };
 
