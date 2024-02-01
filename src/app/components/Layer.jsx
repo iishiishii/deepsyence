@@ -15,15 +15,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { processImage } from "../helpers/niimath";
 import { brainExtractionModel } from "../helpers/brainExtractionModel";
-import {
-  convertArrayToImg,
-  imagedataToImage,
-  normalize,
-  padToSquare,
-  resizeLonger,
-  stackSliceToRGB,
-  transposeChannelDim,
-} from "../helpers/imageHelpers";
+import { preprocess } from "../helpers/samModel";
 import npyjs from "npyjs";
 import CircularWithValueLabel from "./ProgressLoad";
 
@@ -71,33 +63,6 @@ export default function Layer(props) {
     })();
   }, []);
 
-  const preprocess = (sliceId) => {
-    const MEAN = [123.675, 116.28, 103.53],
-      STD = [58.395, 57.12, 57.375];
-    const imageRAS = image.img2RAS();
-    const imageArray = imageRAS.slice(
-      image.dims[1] * image.dims[2] * sliceId,
-      image.dims[1] * image.dims[2] * (sliceId + 1),
-    );
-
-    const imageUint8 = new Uint8Array(imageArray);
-    const image3Channels = stackSliceToRGB(imageUint8);
-    const arrayToImage = convertArrayToImg(image3Channels, [
-      image.dims[1],
-      image.dims[2],
-    ]);
-    const resizedImage = resizeLonger(arrayToImage, 1024);
-    const normalizedArray = normalize(resizedImage.bitmap.data, MEAN, STD);
-    const paddedImage = padToSquare(
-      normalizedArray,
-      resizedImage.bitmap.width,
-      resizedImage.bitmap.height,
-      [0, 0, 0],
-    );
-
-    const transposedArray = transposeChannelDim(paddedImage, 3);
-    return transposedArray;
-  };
 
   const runEncoder = async () => {
     // console.log("image name", image);
@@ -109,13 +74,13 @@ export default function Layer(props) {
       //   document.baseURI,
       // ).href;
       // Load the Segment Anything pre-computed embedding
-      let updateAmount = (1 / 90) * 100;
-      setProgress(updateAmount);
+      let UPDATE_AMOUNT = (1 / 90) * 100;
+      setProgress(UPDATE_AMOUNT);
       try {
         let updater = setInterval(
           () => {
             setProgress((prevProgress) => {
-              let newProgress = prevProgress + updateAmount;
+              let newProgress = prevProgress + UPDATE_AMOUNT;
               if (newProgress >= 90) {
                 clearInterval(updater);
                 newProgress = 90;
@@ -162,7 +127,7 @@ export default function Layer(props) {
       }
       try {
         for (let i = start; i < end; i++) {
-          const preprocessedImage = preprocess(i);
+          const preprocessedImage = preprocess(image, i);
           // console.log("samModel", samModel);
           await samModel.process(preprocessedImage).then((result) => {
             if (i === end - 1) {

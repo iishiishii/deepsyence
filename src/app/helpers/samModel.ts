@@ -2,6 +2,43 @@ import * as ort from "onnxruntime-web";
 import { modelInputProps } from "./Interfaces";
 import { modelData } from "./onnxModelAPI";
 import { maskImage } from "./imageHelpers";
+import {
+  convertArrayToImg,
+  imagedataToImage,
+  normalize,
+  padToSquare,
+  resizeLonger,
+  stackSliceToRGB,
+  transposeChannelDim,
+} from "./imageHelpers";
+
+export const preprocess = (image, sliceId) => {
+  const MEAN = [123.675, 116.28, 103.53],
+    STD = [58.395, 57.12, 57.375];
+  const imageRAS = image.img2RAS();
+  const imageArray = imageRAS.slice(
+    image.dims[1] * image.dims[2] * sliceId,
+    image.dims[1] * image.dims[2] * (sliceId + 1),
+  );
+
+  const imageUint8 = new Uint8Array(imageArray);
+  const image3Channels = stackSliceToRGB(imageUint8);
+  const arrayToImage = convertArrayToImg(image3Channels, [
+    image.dims[1],
+    image.dims[2],
+  ]);
+  const resizedImage = resizeLonger(arrayToImage, 1024);
+  const normalizedArray = normalize(resizedImage.bitmap.data, MEAN, STD);
+  const paddedImage = padToSquare(
+    normalizedArray,
+    resizedImage.bitmap.width,
+    resizedImage.bitmap.height,
+    // [0, 0, 0],
+  );
+
+  const transposedArray = transposeChannelDim(paddedImage, 3);
+  return transposedArray;
+};
 
 export const samDecoder = async (
   image: any,

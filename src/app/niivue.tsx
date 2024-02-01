@@ -7,7 +7,6 @@ import { LayersPanel } from "./components/LayersPanel";
 import { NiivuePanel } from "./components/NiivuePanel";
 import Layer from "./components/Layer";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-// import WorkerBuilder from "./components/WorkerBuilder";
 import { ViewType } from "./types";
 /* @ts-ignore */
 import {
@@ -59,8 +58,6 @@ const nv = new Niivue({
   multiplanarForceRender: false,
   onLocationChange: handleIntensityChange,
 });
-
-// let instance = new WorkerBuilder(Worker);
 
 export default function NiiVue(props: any) {
   const [openLayers, setOpenLayers] = useState(false);

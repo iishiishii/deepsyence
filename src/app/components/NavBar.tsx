@@ -16,6 +16,7 @@ import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import Tutorial from "./Tutorial";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import MenuItem from "@mui/material/MenuItem";
 
 export default function NavBar(props) {
   const nv = props.nv;
@@ -35,7 +36,7 @@ export default function NavBar(props) {
     model: [, setSamModel],
     modelLoading: [, setLoading],
     positivePoints: [, setPositivePoints],
-  } = useContext(AppContext);
+  } = useContext(AppContext)!;
 
   function nvUpdateCrosshair3D() {
     nv.opts.show3Dcrosshair = !crosshair3D;
@@ -89,8 +90,8 @@ export default function NavBar(props) {
     input.multiple = true;
 
     input.onchange = async function () {
-      for (let i = 0; i < input.files.length; i++) {
-        props.onAddLayer(input.files[i]);
+      for (let i = 0; i < input.files!.length; i++) {
+        props.onAddLayer(input.files![i]);
       }
     };
 
@@ -185,9 +186,10 @@ export default function NavBar(props) {
               ></NVTick>
             </DropdownMenuItem>,
             <DropdownNestedMenuItem
-              label="Display Mode"
+            parentMenuOpen={true} 
+            label="Display Mode"
               rightIcon={<ArrowRight />}
-              menu={[
+>
                 <DropdownMenuItem
                   selected={sliceType == "axial"}
                   onClick={(e) => {
@@ -196,7 +198,7 @@ export default function NavBar(props) {
                   }}
                 >
                   Axial
-                </DropdownMenuItem>,
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   selected={sliceType == "coronal"}
                   onClick={(e) => {
@@ -205,7 +207,7 @@ export default function NavBar(props) {
                   }}
                 >
                   Coronal
-                </DropdownMenuItem>,
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   selected={sliceType == "sagittal"}
                   onClick={(e) => {
@@ -214,7 +216,7 @@ export default function NavBar(props) {
                   }}
                 >
                   Sagittal
-                </DropdownMenuItem>,
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   selected={sliceType == "multi"}
                   onClick={(e) => {
@@ -223,7 +225,7 @@ export default function NavBar(props) {
                   }}
                 >
                   Multi
-                </DropdownMenuItem>,
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   selected={sliceType == "3d"}
                   onClick={(e) => {
@@ -232,14 +234,14 @@ export default function NavBar(props) {
                   }}
                 >
                   3D
-                </DropdownMenuItem>,
-              ]}
-            />,
+                </DropdownMenuItem>
+              </DropdownNestedMenuItem>,
             <DropdownNestedMenuItem
+              parentMenuOpen={true} 
               label="Colormap"
               rightIcon={<ArrowRight />}
-              menu={[
-                <DropdownMenuItem
+            >
+                <MenuItem
                   selected={color == "blue2red"}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -247,8 +249,8 @@ export default function NavBar(props) {
                   }}
                 >
                   Blue2red
-                </DropdownMenuItem>,
-                <DropdownMenuItem
+                </MenuItem>
+                <MenuItem
                   selected={color == "gray"}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -256,8 +258,8 @@ export default function NavBar(props) {
                   }}
                 >
                   Gray
-                </DropdownMenuItem>,
-                <DropdownMenuItem
+                </MenuItem>
+                <MenuItem
                   selected={color == "freesurfer"}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -265,9 +267,9 @@ export default function NavBar(props) {
                   }}
                 >
                   Freesurfer
-                </DropdownMenuItem>,
-              ]}
-            />,
+                </MenuItem>
+
+              </DropdownNestedMenuItem>
           ]}
         />
         <Dropdown

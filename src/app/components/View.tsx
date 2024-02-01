@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ReactNode } from "react";
 import { alpha, styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
@@ -7,7 +8,23 @@ import Divider from "@mui/material/Divider";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import NVTick from "./Tick";
 
-const StyledMenu = styled((props) => (
+export type ViewProps = {
+  /** Define o conteúdo da View. */
+  children?: React.ReactNode;
+  /** Define a tag da View. */
+  tag?: 'div' | 'section' | 'header' | 'footer' | 'main' | 'nav';
+};
+
+export interface MenuProps {
+  readonly id: string;
+  readonly open: boolean;
+  readonly children?: ReactNode;
+  readonly MenuListProps?
+  readonly anchorEl?: null | HTMLElement;
+  readonly onClose?: () => void;
+}
+
+const StyledMenu = styled(( props: MenuProps ) => (
   <Menu
     elevation={0}
     anchorOrigin={{
@@ -19,7 +36,7 @@ const StyledMenu = styled((props) => (
       horizontal: "right",
     }}
     {...props}
-  />
+  >{props.children}</Menu>
 ))(({ theme }) => ({
   "& .MuiPaper-root": {
     borderRadius: 6,
@@ -50,7 +67,7 @@ const StyledMenu = styled((props) => (
   },
 }));
 
-export default function View(props) {
+export default function View(props){
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
