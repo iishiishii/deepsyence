@@ -25,7 +25,6 @@ export default function Layer(props) {
   const [detailsOpen, setDetailsOpen] = useState(image.opacity != 0);
   const [visibilityIcon, setVisibilityIcon] = useState(image.opacity != 0);
   const [opacity, setOpacity] = useState(image.opacity);
-  const [selected, setSelected] = useState();
   const [done, setDone] = useState(false);
   const {
     clicks: [clicks],
@@ -34,10 +33,10 @@ export default function Layer(props) {
     model: [samModel],
     penMode: [penMode],
     modelLoading: [loading],
-  } = useContext(AppContext);
+  } = useContext(AppContext)!;
   const [progress, setProgress] = useState(0);
   const [fetchRate, setFetchRate] = useState(0);
-  const [embedded, setEmbedded] = useState(null);
+  const [embedded, setEmbedded] = useState([] as ort.Tensor[] || null);
   let Visibility = visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />;
   let ArrowIcon = detailsOpen ? (
     <KeyboardArrowUpIcon />
@@ -66,7 +65,12 @@ export default function Layer(props) {
 
   const runEncoder = async () => {
     // console.log("image name", image);
-    if (image.name === "sub-M2002_ses-a1440_T2w.nii") {
+    setMaskImg(
+      new Uint8Array(
+        image.dimsRAS[1] * image.dimsRAS[2] * image.dimsRAS[3],
+      ).fill(0),
+    );
+    if (image.name === "sub-M2002_ses-a1440_T2.nii") {
       const IMAGE_EMBEDDING =
         "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2002_ses-a1440_T2w.npy";
       // const IMAGE_EMBEDDING = new URL(
@@ -108,31 +112,29 @@ export default function Layer(props) {
         let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
         let bottomRight = { x: 153, y: 214, z: 0, clickType: 3 };
         setBbox({ topLeft, bottomRight });
-        setMaskImg(
-          new Uint8Array(
-            image.dimsRAS[1] * image.dimsRAS[2] * image.dimsRAS[3],
-          ).fill(0),
-        );
       } catch (error) {
         props.onAlert(`error embedding ${error}`);
         console.log("error embedding", error);
       }
     } else {
-      setEmbedded([]);
-      const start = 50;
-      const end = Math.floor((image.dims[2] / 3) * 2);
+      // setEmbedded([]);
+      const start = 90;
+      const end = 92;
 
       for (let i = 0; i < start; i++) {
-        setEmbedded((embedded) => [...embedded, []]);
+        setEmbedded((embedded) => [...embedded, new ort.Tensor("float32", [], [0])]);
       }
       try {
         for (let i = start; i < end; i++) {
           const preprocessedImage = preprocess(image, i);
           // console.log("samModel", samModel);
-          await samModel.process(preprocessedImage).then((result) => {
+          await samModel!.process(preprocessedImage).then((result) => {
             if (i === end - 1) {
+              console.log("embedding", [...embedded, ...result!.embedding!]);
               // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
-              setEmbedded((embedded) => [...embedded, ...result.embedding]);
+              setEmbedded((embedded) => [...embedded, ...result!.embedding!]);
+              console.log("embedding after", embedded, embedded.length);
+
             }
           });
           setProgress((prevProgress) =>
@@ -142,6 +144,10 @@ export default function Layer(props) {
           );
         }
         setDone(!done);
+        let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
+        let bottomRight = { x: 153, y: 214, z: 0, clickType: 3 };
+        setBbox({ topLeft, bottomRight });
+        console.log("embedded end", embedded);
       } catch (error) {
         props.onAlert(`Encoder ${error}`);
         console.log("error encoder", error);
@@ -152,7 +158,7 @@ export default function Layer(props) {
   const runDecoder = async () => {
     try {
       if (image.name === "lesion_mask.nii") return;
-      if (clicks.length === 0 && bbox.length === 0) return;
+      if (clicks!.length === 0 && !bbox) return;
       if (embedded === undefined || embedded == null) {
         console.log(`No embedding found for ${image.name}`);
         throw new Error(
@@ -166,12 +172,13 @@ export default function Layer(props) {
         console.log("No model found");
         throw new Error("No model found. Select one in the top bar.");
       }
+      console.log("running decoder, embedding: ", embedded, maskImg);
 
       await samModel
-        .processDecoder(image, embedded[clicks[0].z], clicks, bbox, maskImg)
+        .processDecoder(image, embedded[clicks![0].z], clicks!, bbox!)
         .then((result) => {
           props.onModel(image.id, image.name, result);
-          setMaskImg(result);
+          setMaskImg(result!);
         });
     } catch (error) {
       props.onAlert(`Decoder ${error}`);
@@ -181,10 +188,15 @@ export default function Layer(props) {
 
   // pre-computed image embedding
   useEffect(() => {
+    console.log("running decoder, embedding: ", embedded);
+
     if (clicks && penMode < 0) {
+      console.log("running decoder, embedding: ", embedded);
+
       // Check if clicks changed and selected is not null
       runDecoder();
     }
+    console.log("clicks", clicks);
   }, [clicks]);
 
   // Decode a Numpy file into a tensor.
@@ -193,7 +205,7 @@ export default function Layer(props) {
     let npArray = await npLoader.load(tensorFile).then((npArray) => {
       return npArray;
     });
-    let tensorArray = [];
+    let tensorArray: ort.TypedTensor<"string">[] = [];
     for (let i = 0; i < npArray.shape[0]; i++) {
       let slice = npArray.data.slice(
         i * npArray.shape[1] * npArray.shape[2] * npArray.shape[3],
@@ -259,8 +271,8 @@ export default function Layer(props) {
         <ListItemIcon
           onClick={(e) => {
             e.stopPropagation();
-            visibilityToggle(image);
-            handleOpacity(image.opacity);
+            visibilityToggle();
+            handleOpacity();
           }}
         >
           {Visibility}

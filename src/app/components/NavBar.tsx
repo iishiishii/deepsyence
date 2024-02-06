@@ -106,7 +106,7 @@ export default function NavBar(props) {
   const loadSamModel = async (id) => {
     setLoading(true);
     const result = await ImageModel.create(id);
-    setSamModel(result.model);
+    setSamModel(result.model as SegmentAnythingModel);
     setLoading(false);
   };
 

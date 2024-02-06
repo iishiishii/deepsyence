@@ -6,7 +6,7 @@
 
 import React, { useState } from "react";
 import { boundingBox, modelInputProps } from "../helpers/Interfaces";
-import { ImageModel } from "../browser/imageModel";
+import { SegmentAnythingModel } from "../browser/samModel";
 import AppContext from "./createContext";
 import * as ort from "onnxruntime-web";
 
@@ -19,7 +19,7 @@ const AppContextProvider = (props: {
   const [maskImg, setMaskImg] = useState<Uint8Array | null>(null);
   const [penMode, setPenMode] = useState<number>(-1);
   const [filled, setFilled] = useState<boolean>(false);
-  const [model, setModel] = useState<ImageModel | null>(null);
+  const [model, setModel] = useState<SegmentAnythingModel | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [positivePoints, setPositivePoints] = useState<boolean>(true);
 

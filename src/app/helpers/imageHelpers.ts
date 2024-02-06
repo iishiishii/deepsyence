@@ -535,6 +535,33 @@ export function normalize(
   return float32Data;
 }
 
+export function normalizeArray(
+  image: Float32Array,
+  mean: number[],
+  std: number[],
+): Float32Array {
+  // 1. Get buffer data from image and create R, G, and B arrays.
+  // let imageBufferData = new Float32Array(image);
+  // console.log("imageBufferData", imageBufferData, imageBufferData.reduce((a,b) => a+b, 0))
+
+  // // 2. Loop through the image buffer and extract the R, G, and B channels
+  const float32Data = new Float32Array(image.length);
+
+  for (let i = 0; i < image.length; i += 3) {
+    float32Data[(3 * i)] = (image[i] - mean[0]) / std[0];
+
+    float32Data[(3 * i) + 1] = (image[i + 1] - mean[1]) / std[1];
+
+    float32Data[(3 * i) + 2] = (image[i + 2] - mean[2]) / std[2];
+
+    // skip data[i + 3] to filter out the alpha channel
+  }
+  // console.log("minVal", minVal, maxVal)
+  // console.log("normalized array", float32Data, float32Data.reduce((a,b) => a+b, 0))
+
+  return float32Data;
+}
+
 export const overlayMasksOnImage = async (
   image: Jimp,
   masks: [Jimp],

@@ -1,15 +1,59 @@
-To set up the app and install packages using yarn and start the app, you can follow these instructions:
+# Welcome to Deepsyence 👋
+![Version](https://img.shields.io/badge/version-0.1.0-blue.svg?cacheSeconds=2592000)
 
-Make sure you have Node.js and Yarn installed on your system.
+Deep learning in the browser for medical images.
 
-You will need to have Rust installed. You can get it by visiting https://rustup.rs. This'll also install Cargo, Rust's package/project manager.
+These models are finetuned with interactive points and bounding boxes. The models are then quantized to small sizes for inference in the browser.
 
-Open a terminal or command prompt in the root directory of your app.
+This app aims to reduce the constraints that hold back the deployment of deep learning models for medical images.
 
-Run the following command to install the required packages:
+## Features
+### Convert model checkpoint to onnx format for inference in the browser
+- Upload checkpoint file and config file with preprocessing steps
+- Convert to onnx format
+- Download onnx model
+### Model deployment
+- Upload onnx model
+- Upload test image
+- Run inference interactively within image
+### Annotation tool
+- Get automated annotations from model
+- Interactively correct annotations
+- Download annotations
 
-`yarn`
 
-Once the packages are installed, you can start the app by running the following command:
+### ✨ [Demo](https://iishiishii.github.io/deepsyence/)
 
-`yarn start`
+## Development setup
+Install dependencies
+```sh
+yarn install
+```
+
+then start the application
+
+```sh
+yarn start
+```
+
+Run tests
+
+```sh
+yarn run test
+```
+
+## Author
+
+👤 **Thuy Dao**
+
+* Github: [@iishiishii](https://github.com/iishiishii)
+
+## 🤝 Contributing
+
+Contributions, issues and feature requests are welcome!
+
+Feel free to check [issues page](https://github.com/iishiishii/deepsyence/issues). 
+
+## Show your support
+
+Give a ⭐️ if this project helped you!

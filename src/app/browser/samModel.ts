@@ -4,6 +4,46 @@ import { BaseImageModel } from "./base";
 import { boundingBox, modelInputProps } from "../helpers/Interfaces";
 import { modelData } from "../helpers/onnxModelAPI";
 import { maskImage } from "../helpers/imageHelpers";
+import {
+  convertArrayToImg,
+  imagedataToImage,
+  normalize,
+  normalizeArray,
+  padToSquare,
+  resize,
+  resizeLonger,
+  stackSliceToRGB,
+  transposeChannelDim,
+} from "../helpers/imageHelpers";
+
+export const preprocess = (image, sliceId) => {
+  const MEAN = [51.38294238181054, 51.38294238181054, 51.38294238181054],
+    STD = [64.6803075646777, 64.6803075646777, 64.6803075646777];
+  const imageRAS = image.img2RAS();
+  const imageArray = imageRAS.slice(
+    image.dims[1] * image.dims[2] * sliceId,
+    image.dims[1] * image.dims[2] * (sliceId + 1),
+  );
+  const normalizedArray = normalizeArray(imageArray, MEAN, STD);
+
+  const imageUint8 = new Uint8Array(normalizedArray);
+
+  const image3Channels = stackSliceToRGB(imageUint8);
+  const arrayToImage = convertArrayToImg(image3Channels, [
+    image.dims[1],
+    image.dims[2],
+  ]);
+  const resizedImage = resize(arrayToImage, 1024, 1024);
+  // const paddedImage = padToSquare(
+  //   normalizedArray,
+  //   resizedImage.bitmap.width,
+  //   resizedImage.bitmap.height,
+  //   // [0, 0, 0],
+  // );
+
+  const transposedArray = transposeChannelDim(resizedImage.bitmap.data, 3);
+  return transposedArray;
+};
 
 export type SAMResult = {
   elapsed: number;
@@ -16,7 +56,7 @@ export class SegmentAnythingModel extends BaseImageModel {
 
   process = async (input: any): Promise<SAMResult | undefined> => {
     const start = new Date();
-    let embedding: Float32Array | undefined;
+    // let embedding: Float32Array | undefined;
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       throw Error("the model is not initialized");
     }
@@ -40,6 +80,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       embedding: this.encoderResult,
       elapsed: elapsed,
     };
+    console.log("result ", result);
     return result;
   };
 
@@ -69,7 +110,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log("inference time ", inferenceTime);
 
       // const output = results[session.outputNames[0]].data;
-      // console.log("output ", this.encoderResult);
+      console.log("output ", this.encoderResult);
       // console.log("output sum ", output.reduce((a: number,b: number) => a+b,0))
       // return output;
     } catch (e) {
@@ -79,17 +120,21 @@ export class SegmentAnythingModel extends BaseImageModel {
 
   processDecoder = async (
     image: any,
-    tensor: ort.TypedTensor<"string">,
+    tensor: ort.Tensor | undefined,
     clicks: modelInputProps[],
     bbox: boundingBox,
-    mask: Uint8Array,
+    // mask: Uint8Array,
     // onModel: (id: any, name: any, array: any) => void,
   ): Promise<Uint8Array | undefined> => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       console.log("the model is not initialized");
       throw Error("the model is not initialized");
     }
-
+    if (
+      tensor === undefined
+    ) {
+      throw Error("you must provide an image as an input");
+    }
     const start = new Date();
     let id = image.id;
     let name = image.name;
@@ -121,7 +166,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     try {
       // feed inputs and run
       let results = await session.run(feeds);
-
+      let mask = new Uint8Array(w * h * image.dimsRAS[3]);
       const end = new Date();
       const inferenceTime = end.getTime() - start.getTime();
       console.log("inference time ", inferenceTime);
