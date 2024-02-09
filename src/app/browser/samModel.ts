@@ -6,6 +6,7 @@ import { modelData } from "../helpers/onnxModelAPI";
 import { maskImage } from "../helpers/imageHelpers";
 import {
   convertArrayToImg,
+  downloadToFile,
   imagedataToImage,
   normalize,
   normalizeArray,
@@ -15,35 +16,8 @@ import {
   stackSliceToRGB,
   transposeChannelDim,
 } from "../helpers/imageHelpers";
+import * as nj from "numjs";
 
-export const preprocess = (image, sliceId) => {
-  const MEAN = [51.38294238181054, 51.38294238181054, 51.38294238181054],
-    STD = [64.6803075646777, 64.6803075646777, 64.6803075646777];
-  const imageRAS = image.img2RAS();
-  const imageArray = imageRAS.slice(
-    image.dims[1] * image.dims[2] * sliceId,
-    image.dims[1] * image.dims[2] * (sliceId + 1),
-  );
-  const normalizedArray = normalizeArray(imageArray, MEAN, STD);
-
-  const imageUint8 = new Uint8Array(normalizedArray);
-
-  const image3Channels = stackSliceToRGB(imageUint8);
-  const arrayToImage = convertArrayToImg(image3Channels, [
-    image.dims[1],
-    image.dims[2],
-  ]);
-  const resizedImage = resize(arrayToImage, 1024, 1024);
-  // const paddedImage = padToSquare(
-  //   normalizedArray,
-  //   resizedImage.bitmap.width,
-  //   resizedImage.bitmap.height,
-  //   // [0, 0, 0],
-  // );
-
-  const transposedArray = transposeChannelDim(resizedImage.bitmap.data, 3);
-  return transposedArray;
-};
 
 export type SAMResult = {
   elapsed: number;
@@ -54,7 +28,47 @@ export class SegmentAnythingModel extends BaseImageModel {
   encoderResult: ort.Tensor[] | undefined = [];
   // decoderResult: Uint8Array[] = new Uint8Array(width * height * sliceId).fill(0);
 
-  process = async (input: any): Promise<SAMResult | undefined> => {
+
+  preprocess = (image, sliceId) => {
+    try {
+      const MEAN = [51.38294238181054, 51.38294238181054, 51.38294238181054],
+        STD = [64.6803075646777, 64.6803075646777, 64.6803075646777];
+      const imageRAS = image.img2RAS();
+      console.log("imageRAS ", imageRAS);
+      const imageArray = imageRAS.slice(
+        image.dims[1] * image.dims[2] * sliceId,
+        image.dims[1] * image.dims[2] * (sliceId + 1),
+      );
+      console.log("imageArray ", imageArray);
+      const normalizedArray = normalizeArray(imageArray, MEAN, STD);
+      console.log("normalizedArray ", normalizedArray);
+      const imageUint8 = nj.array(nj.uint8(normalizedArray));
+      console.log("imageUint8 ", imageUint8);
+      const resizedImage = nj.images.resize(imageUint8, 1024, 1024);
+      console.log("resizedImage ", resizedImage);
+      // const image3Channels = stackSliceToRGB(resizedImage);
+      // const arrayToImage = convertArrayToImg(image3Channels, [
+      //   image.dims[1],
+      //   image.dims[2],
+      // ]);
+      // const arrayToImage = nj.array(image3Channels);
+      // const paddedImage = padToSquare(
+      //   normalizedArray,
+      //   resizedImage.bitmap.width,
+      //   resizedImage.bitmap.height,
+      //   // [0, 0, 0],
+      // );
+      // console.log("image3Channels ", image3Channels);
+      downloadToFile(resizedImage.tolist()[0], "/home/thuy/repo/deepsyence/resizedImage.jpg", "image/jpeg");
+      // const transposedArray = transposeChannelDim(resizedImage.bitmap.data, 3);
+      return resizedImage.tolist()[0];
+    } catch (e) {
+      console.log(`failed to inference ONNX model: ${e}. `);
+      throw Error(`failed to inference ONNX model: ${e}. `);
+    }
+  };
+
+  process = async (input: any, sliceId: number): Promise<SAMResult | undefined> => {
     const start = new Date();
     // let embedding: Float32Array | undefined;
     if (!this.initialized || !this.preprocessor || !this.sessions) {
@@ -62,7 +76,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     }
     if (input !== undefined) {
       console.log("input ", input);
-      await this.processEncoder(input);
+      await this.processEncoder(input, sliceId);
     } else {
       console.log("didnt run encoder ", input);
     }
@@ -84,13 +98,13 @@ export class SegmentAnythingModel extends BaseImageModel {
     return result;
   };
 
-  processEncoder = async (image: any) => {
+  processEncoder = async (image: any, sliceId: number) => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       throw Error("the model is not initialized");
     }
     const start = new Date();
-    // const result = this.preprocessor.process(image);
-    const tensor = new ort.Tensor("float32", image, [1, 3, 1024, 1024]);
+    const preprocessImage = this.preprocess(image, sliceId);
+    const tensor = new ort.Tensor("float32", preprocessImage, [1, 3, 1024, 1024]);
     const session = this.sessions.get("encoder");
     if (!session) {
       throw Error("the encoder is absent in the sessions map");

@@ -37,12 +37,6 @@ export default function Layer(props) {
   const [progress, setProgress] = useState(0);
   const [fetchRate, setFetchRate] = useState(0);
   const [embedded, setEmbedded] = useState([] as ort.Tensor[] || null);
-  let Visibility = visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />;
-  let ArrowIcon = detailsOpen ? (
-    <KeyboardArrowUpIcon />
-  ) : (
-    <KeyboardArrowDownIcon />
-  );
 
   useEffect(() => {
     async function checkResponseTime(testURL) {
@@ -119,16 +113,16 @@ export default function Layer(props) {
     } else {
       // setEmbedded([]);
       const start = 90;
-      const end = 92;
+      const end = 91;
 
       for (let i = 0; i < start; i++) {
         setEmbedded((embedded) => [...embedded, new ort.Tensor("float32", [], [0])]);
       }
       try {
         for (let i = start; i < end; i++) {
-          const preprocessedImage = preprocess(image, i);
+          // const preprocessedImage = preprocess(image, i);
           // console.log("samModel", samModel);
-          await samModel!.process(preprocessedImage).then((result) => {
+          await samModel!.process(image, i).then((result) => {
             if (i === end - 1) {
               console.log("embedding", [...embedded, ...result!.embedding!]);
               // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
@@ -275,7 +269,7 @@ export default function Layer(props) {
             handleOpacity();
           }}
         >
-          {Visibility}
+          {visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />}
         </ListItemIcon>
         <Typography
           sx={{
@@ -287,7 +281,7 @@ export default function Layer(props) {
           {image.name}
         </Typography>
         <IconButton onClick={handleDetails} style={{ marginRight: "auto" }}>
-          {ArrowIcon}
+          {detailsOpen ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
         </IconButton>
         {/* <Box style={{ marginRight: "auto" }}>{DoneIcon}</Box> */}
         <CircularWithValueLabel progress={progress} />

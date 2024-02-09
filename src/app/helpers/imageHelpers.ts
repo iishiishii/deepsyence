@@ -1,5 +1,7 @@
 import * as Jimp from "jimp";
 import { Tensor } from "onnxruntime-web";
+import * as nj from "numjs";
+import Resize from "./resize";
 
 export function transposeChannelDim(
   imageBufferData: Buffer | Float32Array,
@@ -178,7 +180,7 @@ export function imagedataToImage(imagedata: Float32Array | Uint8Array) {
     .replace("image/png", "image/octet-stream"); // here is the most important part because if you dont replace you will get a DOM 18 exception.
 }
 
-const downloadToFile = (
+export const downloadToFile = (
   content: Float32Array | Uint8Array,
   filename: string,
   contentType: string = "text/plain",
