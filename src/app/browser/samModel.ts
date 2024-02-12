@@ -17,7 +17,7 @@ import {
   transposeChannelDim,
 } from "../helpers/imageHelpers";
 import * as nj from "numjs";
-
+import { NiiArrayHandler } from "../helpers/resizeArray";
 
 export type SAMResult = {
   elapsed: number;
@@ -34,7 +34,11 @@ export class SegmentAnythingModel extends BaseImageModel {
       const MEAN = [51.38294238181054, 51.38294238181054, 51.38294238181054],
         STD = [64.6803075646777, 64.6803075646777, 64.6803075646777];
       const imageRAS = image.img2RAS();
-      console.log("imageRAS ", imageRAS);
+      const arr = new NiiArrayHandler(imageRAS).reshape(image.dimsRAS[1], image.dimsRAS[2], image.dimsRAS[3]);
+      console.log("imageRAS ", imageRAS, arr);
+      
+      let random = nj.ones(new Uint8Array([1024, 1024, 3]));
+      console.log("random ", random);
       const imageArray = imageRAS.slice(
         image.dims[1] * image.dims[2] * sliceId,
         image.dims[1] * image.dims[2] * (sliceId + 1),

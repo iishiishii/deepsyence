@@ -2,6 +2,7 @@ import * as Jimp from "jimp";
 import { Tensor } from "onnxruntime-web";
 import * as nj from "numjs";
 import Resize from "./resize";
+import { NiiArray } from "./resizeArray";
 
 export function transposeChannelDim(
   imageBufferData: Buffer | Float32Array,
@@ -82,6 +83,15 @@ export function resize(
   height: number = 224,
   mode: string = "bicubicInterpolation",
 ): Jimp {
+  return image.resize(width, height, mode);
+}
+
+export function resizeNii(
+  image: NiiArray,
+  width: number = 224,
+  height: number = 224,
+  mode: string = "bicubicInterpolation",
+): nj.NdArray {
   return image.resize(width, height, mode);
 }
 
