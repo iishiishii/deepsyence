@@ -15,9 +15,24 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { processImage } from "../helpers/niimath";
 import { brainExtractionModel } from "../helpers/brainExtractionModel";
-import { preprocess } from "../helpers/samModel";
 import npyjs from "npyjs";
 import CircularWithValueLabel from "./ProgressLoad";
+import {
+  convertArrayToImg,
+  downloadToFile,
+  filterZero,
+  imagedataToImage,
+  normalize,
+  normalizeArray,
+  padToSquare,
+  resize,
+  resizeLonger,
+  stackSliceToRGB,
+  standardizeArray,
+  transposeChannelDim,
+} from "../helpers/imageHelpers";
+import * as nj from "numjs";
+import { cv } from "opencv-wasm";
 
 export default function Layer(props) {
   const image = props.image;
@@ -56,6 +71,54 @@ export default function Layer(props) {
     })();
   }, []);
 
+
+  const preprocessVolume = (image) => {
+    try {
+      const MEAN = [51.38294238181054, 51.38294238181054, 51.38294238181054],
+        STD = [64.6803075646777, 64.6803075646777, 64.6803075646777];
+      // const imageRAS = image.img2RAS();
+      
+      const standardizedArray = standardizeArray(image, MEAN, STD);
+      const normalizedArray = normalizeArray(standardizedArray, image.calMax, image.calMin);
+      console.log("normalizedArray ", normalizedArray);
+      const filteredArray = filterZero(image, normalizedArray);
+      const imageUint8 = new Uint8Array(filteredArray);
+
+      console.log("imageUint8 ", imageUint8);
+
+      return imageUint8;
+    } catch (e) {
+      console.log(`failed to preprocess volume: ${e}. `);
+      throw Error(`failed to preprocess volume: ${e}. `);
+    }
+  }
+
+  const preprocess = (image, sliceId) => {
+    try {
+      const imageRAS = image.img2RAS();
+
+      const imageArray = preprocessVolume(imageRAS);
+      console.log("imageArray ", imageArray);
+
+      const sliceArray = imageArray.slice(
+        image.dims[1] * image.dims[2] * sliceId,
+        image.dims[1] * image.dims[2] * (sliceId + 1),
+      );
+      const src = cv.matFromArray(image.dims[1], image.dims[2], cv.CV_8UC1, sliceArray);
+      let dst = new cv.Mat(1024, 1024);
+
+      const resizedImage = cv.resize(src, dst, dst.size(), 0, 0, cv.INTER_LINEAR);
+      console.log("resizedImage ", resizedImage);
+      const image3Channels = stackSliceToRGB(resizedImage.data);
+
+      downloadToFile(new Uint8Array(image3Channels), "/home/thuy/repo/deepsyence/resizedImage.jpg", "image/jpeg");
+      // const transposedArray = transposeChannelDim(resizedImage.bitmap.data, 3);
+      return image3Channels;
+    } catch (e) {
+      console.log(`failed to inference ONNX model: ${e}. `);
+      throw Error(`failed to inference ONNX model: ${e}. `);
+    }
+  };
 
   const runEncoder = async () => {
     // console.log("image name", image);
@@ -120,9 +183,9 @@ export default function Layer(props) {
       }
       try {
         for (let i = start; i < end; i++) {
-          // const preprocessedImage = preprocess(image, i);
+          const preprocessedImage = preprocess(image, i);
           // console.log("samModel", samModel);
-          await samModel!.process(image, i).then((result) => {
+          await samModel!.process(preprocessedImage, i).then((result) => {
             if (i === end - 1) {
               console.log("embedding", [...embedded, ...result!.embedding!]);
               // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array

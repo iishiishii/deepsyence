@@ -2,7 +2,6 @@ import * as Jimp from "jimp";
 import { Tensor } from "onnxruntime-web";
 import * as nj from "numjs";
 import Resize from "./resize";
-import { NiiArray } from "./resizeArray";
 
 export function transposeChannelDim(
   imageBufferData: Buffer | Float32Array,
@@ -86,15 +85,6 @@ export function resize(
   return image.resize(width, height, mode);
 }
 
-export function resizeNii(
-  image: NiiArray,
-  width: number = 224,
-  height: number = 224,
-  mode: string = "bicubicInterpolation",
-): nj.NdArray {
-  return image.resize(width, height, mode);
-}
-
 export async function getImageTensorFromPath(
   path: string,
   dims: number[] = [1, 3, 224, 224],
@@ -142,9 +132,9 @@ export function maskImage(
   return mask;
 }
 
-export function stackSliceToRGB(buffer: Uint8Array): Uint8Array {
+export function stackSliceToRGB(buffer: Float32Array): Float32Array {
   let bufferLength = buffer.length,
-    result = new Uint8Array(bufferLength * 3);
+    result = new Float32Array(bufferLength * 3);
 
   for (let i = 0; i < bufferLength; i++) {
     result[3 * i] = buffer[i];
@@ -547,7 +537,7 @@ export function normalize(
   return float32Data;
 }
 
-export function normalizeArray(
+export function standardizeArray(
   image: Float32Array,
   mean: number[],
   std: number[],
@@ -557,14 +547,14 @@ export function normalizeArray(
   // console.log("imageBufferData", imageBufferData, imageBufferData.reduce((a,b) => a+b, 0))
 
   // // 2. Loop through the image buffer and extract the R, G, and B channels
-  const float32Data = new Float32Array(image.length);
+  let float32Data = new Float32Array(image.length);
 
-  for (let i = 0; i < image.length; i += 3) {
-    float32Data[(3 * i)] = (image[i] - mean[0]) / std[0];
+  for (let i = 0; i < image.length; i += 1) {
+    float32Data[(i)] = (image[i] - mean[0]) / std[0];
 
-    float32Data[(3 * i) + 1] = (image[i + 1] - mean[1]) / std[1];
+    // float32Data[(3 * i) + 1] = (image[i + 1] - mean[1]) / std[1];
 
-    float32Data[(3 * i) + 2] = (image[i + 2] - mean[2]) / std[2];
+    // float32Data[(3 * i) + 2] = (image[i + 2] - mean[2]) / std[2];
 
     // skip data[i + 3] to filter out the alpha channel
   }
@@ -572,6 +562,27 @@ export function normalizeArray(
   // console.log("normalized array", float32Data, float32Data.reduce((a,b) => a+b, 0))
 
   return float32Data;
+}
+
+export function normalizeArray(
+  array: Float32Array,
+  max: number,
+  min: number,
+): Float32Array {
+  let normalizedArray = new Float32Array(array.length);
+  for (let i = 0; i < array.length; i++) {
+    normalizedArray[i] = (array[i] - min) / (max - min) * 255;
+  }
+  return normalizedArray;
+}
+
+export function filterZero(oriArray: Float32Array, preprocessedArray: Float32Array): Float32Array {
+  for (let i = 0; i < oriArray.length; i++) {
+    if (oriArray[i] === 0) {
+      preprocessedArray[i] = 0;
+    }
+  }
+  return preprocessedArray;
 }
 
 export const overlayMasksOnImage = async (

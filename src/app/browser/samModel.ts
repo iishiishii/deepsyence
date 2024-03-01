@@ -1,23 +1,10 @@
+/* eslint-disable */
 import * as ort from "onnxruntime-web";
 import Jimp from "jimp";
 import { BaseImageModel } from "./base";
 import { boundingBox, modelInputProps } from "../helpers/Interfaces";
 import { modelData } from "../helpers/onnxModelAPI";
 import { maskImage } from "../helpers/imageHelpers";
-import {
-  convertArrayToImg,
-  downloadToFile,
-  imagedataToImage,
-  normalize,
-  normalizeArray,
-  padToSquare,
-  resize,
-  resizeLonger,
-  stackSliceToRGB,
-  transposeChannelDim,
-} from "../helpers/imageHelpers";
-import * as nj from "numjs";
-import { NiiArrayHandler } from "../helpers/resizeArray";
 
 export type SAMResult = {
   elapsed: number;
@@ -28,51 +15,10 @@ export class SegmentAnythingModel extends BaseImageModel {
   encoderResult: ort.Tensor[] | undefined = [];
   // decoderResult: Uint8Array[] = new Uint8Array(width * height * sliceId).fill(0);
 
-
-  preprocess = (image, sliceId) => {
-    try {
-      const MEAN = [51.38294238181054, 51.38294238181054, 51.38294238181054],
-        STD = [64.6803075646777, 64.6803075646777, 64.6803075646777];
-      const imageRAS = image.img2RAS();
-      const arr = new NiiArrayHandler(imageRAS).reshape(image.dimsRAS[1], image.dimsRAS[2], image.dimsRAS[3]);
-      console.log("imageRAS ", imageRAS, arr);
-      
-      let random = nj.ones(new Uint8Array([1024, 1024, 3]));
-      console.log("random ", random);
-      const imageArray = imageRAS.slice(
-        image.dims[1] * image.dims[2] * sliceId,
-        image.dims[1] * image.dims[2] * (sliceId + 1),
-      );
-      console.log("imageArray ", imageArray);
-      const normalizedArray = normalizeArray(imageArray, MEAN, STD);
-      console.log("normalizedArray ", normalizedArray);
-      const imageUint8 = nj.array(nj.uint8(normalizedArray));
-      console.log("imageUint8 ", imageUint8);
-      const resizedImage = nj.images.resize(imageUint8, 1024, 1024);
-      console.log("resizedImage ", resizedImage);
-      // const image3Channels = stackSliceToRGB(resizedImage);
-      // const arrayToImage = convertArrayToImg(image3Channels, [
-      //   image.dims[1],
-      //   image.dims[2],
-      // ]);
-      // const arrayToImage = nj.array(image3Channels);
-      // const paddedImage = padToSquare(
-      //   normalizedArray,
-      //   resizedImage.bitmap.width,
-      //   resizedImage.bitmap.height,
-      //   // [0, 0, 0],
-      // );
-      // console.log("image3Channels ", image3Channels);
-      downloadToFile(resizedImage.tolist()[0], "/home/thuy/repo/deepsyence/resizedImage.jpg", "image/jpeg");
-      // const transposedArray = transposeChannelDim(resizedImage.bitmap.data, 3);
-      return resizedImage.tolist()[0];
-    } catch (e) {
-      console.log(`failed to inference ONNX model: ${e}. `);
-      throw Error(`failed to inference ONNX model: ${e}. `);
-    }
-  };
-
-  process = async (input: any, sliceId: number): Promise<SAMResult | undefined> => {
+  process = async (
+    input: any,
+    sliceId: number
+  ): Promise<SAMResult | undefined> => {
     const start = new Date();
     // let embedding: Float32Array | undefined;
     if (!this.initialized || !this.preprocessor || !this.sessions) {
@@ -102,13 +48,17 @@ export class SegmentAnythingModel extends BaseImageModel {
     return result;
   };
 
-  processEncoder = async (image: any, sliceId: number) => {
+  processEncoder = async (preprocessImage: any, sliceId: number) => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       throw Error("the model is not initialized");
     }
     const start = new Date();
-    const preprocessImage = this.preprocess(image, sliceId);
-    const tensor = new ort.Tensor("float32", preprocessImage, [1, 3, 1024, 1024]);
+    // const preprocessImage = preprocess(image, sliceId);
+    const tensor = new ort.Tensor(
+      "float32",
+      preprocessImage,
+      [1, 3, 1024, 1024]
+    );
     const session = this.sessions.get("encoder");
     if (!session) {
       throw Error("the encoder is absent in the sessions map");
@@ -140,7 +90,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     image: any,
     tensor: ort.Tensor | undefined,
     clicks: modelInputProps[],
-    bbox: boundingBox,
+    bbox: boundingBox
     // mask: Uint8Array,
     // onModel: (id: any, name: any, array: any) => void,
   ): Promise<Uint8Array | undefined> => {
@@ -148,9 +98,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log("the model is not initialized");
       throw Error("the model is not initialized");
     }
-    if (
-      tensor === undefined
-    ) {
+    if (tensor === undefined) {
       throw Error("you must provide an image as an input");
     }
     const start = new Date();
@@ -197,7 +145,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       const maxIou = 0;
       const output = results["masks"].data.slice(
         maxIou * h * w,
-        (maxIou + 1) * h * w,
+        (maxIou + 1) * h * w
       );
       // console.log("output ", maxIou, (output as Float32Array).reduce((a, b) => a + b, 0));
       // let rotated = output.reverse();
@@ -206,7 +154,7 @@ export class SegmentAnythingModel extends BaseImageModel {
         w,
         h,
         clicks[0].z,
-        mask,
+        mask
       );
       // console.log("rasImage ", rasImage);
       // onModel(id, name, rasImage);
