@@ -65,13 +65,15 @@ export const models: ImageMetadata[] = [
     configPath:
       "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
     modelPaths: new Map<string, string>([
-      ["encoder", new URL("./model/encoder-quant.onnx", document.baseURI).href],
+      [
+        "encoder",
+        new URL("./model/efficient_sam_vitt_encoder.onnx", document.baseURI)
+          .href,
+      ],
       [
         "decoder",
-        new URL(
-          "./model/sam_finetuned_M2002_decoder_quant_masksigmoid.onnx",
-          document.baseURI,
-        ).href,
+        new URL("./model/efficient_sam_vitt_decoder.onnx", document.baseURI)
+          .href,
       ],
     ]),
     preprocessorPath:

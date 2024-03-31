@@ -1,6 +1,11 @@
 const webpack = require("webpack");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const WriteFilePlugin = require("write-file-webpack-plugin");
+const path = require("path");
 
 module.exports = function override(config) {
+  console.log(path.resolve(__dirname, "node_modules/opencv-wasm/opencv.js"));
+
   const fallback = config.resolve.fallback || {};
   Object.assign(fallback, {
     crypto: false, // require.resolve("crypto-browserify") can be polyfilled here if needed
@@ -23,12 +28,34 @@ module.exports = function override(config) {
     }),
   ]);
   config.ignoreWarnings = [/Failed to parse source map/];
+
+  // config.module.rules[0] = { parser: { requireEnsure: true } };
+  // console.log(config.module.rules);
+
+  config.plugins.push(
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: "node_modules/opencv-wasm/opencv.wasm",
+          to: "static/js",
+        },
+      ],
+    }),
+  );
+  config.plugins.push(new WriteFilePlugin());
   config.module.rules.push({
-    test: /\.(js|mjs|jsx)$/,
-    enforce: "pre",
-    loader: require.resolve("source-map-loader"),
-    resolve: {
-      fullySpecified: false,
+    test: /wasm-opencv.js\.js$/,
+    loader: "exports-loader",
+    options: {
+      exports: "cv",
+    },
+  });
+
+  config.module.rules.push({
+    test: /opencv\.wasm$/,
+    loader: "file-loader",
+    options: {
+      publicPath: "build/static/js",
     },
   });
   return config;

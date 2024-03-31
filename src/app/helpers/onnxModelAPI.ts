@@ -15,12 +15,14 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
   let pointCoords;
   let pointLabels;
 
-  const widthScale =
-    Math.floor(modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
-  const heightScale =
-    Math.floor(modelScale.height * modelScale.samScale + 0.5) /
-    modelScale.height;
+  // const widthScale =
+  //   Math.floor(modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
+  // const heightScale =
+  //   Math.floor(modelScale.height * modelScale.samScale + 0.5) /
+  //   modelScale.height;
 
+  const widthScale = 1,
+    heightScale = 1;
   // console.log(
   //   "clicks",
   //   clicks,
@@ -34,7 +36,7 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
   // Check there are input click prompts
   if (clicks) {
     let clickLength = clicks.length;
-    const padding = bbox ? 2 : 1;
+    const padding = bbox ? 2 : 0;
     pointCoords = new Float32Array(2 * (clickLength + padding));
     pointLabels = new Float32Array(clickLength + padding);
     // If there is no box input, a single padding point with
@@ -59,27 +61,29 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
     } else {
       // Add in the extra point/label when only clicks and no box
       // The extra point is at (0, 0) with label -1
-      pointCoords[2 * clickLength] = 0.0;
-      pointCoords[2 * clickLength + 1] = 0.0;
-      pointLabels[clickLength] = -1.0;
+      // pointCoords[2 * clickLength] = 0.0;
+      // pointCoords[2 * clickLength + 1] = 0.0;
+      // pointLabels[clickLength] = -1.0;
     }
-    // console.log("bbox length", pointCoords, pointLabels);
+    console.log("bbox length", pointCoords, pointLabels);
 
     // Create the tensor
     pointCoordsTensor = new Tensor("float32", pointCoords, [
+      1,
       1,
       clickLength + padding,
       2,
     ]);
     pointLabelsTensor = new Tensor("float32", pointLabels, [
       1,
+      1,
       clickLength + padding,
     ]);
   }
 
-  const imageSizeTensor = new Tensor("float32", [
-    modelScale.height,
+  const imageSizeTensor = new Tensor("int64", [
     modelScale.width,
+    modelScale.height,
   ]);
 
   if (pointCoordsTensor === undefined || pointLabelsTensor === undefined)
@@ -96,11 +100,9 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
 
   return {
     image_embeddings: imageEmbedding,
-    point_coords: pointCoordsTensor,
-    point_labels: pointLabelsTensor,
+    batched_point_coords: pointCoordsTensor,
+    batched_point_labels: pointLabelsTensor,
     orig_im_size: imageSizeTensor,
-    mask_input: maskInput,
-    has_mask_input: hasMaskInput,
   };
 };
 

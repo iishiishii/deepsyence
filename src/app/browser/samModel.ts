@@ -5,6 +5,7 @@ import { BaseImageModel } from "./base";
 import { boundingBox, modelInputProps } from "../helpers/Interfaces";
 import { modelData } from "../helpers/onnxModelAPI";
 import { maskImage } from "../helpers/imageHelpers";
+import { transposeChannelDim } from "../helpers/imageHelpers";
 
 export type SAMResult = {
   elapsed: number;
@@ -17,7 +18,8 @@ export class SegmentAnythingModel extends BaseImageModel {
 
   process = async (
     input: any,
-    sliceId: number
+    // sliceId: number,
+    dim: number[],
   ): Promise<SAMResult | undefined> => {
     const start = new Date();
     // let embedding: Float32Array | undefined;
@@ -25,8 +27,8 @@ export class SegmentAnythingModel extends BaseImageModel {
       throw Error("the model is not initialized");
     }
     if (input !== undefined) {
-      console.log("input ", input);
-      await this.processEncoder(input, sliceId);
+      console.log("input ", input, dim);
+      await this.processEncoder(input, dim);
     } else {
       console.log("didnt run encoder ", input);
     }
@@ -48,17 +50,22 @@ export class SegmentAnythingModel extends BaseImageModel {
     return result;
   };
 
-  processEncoder = async (preprocessImage: any, sliceId: number) => {
+  processEncoder = async (
+    preprocessImage: any,
+    // sliceId: number,
+    dim: number[],
+  ) => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       throw Error("the model is not initialized");
     }
     const start = new Date();
     // const preprocessImage = preprocess(image, sliceId);
-    const tensor = new ort.Tensor(
-      "float32",
-      preprocessImage,
-      [1, 3, 1024, 1024]
-    );
+    const tensor = new ort.Tensor("float32", preprocessImage, [
+      1,
+      3,
+      dim[1],
+      dim[0],
+    ]);
     const session = this.sessions.get("encoder");
     if (!session) {
       throw Error("the encoder is absent in the sessions map");
@@ -66,8 +73,8 @@ export class SegmentAnythingModel extends BaseImageModel {
     console.log("session ", session);
 
     const feeds: Record<string, ort.Tensor> = {};
-    feeds["x"] = tensor;
-    // console.log("feeds ", feeds);
+    feeds["batched_images"] = tensor;
+    console.log("feeds ", feeds, dim);
     try {
       const outputData = await session.run(feeds);
       const outputNames = await session.outputNames();
@@ -79,7 +86,13 @@ export class SegmentAnythingModel extends BaseImageModel {
 
       // const output = results[session.outputNames[0]].data;
       console.log("output ", this.encoderResult);
-      // console.log("output sum ", output.reduce((a: number,b: number) => a+b,0))
+      console.log(
+        "output sum ",
+        (output.data as Float32Array).reduce(
+          (a: number, b: number) => a + b,
+          0,
+        ),
+      );
       // return output;
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `);
@@ -90,7 +103,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     image: any,
     tensor: ort.Tensor | undefined,
     clicks: modelInputProps[],
-    bbox: boundingBox
+    bbox: boundingBox,
     // mask: Uint8Array,
     // onModel: (id: any, name: any, array: any) => void,
   ): Promise<Uint8Array | undefined> => {
@@ -126,7 +139,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       tensor,
       modelScale,
     });
-    // console.log("feeds ", feeds, modelScale);
+    console.log("feeds ", feeds, modelScale);
     if (feeds === undefined) return;
 
     try {
@@ -143,9 +156,23 @@ export class SegmentAnythingModel extends BaseImageModel {
 
       // const maxIou = iou.indexOf(Math.max(...Array.from(iou)));
       const maxIou = 0;
-      const output = results["masks"].data.slice(
-        maxIou * h * w,
-        (maxIou + 1) * h * w
+      // const output = results["output_masks"].data.slice(
+      //   maxIou * h * w,
+      //   (maxIou + 1) * h * w,
+      // );
+      // await cv.loadOpenCV();
+      let output =
+        // inverseTransposeChannelDim(
+        results["output_masks"].data as Float32Array;
+      //   3,
+      // );
+
+      // const src = cv.matFromArray(w, h, cv.CV_32F, output as Float32Array);
+      // let dst = new cv.Mat(w, h, cv.CV_32FC3);
+      console.log(
+        "decoder output",
+        results["output_masks"],
+        (output as Float32Array).reduce((a, b) => a + b, 0),
       );
       // console.log("output ", maxIou, (output as Float32Array).reduce((a, b) => a + b, 0));
       // let rotated = output.reverse();
@@ -154,7 +181,7 @@ export class SegmentAnythingModel extends BaseImageModel {
         w,
         h,
         clicks[0].z,
-        mask
+        mask,
       );
       // console.log("rasImage ", rasImage);
       // onModel(id, name, rasImage);

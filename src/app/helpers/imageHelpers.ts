@@ -119,7 +119,7 @@ export function maskImage(
   mask: Uint8Array,
 ): Uint8Array {
   // let output = new Array(width * height * sliceId).fill(0); // fill to selected slice
-  const threshold = 0.5;
+  const threshold = 0;
   try {
     for (let i = 0; i < input.length; i++) {
       mask[width * height * sliceId + i] = input[i] > threshold ? 1 : 0;
@@ -132,7 +132,9 @@ export function maskImage(
   return mask;
 }
 
-export function stackSliceToRGB(buffer: Float32Array): Float32Array {
+export function stackSliceToRGB(
+  buffer: Float32Array | Uint8Array,
+): Float32Array {
   let bufferLength = buffer.length,
     result = new Float32Array(bufferLength * 3);
 
@@ -163,7 +165,11 @@ function addChannelDim(buffer: Float32Array | Uint8Array): Uint8Array {
   return result;
 }
 
-export function imagedataToImage(imagedata: Float32Array | Uint8Array) {
+export function imagedataToImage(
+  imagedata: Float32Array | Uint8Array,
+  width: number,
+  height: number,
+) {
   let addedChannel = addChannelDim(imagedata);
   console.log("addedChannel", addedChannel);
   let imageUint8Clamped = new Uint8ClampedArray(addedChannel);
@@ -171,8 +177,8 @@ export function imagedataToImage(imagedata: Float32Array | Uint8Array) {
 
   let canvas = document.createElement("canvas");
   let ctx = canvas.getContext("2d");
-  canvas.width = imageData.width;
-  canvas.height = imageData.height;
+  canvas.width = width | imageData.width;
+  canvas.height = height | imageData.height;
   ctx!.putImageData(imageData, 0, 0);
 
   window.location.href = canvas
@@ -550,7 +556,7 @@ export function standardizeArray(
   let float32Data = new Float32Array(image.length);
 
   for (let i = 0; i < image.length; i += 1) {
-    float32Data[(i)] = (image[i] - mean[0]) / std[0];
+    float32Data[i] = (image[i] - mean[0]) / std[0];
 
     // float32Data[(3 * i) + 1] = (image[i + 1] - mean[1]) / std[1];
 
@@ -571,12 +577,16 @@ export function normalizeArray(
 ): Float32Array {
   let normalizedArray = new Float32Array(array.length);
   for (let i = 0; i < array.length; i++) {
-    normalizedArray[i] = (array[i] - min) / (max - min) * 255;
+    // normalizedArray[i] = ((array[i] - min) / (max - min)) * 255;
+    normalizedArray[i] = array[i] / max;
   }
   return normalizedArray;
 }
 
-export function filterZero(oriArray: Float32Array, preprocessedArray: Float32Array): Float32Array {
+export function filterZero(
+  oriArray: Float32Array,
+  preprocessedArray: Float32Array,
+): Float32Array {
   for (let i = 0; i < oriArray.length; i++) {
     if (oriArray[i] === 0) {
       preprocessedArray[i] = 0;
