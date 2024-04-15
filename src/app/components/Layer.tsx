@@ -53,7 +53,7 @@ export default function Layer(props) {
   } = useContext(AppContext)!;
   const [progress, setProgress] = useState(0);
   const [fetchRate, setFetchRate] = useState(0);
-  const [embedded, setEmbedded] = useState([] as ort.Tensor[] || null);
+  // const [embedded, setEmbedded] = useState([] as ort.Tensor[] || null);
 
   useEffect(() => {
     async function checkResponseTime(testURL) {
@@ -180,7 +180,7 @@ export default function Layer(props) {
         loadNpyTensor(IMAGE_EMBEDDING, "float32")
           .then((embedding) => {
             if (embedding) {
-              setEmbedded([...embedding]);
+              // setEmbedded([...embedding]);
             } else {
               console.debug("Server didn't start in time");
             }
@@ -203,23 +203,23 @@ export default function Layer(props) {
       const start = 90;
       const end = 91;
 
-      for (let i = 0; i < start; i++) {
-        setEmbedded((embedded) => [...embedded, new ort.Tensor("float32", [], [0])]);
-      }
+      // for (let i = 0; i < start; i++) {
+      //   setEmbedded((embedded) => [...embedded, new ort.Tensor("float32", [], [0])]);
+      // }
       try {
         // const imageArray = preprocessVolume(image);
         for (let i = start; i < end; i++) {
           console.log("image.dimsRAS[1], image.dimsRAS[2]", image.dimsRAS[1], image.dimsRAS[2])
           // swap height and width to get row major order from npy array to column order
-          await samModel!.process(image, i).then((result) => {
-            if (i === end - 1) {
-              console.log("embedding", [...embedded, ...result!.embedding!]);
+          await samModel!.process(image, i) //.then((result) => {
+            // if (i === end - 1) {
+              // console.log("embedding", [...embedded, ...result!.embedding!]);
               // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
-              setEmbedded((embedded) => [...embedded, ...result!.embedding!]);
-              console.log("embedding after", embedded, embedded.length);
+              // setEmbedded((embedded) => [...embedded, ...result!.embedding!]);
+              // console.log("embedding after", embedded, embedded.length);
 
-            }
-            });
+            // }
+            // });
             setProgress((prevProgress) =>
               prevProgress >= 100
                 ? 100
@@ -230,7 +230,7 @@ export default function Layer(props) {
         let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
         let bottomRight = { x: 153, y: 214, z: 0, clickType: 3 };
         // setBbox({ topLeft, bottomRight });
-        console.log("embedded end", embedded);
+        // console.log("embedded end", embedded);
       } catch (error) {
         props.onAlert(`Encoder ${error}`);
         console.log("error encoder", error);
@@ -242,12 +242,12 @@ export default function Layer(props) {
     try {
       if (image.name === "lesion_mask.nii") return;
       if (clicks!.length === 0 && !bbox) return;
-      if (embedded === undefined || embedded == null) {
-        console.log(`No embedding found for ${image.name}`);
-        throw new Error(
-          `No embedding found for ${image.name}. Please click the play button to run encoder.`,
-        );
-      }
+      // if (embedded === undefined || embedded == null) {
+      //   console.log(`No embedding found for ${image.name}`);
+      //   throw new Error(
+      //     `No embedding found for ${image.name}. Please click the play button to run encoder.`,
+      //   );
+      // }
       if (loading) {
         throw new Error("Model is loading. Please wait.");
       }
@@ -255,10 +255,10 @@ export default function Layer(props) {
         console.log("No model found");
         throw new Error("No model found. Select one in the top bar.");
       }
-      console.log("running decoder, embedding: ", embedded, maskImg);
+      // console.log("running decoder, embedding: ", embedded, maskImg);
 
       await samModel
-        .processDecoder(image, embedded[clicks![0].z], clicks!, bbox!)
+        .processDecoder(image, clicks![0].z, clicks!, bbox!)
         .then((result) => {
           props.onModel(image.id, image.name, result);
           setMaskImg(result!);
@@ -271,10 +271,10 @@ export default function Layer(props) {
 
   // pre-computed image embedding
   useEffect(() => {
-    console.log("running decoder, embedding: ", embedded);
+    // console.log("running decoder, embedding: ", embedded);
 
     if (clicks && penMode < 0) {
-      console.log("running decoder, embedding: ", embedded);
+      // console.log("running decoder, embedding: ", embedded);
 
       // Check if clicks changed and selected is not null
       runDecoder();

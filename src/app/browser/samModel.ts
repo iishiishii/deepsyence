@@ -11,6 +11,7 @@ export type SAMResult = {
 };
 
 export class SegmentAnythingModel extends BaseImageModel {
+  private lastProcessedVolume: any;
   encoderResult: ort.Tensor[] | undefined = [];
 
   process = async (
@@ -24,7 +25,13 @@ export class SegmentAnythingModel extends BaseImageModel {
     }
     if (volume !== undefined) {
       console.log("input ", volume);
-      this.preprocessor.processVolume(volume);
+      if (this.lastProcessedVolume !== volume) {
+        this.preprocessor.processVolume(volume);
+        this.lastProcessedVolume = volume;
+        for (let i = 90; i < 91; i++) {
+          this.encoderResult?.concat(new ort.Tensor("float32", [], [0]));
+        }
+      }
       await this.processEncoder(sliceId);
     } else {
       console.log("didnt run encoder ", volume);
@@ -67,7 +74,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       const outputData = await session.run(feeds);
       const outputNames = await session.outputNames();
       const output = outputData[outputNames[0]];
-      this.encoderResult = this.encoderResult!.concat(output);
+      this.encoderResult![sliceId] = output;
       const end = new Date();
       const inferenceTime = end.getTime() - start.getTime();
       console.log("inference time ", inferenceTime);
@@ -86,7 +93,8 @@ export class SegmentAnythingModel extends BaseImageModel {
 
   processDecoder = async (
     image: any,
-    tensor: ort.Tensor | undefined,
+    sliceId: number,
+    // tensor: ort.Tensor | undefined,
     clicks: modelInputProps[],
     bbox: boundingBox
     // mask: Uint8Array,
@@ -96,12 +104,10 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log("the model is not initialized");
       throw Error("the model is not initialized");
     }
-    if (tensor === undefined) {
+    if (this.encoderResult === undefined) {
       throw Error("you must provide an image as an input");
     }
     const start = new Date();
-    let id = image.id;
-    let name = image.name;
 
     const LONG_SIDE_LENGTH = 1024;
     let w = image.dimsRAS[2];
@@ -117,6 +123,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log("the decoder is absent in the sessions map");
       throw Error("the decoder is absent in the sessions map");
     }
+    const tensor = this.encoderResult[sliceId];
     // prepare feeds. use model input names as keys
     const feeds = modelData({
       clicks,
