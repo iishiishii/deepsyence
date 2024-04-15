@@ -1,11 +1,9 @@
 /* eslint-disable */
 import * as ort from "onnxruntime-web";
-import Jimp from "jimp";
 import { BaseImageModel } from "./base";
 import { boundingBox, modelInputProps } from "../helpers/Interfaces";
 import { modelData } from "../helpers/onnxModelAPI";
 import { maskImage } from "../helpers/imageHelpers";
-import { transposeChannelDim } from "../helpers/imageHelpers";
 
 export type SAMResult = {
   elapsed: number;
@@ -14,29 +12,28 @@ export type SAMResult = {
 
 export class SegmentAnythingModel extends BaseImageModel {
   encoderResult: ort.Tensor[] | undefined = [];
-  // decoderResult: Uint8Array[] = new Uint8Array(width * height * sliceId).fill(0);
 
   process = async (
-    input: any,
-    // sliceId: number,
-    dim: number[],
+    volume: any,
+    sliceId: number
   ): Promise<SAMResult | undefined> => {
     const start = new Date();
     // let embedding: Float32Array | undefined;
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       throw Error("the model is not initialized");
     }
-    if (input !== undefined) {
-      console.log("input ", input, dim);
-      await this.processEncoder(input, dim);
+    if (volume !== undefined) {
+      console.log("input ", volume);
+      this.preprocessor.processVolume(volume);
+      await this.processEncoder(sliceId);
     } else {
-      console.log("didnt run encoder ", input);
+      console.log("didnt run encoder ", volume);
     }
 
-    if (this.encoderResult === undefined && input === undefined) {
+    if (this.encoderResult === undefined && volume === undefined) {
       throw Error("you must provide an image as an input");
     }
-    if (input === undefined) {
+    if (volume === undefined) {
       return undefined;
     }
 
@@ -50,22 +47,13 @@ export class SegmentAnythingModel extends BaseImageModel {
     return result;
   };
 
-  processEncoder = async (
-    preprocessImage: any,
-    // sliceId: number,
-    dim: number[],
-  ) => {
+  processEncoder = async (sliceId: number) => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       throw Error("the model is not initialized");
     }
     const start = new Date();
-    // const preprocessImage = preprocess(image, sliceId);
-    const tensor = new ort.Tensor("float32", preprocessImage, [
-      1,
-      3,
-      dim[1],
-      dim[0],
-    ]);
+    const result = this.preprocessor.process(sliceId);
+
     const session = this.sessions.get("encoder");
     if (!session) {
       throw Error("the encoder is absent in the sessions map");
@@ -73,8 +61,8 @@ export class SegmentAnythingModel extends BaseImageModel {
     console.log("session ", session);
 
     const feeds: Record<string, ort.Tensor> = {};
-    feeds["batched_images"] = tensor;
-    console.log("feeds ", feeds, dim);
+    feeds["batched_images"] = result.tensor;
+    console.log("feeds ", feeds);
     try {
       const outputData = await session.run(feeds);
       const outputNames = await session.outputNames();
@@ -88,10 +76,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log("output ", this.encoderResult);
       console.log(
         "output sum ",
-        (output.data as Float32Array).reduce(
-          (a: number, b: number) => a + b,
-          0,
-        ),
+        (output.data as Float32Array).reduce((a: number, b: number) => a + b, 0)
       );
       // return output;
     } catch (e) {
@@ -103,7 +88,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     image: any,
     tensor: ort.Tensor | undefined,
     clicks: modelInputProps[],
-    bbox: boundingBox,
+    bbox: boundingBox
     // mask: Uint8Array,
     // onModel: (id: any, name: any, array: any) => void,
   ): Promise<Uint8Array | undefined> => {
@@ -119,8 +104,8 @@ export class SegmentAnythingModel extends BaseImageModel {
     let name = image.name;
 
     const LONG_SIDE_LENGTH = 1024;
-    let w = image.dimsRAS[1];
-    let h = image.dimsRAS[2];
+    let w = image.dimsRAS[2];
+    let h = image.dimsRAS[1];
     const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
     const modelScale = {
       samScale: samScale,
@@ -172,7 +157,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log(
         "decoder output",
         results["output_masks"],
-        (output as Float32Array).reduce((a, b) => a + b, 0),
+        (output as Float32Array).reduce((a, b) => a + b, 0)
       );
       // console.log("output ", maxIou, (output as Float32Array).reduce((a, b) => a + b, 0));
       // let rotated = output.reverse();
@@ -181,7 +166,7 @@ export class SegmentAnythingModel extends BaseImageModel {
         w,
         h,
         clicks[0].z,
-        mask,
+        mask
       );
       // console.log("rasImage ", rasImage);
       // onModel(id, name, rasImage);

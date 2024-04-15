@@ -12,7 +12,7 @@ export enum ModelType {
 
 export const ListImageModels = (
   tags?: string[],
-  type?: ModelType,
+  type?: ModelType
 ): ImageMetadata[] => {
   if (!tags && !type) {
     return models;
@@ -76,8 +76,10 @@ export const models: ImageMetadata[] = [
           .href,
       ],
     ]),
-    preprocessorPath:
-      "https://huggingface.co/visheratin/segment-anything-vit-b/resolve/main/preprocessor_config.json",
+    preprocessorPath: new URL(
+      "./model/efficient-sam-preprocess.json",
+      document.baseURI
+    ).href,
     tags: ["segment-anything"],
     referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
   },

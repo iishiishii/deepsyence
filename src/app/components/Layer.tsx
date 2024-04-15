@@ -32,10 +32,12 @@ import {
   transposeChannelDim,
 } from "../helpers/imageHelpers";
 import * as nj from "numjs";
-import cv from 'opencv'
+import { cv } from "opencv-wasm";
+
 
 export default function Layer(props) {
   const image = props.image;
+  console.log("image", image);
   // const [processedImage, setImage] = React.useState(image.img)
   const [detailsOpen, setDetailsOpen] = useState(image.opacity != 0);
   const [visibilityIcon, setVisibilityIcon] = useState(image.opacity != 0);
@@ -205,15 +207,11 @@ export default function Layer(props) {
         setEmbedded((embedded) => [...embedded, new ort.Tensor("float32", [], [0])]);
       }
       try {
-        const imageArray = preprocessVolume(image);
-
+        // const imageArray = preprocessVolume(image);
         for (let i = start; i < end; i++) {
           console.log("image.dimsRAS[1], image.dimsRAS[2]", image.dimsRAS[1], image.dimsRAS[2])
           // swap height and width to get row major order from npy array to column order
-          await preprocess(imageArray, i, image.dimsRAS[1], image.dimsRAS[2])
-          .then(async (preprocessedImage) => {
-          console.log("preprocessedImage", preprocessedImage, preprocessedImage.reduce((a, b) => a + b, 0));
-          await samModel!.process(preprocessedImage, [image.dimsRAS[2], image.dimsRAS[1]]).then((result) => {
+          await samModel!.process(image, i).then((result) => {
             if (i === end - 1) {
               console.log("embedding", [...embedded, ...result!.embedding!]);
               // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
@@ -227,8 +225,6 @@ export default function Layer(props) {
                 ? 100
                 : prevProgress + (1 / (end - start)) * 100,
             );
-           });
-
         }
         setDone(!done);
         let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };

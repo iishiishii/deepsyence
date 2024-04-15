@@ -1,6 +1,17 @@
-import Jimp from "jimp";
 import { PreprocessorConfig } from "./preprocessorConfig";
 import * as ort from "onnxruntime-common";
+import {
+  getMax,
+  normalizeArray,
+  pad,
+  resizeLongerSide,
+} from "../helpers/utils/imageProcessing";
+import { stackSliceToRGB } from "../helpers/utils/channelHandlers";
+import {
+  arrayToMat,
+  downloadImage,
+  imageDataToTensor,
+} from "../helpers/utils/imageConversion";
 
 export interface PreprocessorResult {
   tensor: ort.Tensor;
@@ -10,113 +21,77 @@ export interface PreprocessorResult {
 
 export class Preprocessor {
   config: PreprocessorConfig;
+  volume: any;
+  dims: number[];
+  maxVal: number;
 
   constructor(config: PreprocessorConfig) {
     this.config = config;
+    this.dims = [0, 0, 0];
+    this.maxVal = 0;
   }
 
-  process = (image: Jimp): PreprocessorResult => {
-    if (this.config.resize) {
-      if (!this.config.squareImage) {
-        if (
-          image.bitmap.width > image.bitmap.height &&
-          this.config.resizeLonger
-        ) {
-          image = image.resize(this.config.size, -1, "bicubicInterpolation");
-        } else {
-          image = image.resize(-1, this.config.size, "bicubicInterpolation");
-        }
-      } else {
-        image = image.resize(
-          this.config.size,
-          this.config.size,
-          "bicubicInterpolation",
-        );
-      }
-    }
-    const newWidth = image.bitmap.width;
-    const newHeight = image.bitmap.height;
-    if (this.config.centerCrop) {
-      const startX = (image.bitmap.width - this.config.cropSize) / 2;
-      const startY = (image.bitmap.height - this.config.cropSize) / 2;
-      image = image.crop(
-        startX,
-        startY,
-        this.config.cropSize,
-        this.config.cropSize,
-      );
-    }
-    const tensor = this.imageDataToTensor(image);
-    return {
-      tensor: tensor,
-      newWidth: newWidth,
-      newHeight: newHeight,
-    };
-  };
-
-  /**
-   * imageDataToTensor converts Jimp image to ORT tensor
-   * @param image instance of Jimp image
-   * @param dims target dimensions of the tensor
-   * @returns ORT tensor
-   */
-  imageDataToTensor = (image: Jimp): ort.Tensor => {
-    const [redArray, greenArray, blueArray] = [
-      new Array<number>(),
-      new Array<number>(),
-      new Array<number>(),
+  processVolume = (niiVolume: any) => {
+    this.dims = [
+      niiVolume.dimsRAS[1],
+      niiVolume.dimsRAS[2],
+      niiVolume.dimsRAS[3],
     ];
-    const width = this.config.pad ? this.config.padSize : image.bitmap.width;
-    const height = this.config.pad ? this.config.padSize : image.bitmap.height;
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        if (x >= image.bitmap.width || y >= image.bitmap.height) {
-          redArray.push(0.0);
-          greenArray.push(0.0);
-          blueArray.push(0.0);
-          continue;
-        }
-        const color = image.getPixelColor(x, y);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const rgba = Jimp.intToRGBA(color);
-        let value = this.getValue(rgba.r, 0);
-        redArray.push(value);
-        value = this.getValue(rgba.g, 1);
-        greenArray.push(value);
-        value = this.getValue(rgba.b, 2);
-        blueArray.push(value);
-      }
-    }
-    let transposedData: number[] = [];
-    if (this.config.flipChannels) {
-      transposedData = blueArray.concat(greenArray).concat(redArray);
+    this.maxVal = getMax(niiVolume.img2RAS());
+    if (this.config.normalize) {
+      this.volume = normalizeArray(niiVolume.img2RAS(), this.maxVal);
     } else {
-      transposedData = redArray.concat(greenArray).concat(blueArray);
+      this.volume = niiVolume.img2RAS();
     }
-    const float32Data = new Float32Array(transposedData);
-    const dims = [1, 3, height, width];
-    const inputTensor = new ort.Tensor("float32", float32Data, dims);
-    return inputTensor;
   };
 
-  getValue = (value: number, colorIdx: number): number => {
-    if (
-      this.config.normalize.enabled &&
-      this.config.normalize.mean &&
-      this.config.normalize.std
-    ) {
-      value =
-        (value / 255.0 - this.config.normalize.mean[colorIdx]) /
-        this.config.normalize.std[colorIdx];
-    } else {
-      if (this.config.rescale) {
-        value = value * this.config.rescaleFactor;
-      } else {
-        value = value / 255.0;
+  process = (sliceId: number): PreprocessorResult => {
+    let inputTensor: ort.Tensor;
+
+    let sliceArray = this.volume.slice(
+      this.dims[0] * this.dims[1] * sliceId,
+      this.dims[0] * this.dims[1] * (sliceId + 1)
+    );
+    let image3Channels = stackSliceToRGB(sliceArray);
+
+    if (this.config.resize) {
+      let mat = arrayToMat(image3Channels, [this.dims[0], this.dims[1]]);
+      let resizedImage = resizeLongerSide(mat, this.config.size);
+
+      if (this.config.pad) {
+        let paddedImage = pad(resizedImage, this.config.padSize);
+        inputTensor = new ort.Tensor("float32", paddedImage, [
+          1,
+          3,
+          this.config.size,
+          this.config.size,
+        ]);
       }
+      inputTensor = new ort.Tensor("float32", resizedImage, [
+        1,
+        3,
+        this.config.size,
+        this.config.size,
+      ]);
+    } else {
+      inputTensor = new ort.Tensor("float32", image3Channels, [
+        1,
+        3,
+        this.dims[0],
+        this.dims[1],
+      ]);
     }
-    return value;
+    let result: PreprocessorResult = {
+      tensor: imageDataToTensor(inputTensor.data, [
+        1,
+        3,
+        inputTensor.dims[3],
+        inputTensor.dims[2],
+      ]),
+      newWidth: inputTensor.dims[2],
+      newHeight: inputTensor.dims[3],
+    };
+    return result;
   };
 }
 
