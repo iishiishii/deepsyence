@@ -1,5 +1,5 @@
 {
-    "do_normalize": false,
+    "do_normalize": true,
     "do_resize": true,
     "do_square": false,
     "feature_extractor_type": "MedSAM",

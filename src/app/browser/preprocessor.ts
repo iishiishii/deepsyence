@@ -2,11 +2,16 @@ import { PreprocessorConfig } from "./preprocessorConfig";
 import * as ort from "onnxruntime-common";
 import {
   getMax,
+  getMin,
   normalizeArray,
   pad,
   resizeLongerSide,
+  standardizeArray,
 } from "../helpers/utils/imageProcessing";
-import { stackSliceToRGB } from "../helpers/utils/channelHandlers";
+import {
+  filterAlphaChannel,
+  stackSliceToRGB,
+} from "../helpers/utils/channelHandlers";
 import {
   arrayToMat,
   downloadImage,
@@ -43,6 +48,18 @@ export class Preprocessor {
     } else {
       this.volume = niiVolume.img2RAS();
     }
+
+    if (
+      this.config.standardize.enabled &&
+      this.config.standardize.mean &&
+      this.config.standardize.std
+    ) {
+      this.volume = standardizeArray(
+        this.volume,
+        this.config.standardize.mean[0],
+        this.config.standardize.std[0]
+      );
+    }
   };
 
   process = (sliceId: number): PreprocessorResult => {
@@ -60,19 +77,24 @@ export class Preprocessor {
 
       if (this.config.pad) {
         let paddedImage = pad(resizedImage, this.config.padSize);
-        inputTensor = new ort.Tensor("float32", paddedImage, [
+        let filteredImage = filterAlphaChannel(paddedImage.data);
+        const maxVal = getMax(filteredImage);
+        let normalizedImage = normalizeArray(filteredImage, maxVal);
+
+        inputTensor = new ort.Tensor("float32", normalizedImage, [
+          1,
+          3,
+          this.config.size,
+          this.config.size,
+        ]);
+      } else {
+        inputTensor = new ort.Tensor("float32", resizedImage, [
           1,
           3,
           this.config.size,
           this.config.size,
         ]);
       }
-      inputTensor = new ort.Tensor("float32", resizedImage, [
-        1,
-        3,
-        this.config.size,
-        this.config.size,
-      ]);
     } else {
       inputTensor = new ort.Tensor("float32", image3Channels, [
         1,

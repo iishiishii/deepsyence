@@ -13,6 +13,7 @@ export type SAMResult = {
 export class SegmentAnythingModel extends BaseImageModel {
   private lastProcessedVolume: any;
   encoderResult: ort.Tensor[] | undefined = [];
+  samScale: number = 1;
 
   process = async (
     volume: any,
@@ -65,11 +66,15 @@ export class SegmentAnythingModel extends BaseImageModel {
     if (!session) {
       throw Error("the encoder is absent in the sessions map");
     }
+    const inputData = await session.inputNames();
     console.log("session ", session);
-
     const feeds: Record<string, ort.Tensor> = {};
-    feeds["batched_images"] = result.tensor;
+    feeds[inputData[0]] = result.tensor;
     console.log("feeds ", feeds);
+    this.samScale =
+      result.newHeight /
+      Math.max(this.preprocessor.dims[0], this.preprocessor.dims[1]);
+
     try {
       const outputData = await session.run(feeds);
       const outputNames = await session.outputNames();
@@ -79,13 +84,11 @@ export class SegmentAnythingModel extends BaseImageModel {
       const inferenceTime = end.getTime() - start.getTime();
       console.log("inference time ", inferenceTime);
 
-      // const output = results[session.outputNames[0]].data;
       console.log("output ", this.encoderResult);
       console.log(
         "output sum ",
         (output.data as Float32Array).reduce((a: number, b: number) => a + b, 0)
       );
-      // return output;
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `);
     }
@@ -94,11 +97,8 @@ export class SegmentAnythingModel extends BaseImageModel {
   processDecoder = async (
     image: any,
     sliceId: number,
-    // tensor: ort.Tensor | undefined,
     clicks: modelInputProps[],
     bbox: boundingBox
-    // mask: Uint8Array,
-    // onModel: (id: any, name: any, array: any) => void,
   ): Promise<Uint8Array | undefined> => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       console.log("the model is not initialized");
@@ -109,12 +109,11 @@ export class SegmentAnythingModel extends BaseImageModel {
     }
     const start = new Date();
 
-    const LONG_SIDE_LENGTH = 1024;
+    // const LONG_SIDE_LENGTH = 1024;
     let w = image.dimsRAS[2];
     let h = image.dimsRAS[1];
-    const samScale = LONG_SIDE_LENGTH / Math.max(h, w);
     const modelScale = {
-      samScale: samScale,
+      samScale: this.samScale,
       height: h, // swap height and width to get row major order from npy arrayt to column order ?
       width: w,
     };
@@ -123,9 +122,12 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log("the decoder is absent in the sessions map");
       throw Error("the decoder is absent in the sessions map");
     }
+    const outputData = await session.outputNames();
+    const modelName = this.metadata.id;
     const tensor = this.encoderResult[sliceId];
     // prepare feeds. use model input names as keys
     const feeds = modelData({
+      modelName,
       clicks,
       bbox,
       tensor,
@@ -141,33 +143,15 @@ export class SegmentAnythingModel extends BaseImageModel {
       const end = new Date();
       const inferenceTime = end.getTime() - start.getTime();
       console.log("inference time ", inferenceTime);
-      // read from results
-      // const output = results[session.outputNames[0]].data;
-      const outputNames = await session.outputNames();
-      const iou = results["iou_predictions"].data as Float32Array;
 
-      // const maxIou = iou.indexOf(Math.max(...Array.from(iou)));
-      const maxIou = 0;
-      // const output = results["output_masks"].data.slice(
-      //   maxIou * h * w,
-      //   (maxIou + 1) * h * w,
-      // );
-      // await cv.loadOpenCV();
-      let output =
-        // inverseTransposeChannelDim(
-        results["output_masks"].data as Float32Array;
-      //   3,
-      // );
+      let output = results[outputData[0]].data as Float32Array;
 
-      // const src = cv.matFromArray(w, h, cv.CV_32F, output as Float32Array);
-      // let dst = new cv.Mat(w, h, cv.CV_32FC3);
       console.log(
         "decoder output",
-        results["output_masks"],
         (output as Float32Array).reduce((a, b) => a + b, 0)
       );
       // console.log("output ", maxIou, (output as Float32Array).reduce((a, b) => a + b, 0));
-      // let rotated = output.reverse();
+
       const rasImage = maskImage(
         output as Float32Array,
         w,
@@ -175,8 +159,6 @@ export class SegmentAnythingModel extends BaseImageModel {
         clicks[0].z,
         mask
       );
-      // console.log("rasImage ", rasImage);
-      // onModel(id, name, rasImage);
       return rasImage;
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `);

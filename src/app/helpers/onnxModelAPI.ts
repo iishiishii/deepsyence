@@ -8,31 +8,29 @@
 import { Tensor } from "onnxruntime-web";
 import { modeDataProps } from "./Interfaces";
 
-const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
+const modelData = ({
+  modelName,
+  clicks,
+  bbox,
+  tensor,
+  modelScale,
+}: modeDataProps) => {
   const imageEmbedding = tensor;
+  console.log("image embedding", imageEmbedding);
   let pointCoordsTensor;
   let pointLabelsTensor;
   let pointCoords;
   let pointLabels;
 
-  // const widthScale =
-  //   Math.floor(modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
-  // const heightScale =
-  //   Math.floor(modelScale.height * modelScale.samScale + 0.5) /
-  //   modelScale.height;
+  const widthScale =
+    Math.floor(modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
+  const heightScale =
+    Math.floor(modelScale.height * modelScale.samScale + 0.5) /
+    modelScale.height;
 
-  const widthScale = 1,
-    heightScale = 1;
-  // console.log(
-  //   "clicks",
-  //   clicks,
-  //   "tensor",
-  //   tensor,
-  //   "modelScale",
-  //   modelScale,
-  //   "bbox",
-  //   bbox,
-  // );
+  // const widthScale = 1,
+  //   heightScale = 1;
+
   // Check there are input click prompts
   if (clicks) {
     let clickLength = clicks.length;
@@ -67,18 +65,30 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
     }
     console.log("bbox length", pointCoords, pointLabels);
 
-    // Create the tensor
-    pointCoordsTensor = new Tensor("float32", pointCoords, [
-      1,
-      1,
-      clickLength + padding,
-      2,
-    ]);
-    pointLabelsTensor = new Tensor("float32", pointLabels, [
-      1,
-      1,
-      clickLength + padding,
-    ]);
+    // Create the coord tensor
+    if (modelName === "efficient-sam") {
+      pointCoordsTensor = new Tensor("float32", pointCoords, [
+        1,
+        1,
+        clickLength + padding,
+        2,
+      ]);
+      pointLabelsTensor = new Tensor("float32", pointLabels, [
+        1,
+        1,
+        clickLength + padding,
+      ]);
+    } else {
+      pointCoordsTensor = new Tensor("float32", pointCoords, [
+        1,
+        clickLength + padding,
+        2,
+      ]);
+      pointLabelsTensor = new Tensor("float32", pointLabels, [
+        1,
+        clickLength + padding,
+      ]);
+    }
   }
 
   const imageSizeTensor = new Tensor("int64", [
@@ -93,7 +103,7 @@ const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
   const maskInput = new Tensor(
     "float32",
     new Float32Array(256 * 256),
-    [1, 1, 256, 256],
+    [1, 1, 256, 256]
   );
   // There is no previous mask, so default to 0
   const hasMaskInput = new Tensor("float32", [0]);

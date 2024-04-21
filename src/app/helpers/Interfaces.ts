@@ -25,6 +25,7 @@ export interface boundingBox {
 }
 
 export interface modeDataProps {
+  modelName: string;
   clicks?: modelInputProps[];
   bbox?: boundingBox;
   tensor: Tensor;

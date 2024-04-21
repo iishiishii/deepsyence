@@ -1,5 +1,6 @@
 export class PreprocessorConfig {
-  normalize: NormalizeConfig;
+  normalize: boolean;
+  standardize: StandardizeConfig;
   resize: boolean;
   resizeLonger: boolean;
   size: number;
@@ -13,7 +14,8 @@ export class PreprocessorConfig {
   rescaleFactor: number;
 
   constructor() {
-    this.normalize = {
+    this.normalize = false;
+    this.standardize = {
       enabled: false,
     };
     this.resize = false;
@@ -37,17 +39,21 @@ export class PreprocessorConfig {
 
   static parseConfig = (configData): PreprocessorConfig => {
     const res = new PreprocessorConfig();
-    res.normalize = {
+    res.normalize = false;
+    res.standardize = {
       enabled: false,
     };
     if ("do_normalize" in configData) {
-      res.normalize.enabled = configData["do_normalize"];
+      res.normalize = configData["do_normalize"];
+    }
+    if ("do_standardize" in configData) {
+      res.standardize.enabled = configData["do_standardize"];
     }
     if ("image_mean" in configData) {
-      res.normalize.mean = configData["image_mean"];
+      res.standardize.mean = configData["image_mean"];
     }
     if ("image_std" in configData) {
-      res.normalize.std = configData["image_std"];
+      res.standardize.std = configData["image_std"];
     }
     if ("do_resize" in configData) {
       res.resize = configData["do_resize"];
@@ -86,7 +92,7 @@ export class PreprocessorConfig {
   };
 }
 
-export type NormalizeConfig = {
+export type StandardizeConfig = {
   enabled: boolean;
   mean?: number[];
   std?: number[];

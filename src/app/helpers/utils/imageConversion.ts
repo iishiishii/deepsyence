@@ -3,26 +3,6 @@ import { Tensor } from "onnxruntime-web";
 import { cv } from "opencv-wasm";
 import { addChannel } from "./channelHandlers";
 
-export function convertImgToFloat(
-  image: Array<number>,
-  dims: number[]
-): Float32Array {
-  // 4. convert to float32
-  let i,
-    l = image.length; // length, we need this for the loop
-  console.log("image.length", image, dims);
-  // create the Float32Array size 3 * 224 * 224 for these dimensions output
-  const float32Data = new Float32Array((image.length * 3) / 4);
-  for (i = 0; i < l; i += 4) {
-    float32Data[(3 * i) / 4] = image[i]; // convert to float
-    float32Data[(3 * i) / 4 + 1] = image[i + 1]; // convert to float
-    float32Data[(3 * i) / 4 + 2] = image[i + 2]; // convert to float
-    // skip image[i + 3] to filter out the alpha channel
-  }
-  // console.log("float32Data", float32Data)
-  return float32Data;
-}
-
 export function convertArrayToTensor(
   float32image: Float32Array,
   dims: number[]
