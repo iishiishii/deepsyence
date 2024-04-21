@@ -1,0 +1,10 @@
+{
+    "do_normalize": false,
+    "do_resize": true,
+    "do_square": false,
+    "feature_extractor_type": "MedSAM",
+    "size": 256,
+    "do_pad": true,
+    "pad_size": 256,
+    "resize_longer": true
+  }

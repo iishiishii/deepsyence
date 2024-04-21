@@ -1,8 +1,8 @@
 {
-    "do_normalize": false,
-    "do_standardize": true,
+    "do_normalize": true,
+    "do_standardize": false,
     "do_resize": false,
     "do_square": false,
     "do_pad": false,
     "resize_longer": false
-  }
+}
