@@ -2,9 +2,10 @@
 import { useContext, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Annotation from "./Annotation";
-import { Box } from "@mui/material";
+import { Box, ListItemText } from "@mui/material";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { Dropdown, DropdownMenuItem, DropdownNestedMenuItem } from "./Dropdown";
+import NestedMenuItem from "./NestedMenuItem";
 import NVTick from "./Tick";
 import ModelSelector from "./ModelSelector";
 import { ModelType } from "../browser/modelConfig";
@@ -27,7 +28,7 @@ export default function NavBar(props) {
   const [crosshair3D, setCrosshair3D] = useState(false);
   const [colorBar, setColorBar] = useState(nv.opts.isColorbar);
   const [clipPlane, setClipPlane] = useState(
-    nv.currentClipPlaneIndex > 0 ? true : false,
+    nv.currentClipPlaneIndex > 0 ? true : false
   );
   const [tutorialRun, setTutorialRun] = useState(false);
   let tutorial = tutorialRun ? <Tutorial /> : null;
@@ -36,7 +37,7 @@ export default function NavBar(props) {
     model: [, setSamModel],
     modelLoading: [, setLoading],
     positivePoints: [, setPositivePoints],
-  } = useContext(AppContext)!;
+  } = useContext(AppContext);
 
   function nvUpdateCrosshair3D() {
     nv.opts.show3Dcrosshair = !crosshair3D;
@@ -90,8 +91,8 @@ export default function NavBar(props) {
     input.multiple = true;
 
     input.onchange = async function () {
-      for (let i = 0; i < input.files!.length; i++) {
-        props.onAddLayer(input.files![i]);
+      for (let i = 0; i < input.files.length; i++) {
+        props.onAddLayer(input.files[i]);
       }
     };
 
@@ -105,10 +106,9 @@ export default function NavBar(props) {
 
   const loadSamModel = async (id) => {
     setLoading(true);
-    const result = await ImageModel.create(id)
-    setSamModel(result.model as SegmentAnythingModel);
-    setLoading(false); 
-
+    const result = await ImageModel.create(id);
+    setSamModel(result.model);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -186,91 +186,90 @@ export default function NavBar(props) {
                 onChange={nvUpdateColorBar}
               ></NVTick>
             </DropdownMenuItem>,
-            <DropdownNestedMenuItem
-            parentMenuOpen={true} 
-            label="Display Mode"
+            <NestedMenuItem
+              parentMenuOpen={true}
+              label="Display Mode"
               rightIcon={<ArrowRight />}
->
-                <DropdownMenuItem
-                  selected={sliceType == "axial"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSliceTypeChange("axial");
-                  }}
-                >
-                  Axial
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  selected={sliceType == "coronal"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSliceTypeChange("coronal");
-                  }}
-                >
-                  Coronal
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  selected={sliceType == "sagittal"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSliceTypeChange("sagittal");
-                  }}
-                >
-                  Sagittal
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  selected={sliceType == "multi"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSliceTypeChange("multi");
-                  }}
-                >
-                  Multi
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  selected={sliceType == "3d"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSliceTypeChange("3d");
-                  }}
-                >
-                  3D
-                </DropdownMenuItem>
-              </DropdownNestedMenuItem>,
-            <DropdownNestedMenuItem
-              parentMenuOpen={true} 
+            >
+              <DropdownMenuItem
+                selected={sliceType == "axial"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSliceTypeChange("axial");
+                }}
+              >
+                <ListItemText>{"Axial"}</ListItemText>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                selected={sliceType == "coronal"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSliceTypeChange("coronal");
+                }}
+              >
+                <ListItemText>{"Coronal"}</ListItemText>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                selected={sliceType == "sagittal"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSliceTypeChange("sagittal");
+                }}
+              >
+                <ListItemText>{"Sagittal"}</ListItemText>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                selected={sliceType == "multi"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSliceTypeChange("multi");
+                }}
+              >
+                <ListItemText>{"Multi"}</ListItemText>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                selected={sliceType == "3d"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSliceTypeChange("3d");
+                }}
+              >
+                <ListItemText>{"3D"}</ListItemText>
+              </DropdownMenuItem>
+            </NestedMenuItem>,
+            <NestedMenuItem
+              parentMenuOpen={true}
               label="Colormap"
               rightIcon={<ArrowRight />}
             >
-                <MenuItem
-                  selected={color == "blue2red"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleColorChange("blue2red");
-                  }}
-                >
-                  Blue2red
-                </MenuItem>
-                <MenuItem
-                  selected={color == "gray"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleColorChange("gray");
-                  }}
-                >
-                  Gray
-                </MenuItem>
-                <MenuItem
-                  selected={color == "freesurfer"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleColorChange("freesurfer");
-                  }}
-                >
-                  Freesurfer
-                </MenuItem>
-
-              </DropdownNestedMenuItem>
+              <MenuItem
+                selected={color == "blue2red"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleColorChange("blue2red");
+                }}
+              >
+                <ListItemText>{"Blue2red"}</ListItemText>
+              </MenuItem>
+              <MenuItem
+                selected={color == "gray"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleColorChange("gray");
+                }}
+              >
+                <ListItemText>{"Gray"}</ListItemText>
+              </MenuItem>
+              <MenuItem
+                selected={color == "freesurfer"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleColorChange("freesurfer");
+                }}
+              >
+                <ListItemText>{"Freesurfer"}</ListItemText>
+              </MenuItem>
+            </NestedMenuItem>,
           ]}
         />
         <Dropdown
@@ -314,17 +313,22 @@ export default function NavBar(props) {
           </IconButton>
         </Tooltip>
         {tutorial}
-        <Dropdown 
-        trigger={<Button className="navbar-model" sx={{ color: "white" }}>Model</Button>}
-        menu={[
-          <DropdownMenuItem>          
-            <ModelSelector
-            tags={undefined}
-            imageType={ModelType.SegmentAnything}
-            callback={loadSamModel}/>
-        </DropdownMenuItem>
-        ]} />
-
+        <Dropdown
+          trigger={
+            <Button className="navbar-model" sx={{ color: "white" }}>
+              Model
+            </Button>
+          }
+          menu={[
+            <DropdownMenuItem>
+              <ModelSelector
+                tags={undefined}
+                imageType={ModelType.SegmentAnything}
+                callback={loadSamModel}
+              />
+            </DropdownMenuItem>,
+          ]}
+        />
       </Box>
     </div>
   );
