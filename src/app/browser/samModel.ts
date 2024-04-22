@@ -126,14 +126,25 @@ export class SegmentAnythingModel extends BaseImageModel {
     const modelName = this.metadata.id;
     const tensor = this.encoderResult[sliceId];
     // prepare feeds. use model input names as keys
-    const feeds = modelData({
-      modelName,
-      clicks,
-      bbox,
-      tensor,
-      modelScale,
-    });
-    console.log("feeds ", feeds, modelScale);
+    let feeds;
+    if (this.metadata.id === "efficient-sam") {
+      feeds = modelData({
+        modelName,
+        clicks,
+        tensor,
+        modelScale,
+      });
+    } else {
+      feeds = modelData({
+        modelName,
+        clicks,
+        bbox,
+        tensor,
+        modelScale,
+      });
+    }
+
+    console.log("feeds ", feeds, modelScale, bbox);
     if (feeds === undefined) return;
 
     try {

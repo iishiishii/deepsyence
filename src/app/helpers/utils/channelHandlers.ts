@@ -24,7 +24,9 @@ export function addChannel(buffer: Float32Array | Uint8Array): Uint8Array {
   return result;
 }
 
-export function filterAlphaChannel(image: Array<number>): Float32Array {
+export function filterAlphaChannel(
+  image: Float32Array | Uint8Array | Array<number>
+): Float32Array {
   // 4. convert to float32
   let i,
     l = image.length; // length, we need this for the loop

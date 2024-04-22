@@ -74,13 +74,27 @@ export class Preprocessor {
     if (this.config.resize) {
       let mat = arrayToMat(image3Channels, [this.dims[0], this.dims[1]]);
       let resizedImage = resizeLongerSide(mat, this.config.size);
-
+      console.log(
+        "resizedImage",
+        resizedImage.size().width,
+        resizedImage.size().height,
+        resizedImage.data.reduce((a, b) => a + b, 0)
+      );
       if (this.config.pad) {
         let paddedImage = pad(resizedImage, this.config.padSize);
+        console.log(
+          "paddedImage",
+          paddedImage.size().width,
+          paddedImage.size().height,
+          paddedImage.data.reduce((a, b) => a + b, 0)
+        );
         let filteredImage = filterAlphaChannel(paddedImage.data);
         const maxVal = getMax(filteredImage);
         let normalizedImage = normalizeArray(filteredImage, maxVal);
-
+        console.log(
+          "normalizedImage",
+          normalizedImage.reduce((a, b) => a + b, 0)
+        );
         inputTensor = new ort.Tensor("float32", normalizedImage, [
           1,
           3,
@@ -88,7 +102,7 @@ export class Preprocessor {
           this.config.size,
         ]);
       } else {
-        inputTensor = new ort.Tensor("float32", resizedImage, [
+        inputTensor = new ort.Tensor("float32", resizedImage.data, [
           1,
           3,
           this.config.size,

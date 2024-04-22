@@ -36,27 +36,14 @@ export default function Layer(props) {
     modelLoading: [loading],
   } = useContext(AppContext)!;
   const [progress, setProgress] = useState(0);
-  const [fetchRate, setFetchRate] = useState(0);
   // const [embedded, setEmbedded] = useState([] as ort.Tensor[] || null);
 
   useEffect(() => {
-    async function checkResponseTime(testURL) {
-      let time1 = performance.now();
-      await fetch(testURL);
-      let time2 = performance.now();
-      return 43783 / (time2 - time1);
-    }
-
-    (async () => {
-      // for the purpose of this snippet example, some host with CORS response
-      let rate = await checkResponseTime(
-        "https://iishiishii.github.io/deepsyence/process-image.wasm",
-      );
-      console.log(rate);
-      setFetchRate(rate);
-    })();
-  }, []);
-
+    setProgress(0);
+    // setClicks([]);
+    props.onModel(image.id, image.name, new Uint8Array());
+    setMaskImg(new Uint8Array());
+  }, [samModel]);
 
   const runEncoder = async () => {
     // console.log("image name", image);
@@ -65,53 +52,6 @@ export default function Layer(props) {
         image.dimsRAS[1] * image.dimsRAS[2] * image.dimsRAS[3],
       ).fill(0),
     );
-    if (image.name === "sub-M2002_ses-a1440_T2.nii") {
-      const IMAGE_EMBEDDING =
-        "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2002_ses-a1440_T2w.npy";
-      // const IMAGE_EMBEDDING = new URL(
-      //   "./model/sub-M2002_ses-a1440_T2w.npy",
-      //   document.baseURI,
-      // ).href;
-      // Load the Segment Anything pre-computed embedding
-      let UPDATE_AMOUNT = (1 / 90) * 100;
-      setProgress(UPDATE_AMOUNT);
-      try {
-        let updater = setInterval(
-          () => {
-            setProgress((prevProgress) => {
-              let newProgress = prevProgress + UPDATE_AMOUNT;
-              if (newProgress >= 90) {
-                clearInterval(updater);
-                newProgress = 90;
-              }
-              return newProgress;
-            });
-          },
-          922747008 / fetchRate / 10,
-        );
-
-        loadNpyTensor(IMAGE_EMBEDDING, "float32")
-          .then((embedding) => {
-            if (embedding) {
-              // setEmbedded([...embedding]);
-            } else {
-              console.debug("Server didn't start in time");
-            }
-          })
-          .then(() => {
-            clearInterval(updater);
-            setProgress(100);
-            props.onAlert("Embedding loaded", false);
-          });
-
-        let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
-        let bottomRight = { x: 153, y: 214, z: 0, clickType: 3 };
-        setBbox({ topLeft, bottomRight });
-      } catch (error) {
-        props.onAlert(`error embedding ${error}`);
-        console.log("error embedding", error);
-      }
-    } else {
       // setEmbedded([]);
       const start = 90;
       const end = 91;
@@ -129,26 +69,20 @@ export default function Layer(props) {
         }
         setDone(!done);
         let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
-        let bottomRight = { x: 153, y: 214, z: 0, clickType: 3 };
+        let bottomRight = { x: image.dimsRAS[1], y: image.dimsRAS[2], z: 0, clickType: 3 };
         setBbox({ topLeft, bottomRight });
         // console.log("embedded end", embedded);
       } catch (error) {
         props.onAlert(`Encoder ${error}`);
         console.log("error encoder", error);
       }
-    }
   };
 
   const runDecoder = async () => {
     try {
       if (image.name === "lesion_mask.nii") return;
       if (clicks!.length === 0 && !bbox) return;
-      // if (embedded === undefined || embedded == null) {
-      //   console.log(`No embedding found for ${image.name}`);
-      //   throw new Error(
-      //     `No embedding found for ${image.name}. Please click the play button to run encoder.`,
-      //   );
-      // }
+
       if (loading) {
         throw new Error("Model is loading. Please wait.");
       }
@@ -182,30 +116,6 @@ export default function Layer(props) {
     }
     console.log("clicks", clicks);
   }, [clicks]);
-
-  // Decode a Numpy file into a tensor.
-  const loadNpyTensor = async (tensorFile, dType) => {
-    let npLoader = new npyjs();
-    let npArray = await npLoader.load(tensorFile).then((npArray) => {
-      return npArray;
-    });
-    let tensorArray: ort.TypedTensor<"string">[] = [];
-    for (let i = 0; i < npArray.shape[0]; i++) {
-      let slice = npArray.data.slice(
-        i * npArray.shape[1] * npArray.shape[2] * npArray.shape[3],
-        (i + 1) * npArray.shape[1] * npArray.shape[2] * npArray.shape[3],
-      );
-      tensorArray.push(
-        new ort.Tensor(dType, slice, [
-          1,
-          npArray.shape[1],
-          npArray.shape[2],
-          npArray.shape[3],
-        ]),
-      );
-    }
-    return tensorArray;
-  };
 
   const brainExtract = async () => {
     brainExtractionModel(image, props.onModel);

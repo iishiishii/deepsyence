@@ -1,5 +1,5 @@
-import { cv } from "opencv-wasm";
-import { addChannel } from "./channelHandlers";
+import cv, { Scalar } from "opencv-ts";
+import { addChannel, stackSliceToRGB } from "./channelHandlers";
 
 export function getMax(arr) {
   let len = arr.length;
@@ -76,8 +76,18 @@ export function pad(image: any, target_size: number) {
   if (image.type() !== cv.CV_8UC4) {
     image4Channels = addChannel(image.data);
   }
+  const value: Scalar = new cv.Scalar(0, 0, 0, 0);
   //  copyMakeBorder( src, dst, top, bottom, left, right, borderType, value );
-  cv.copyMakeBorder(image, dstPadded, 0, padh, 0, padw, cv.BORDER_CONSTANT);
+  cv.copyMakeBorder(
+    image,
+    dstPadded,
+    0,
+    padh,
+    0,
+    padw,
+    cv.BORDER_CONSTANT,
+    value
+  );
 
   return dstPadded;
 }

@@ -5,7 +5,7 @@ import Resize from "./resize";
 
 export function transposeChannelDim(
   imageBufferData: Buffer | Float32Array,
-  dims: number = 4,
+  dims: number = 4
 ): Array<number> {
   // 1. Get buffer data from image and create R, G, and B arrays.
   const [redArray, greenArray, blueArray] = [
@@ -29,7 +29,7 @@ export function transposeChannelDim(
 
 export function convertImgToFloat(
   image: Array<number>,
-  dims: number[],
+  dims: number[]
 ): Float32Array {
   // 4. convert to float32
   let i,
@@ -49,7 +49,7 @@ export function convertImgToFloat(
 
 export function convertArrayToTensor(
   float32image: Float32Array,
-  dims: number[],
+  dims: number[]
 ): Tensor {
   const inputTensor = new Tensor("float32", float32image, dims);
   return inputTensor;
@@ -80,14 +80,14 @@ export function resize(
   image: Jimp,
   width: number = 224,
   height: number = 224,
-  mode: string = "bicubicInterpolation",
+  mode: string = "bicubicInterpolation"
 ): Jimp {
   return image.resize(width, height, mode);
 }
 
 export async function getImageTensorFromPath(
   path: string,
-  dims: number[] = [1, 3, 224, 224],
+  dims: number[] = [1, 3, 224, 224]
 ): Promise<Tensor> {
   // 1. load the image
   let image = await loadImageFromPath(path);
@@ -102,7 +102,7 @@ export async function getImageTensorFromPath(
 export function resizeLonger(
   image: Jimp,
   size: number,
-  mode: string = Jimp.default.RESIZE_BILINEAR,
+  mode: string = Jimp.default.RESIZE_BILINEAR
 ): Jimp {
   if (image.bitmap.width > image.bitmap.height) {
     return image.resize(size, Jimp.default.AUTO, mode);
@@ -116,7 +116,7 @@ export function maskImage(
   width: number,
   height: number,
   sliceId: number,
-  mask: Uint8Array,
+  mask: Uint8Array
 ): Uint8Array {
   // let output = new Array(width * height * sliceId).fill(0); // fill to selected slice
   const threshold = 0;
@@ -124,7 +124,12 @@ export function maskImage(
     for (let i = 0; i < input.length; i++) {
       mask[width * height * sliceId + i] = input[i] > threshold ? 1 : 0;
     }
-
+    for (let i = width * height; i < width * height * 2; i++) {
+      mask[width * height * (sliceId - 1) + i] = input[i] > threshold ? 2 : 0;
+    }
+    for (let i = width * height * 2; i < width * height * 3; i++) {
+      mask[width * height * (sliceId - 2) + i] = input[i] > threshold ? 3 : 0;
+    }
     // output = output.concat(Array.from(input));
   } catch (error) {
     console.log("error", error);
@@ -133,7 +138,7 @@ export function maskImage(
 }
 
 export function stackSliceToRGB(
-  buffer: Float32Array | Uint8Array,
+  buffer: Float32Array | Uint8Array
 ): Float32Array {
   let bufferLength = buffer.length,
     result = new Float32Array(bufferLength * 3);
@@ -168,7 +173,7 @@ function addChannelDim(buffer: Float32Array | Uint8Array): Uint8Array {
 export function imagedataToImage(
   imagedata: Float32Array | Uint8Array,
   width: number,
-  height: number,
+  height: number
 ) {
   let addedChannel = addChannelDim(imagedata);
   console.log("addedChannel", addedChannel);
@@ -189,7 +194,7 @@ export function imagedataToImage(
 export const downloadToFile = (
   content: Float32Array | Uint8Array,
   filename: string,
-  contentType: string = "text/plain",
+  contentType: string = "text/plain"
 ) => {
   const a = document.createElement("a");
   const file = new Blob([content], { type: contentType });
@@ -217,7 +222,7 @@ export function getChannel(image: Jimp, channel: number): Array<number> {
 export function replaceChannel(
   image: Jimp,
   channel: number,
-  channelArray: Array<number>,
+  channelArray: Array<number>
 ): Jimp {
   // 1. Get buffer data from image and create R, G, and B arrays.
   let imageBufferData = image.bitmap.data;
@@ -226,7 +231,7 @@ export function replaceChannel(
   const outImage = new (Jimp as any)(
     image.bitmap.width,
     image.bitmap.height,
-    0x000000ff,
+    0x000000ff
   );
 
   // 3. round out value sto jimp values [0-255]
@@ -243,7 +248,7 @@ export function replaceChannel(
 
 export function inverseTransposeChannelDim(
   transposedData: Array<number> | Float32Array,
-  dims: number = 4,
+  dims: number = 4
 ): Float32Array {
   const length = transposedData.length;
   const channelSize = length / dims;
@@ -267,7 +272,7 @@ export function inverseTransposeChannelDim(
 export function scaleImgToFloat(
   image: Array<number>,
   dims: number[],
-  scale: number = 1 / 255,
+  scale: number = 1 / 255
 ): Float32Array {
   // 4. convert to float32
   let i,
@@ -288,7 +293,7 @@ export function convertFloatToInt8(float32Data: Float32Array): Array<number> {
   const ImgData = new Array<number>();
   for (i = 0; i < l; i++) {
     ImgData.push(
-      Math.min(255, Math.max(0, Math.round(float32Data[i] * 255.0))),
+      Math.min(255, Math.max(0, Math.round(float32Data[i] * 255.0)))
     ); // convert to float
   }
   return ImgData;
@@ -297,7 +302,7 @@ export function convertFloatToInt8(float32Data: Float32Array): Array<number> {
 export function convertFloatToImg(
   float32Data: Float32Array,
   dims: number[],
-  rgb: boolean,
+  rgb: boolean
 ): Jimp {
   // 4. convert to float32
   let i,
@@ -310,10 +315,10 @@ export function convertFloatToImg(
     for (i = 0; i < l; i += 3) {
       ImgData.bitmap.data[(4 * i) / 3] = Math.round(float32Data[i] * 255.0); // convert to float
       ImgData.bitmap.data[(4 * i) / 3 + 1] = Math.round(
-        float32Data[i + 1] * 255.0,
+        float32Data[i + 1] * 255.0
       ); // convert to float
       ImgData.bitmap.data[(4 * i) / 3 + 2] = Math.round(
-        float32Data[i + 2] * 255.0,
+        float32Data[i + 2] * 255.0
       ); // convert to float
       ImgData.bitmap.data[(4 * i) / 3 + 3] = 255; // convert to float
     }
@@ -357,13 +362,13 @@ export function imageRGBToYCC(image: Jimp): Jimp {
     let green = imageBufferData[i + 1];
     let blue = imageBufferData[i + 2];
     outImage.bitmap.data[i] = Math.round(
-      0.299 * red + 0.587 * green + 0.114 * blue,
+      0.299 * red + 0.587 * green + 0.114 * blue
     );
     outImage.bitmap.data[i + 1] = Math.round(
-      128 - 0.168736 * red - 0.331264 * green + 0.5 * blue,
+      128 - 0.168736 * red - 0.331264 * green + 0.5 * blue
     );
     outImage.bitmap.data[i + 2] = Math.round(
-      128 + 0.5 * red - 0.418688 * green - 0.081312 * blue,
+      128 + 0.5 * red - 0.418688 * green - 0.081312 * blue
     );
     outImage.bitmap.data[i + 3] = image.bitmap.data[i + 3];
   }
@@ -390,7 +395,7 @@ export function imageYCCToRGB(image: Jimp): Jimp {
     cr = imageBufferData[i + 2];
     outImage.bitmap.data[i] = Math.round(y + 1.402 * (cr - 128));
     outImage.bitmap.data[i + 1] = Math.round(
-      y - 0.344136 * (cb - 128) - 0.714136 * (cr - 128),
+      y - 0.344136 * (cb - 128) - 0.714136 * (cr - 128)
     );
     outImage.bitmap.data[i + 2] = Math.round(y + 1.772 * (cb - 128));
     outImage.bitmap.data[i + 3] = image.bitmap.data[i + 3];
@@ -402,7 +407,7 @@ export function imageYCCToRGB(image: Jimp): Jimp {
 export function crop(
   image: Jimp,
   croppedwidth: number,
-  croppedheight: number,
+  croppedheight: number
 ): Jimp {
   const startX = (image.bitmap.width - croppedwidth) / 2;
   const startY = (image.bitmap.height - croppedheight) / 2;
@@ -413,7 +418,7 @@ export function crop(
 export function pad(
   image: Jimp,
   padSize: number,
-  center: boolean = false,
+  center: boolean = false
 ): Jimp {
   // Get dimensions of the original image
   const width = image.getWidth();
@@ -421,7 +426,7 @@ export function pad(
   console.log(
     "image before padding",
     image,
-    image.bitmap.data.reduce((a, b) => a + b, 0),
+    image.bitmap.data.reduce((a, b) => a + b, 0)
   );
 
   // Create a new blank image with the padded dimensions
@@ -448,7 +453,7 @@ export function padImageToSquare(image: Jimp): Jimp {
 export function padToSquare(
   imageData: Float32Array,
   originalWidth: number,
-  originalHeight: number,
+  originalHeight: number
 ): Float32Array {
   // Determine the size of the square canvas (use the larger dimension)
   const sideLength = Math.max(originalWidth, originalHeight);
@@ -477,7 +482,7 @@ export function padToSquare(
 export function normalizeAndTranspose(
   image: Jimp,
   mean: number[],
-  std: number[],
+  std: number[]
 ): Float32Array {
   let imageBufferData = image.bitmap.data;
   const [redArray, greenArray, blueArray] = [
@@ -516,7 +521,7 @@ export function normalizeAndTranspose(
 export function normalize(
   image: Uint8Array,
   mean: number[],
-  std: number[],
+  std: number[]
 ): Float32Array {
   // 1. Get buffer data from image and create R, G, and B arrays.
   let imageBufferData = new Float32Array(image);
@@ -546,7 +551,7 @@ export function normalize(
 export function standardizeArray(
   image: Float32Array,
   mean: number[],
-  std: number[],
+  std: number[]
 ): Float32Array {
   // 1. Get buffer data from image and create R, G, and B arrays.
   // let imageBufferData = new Float32Array(image);
@@ -573,7 +578,7 @@ export function standardizeArray(
 export function normalizeArray(
   array: Float32Array,
   max: number,
-  min: number,
+  min: number
 ): Float32Array {
   let normalizedArray = new Float32Array(array.length);
   for (let i = 0; i < array.length; i++) {
@@ -585,7 +590,7 @@ export function normalizeArray(
 
 export function filterZero(
   oriArray: Float32Array,
-  preprocessedArray: Float32Array,
+  preprocessedArray: Float32Array
 ): Float32Array {
   for (let i = 0; i < oriArray.length; i++) {
     if (oriArray[i] === 0) {
@@ -600,7 +605,7 @@ export const overlayMasksOnImage = async (
   masks: [Jimp],
   x: number = 0,
   y: number = 0,
-  alpha: number = 0.5,
+  alpha: number = 0.5
 ) => {
   // Read the main image
   // Iterate over each mask path and apply it to the image
@@ -648,7 +653,7 @@ export function rowToCol(image: any, rowArray: any) {
 export function rotateImage90CW(
   arr: Float32Array,
   width: number,
-  height: number,
+  height: number
 ) {
   let rotatedArray: number[] = [];
   let counter = 0;
@@ -666,7 +671,7 @@ export function rotateImage90CW(
 export function rotateImage90CCW(
   arr: Float32Array,
   width: number,
-  height: number,
+  height: number
 ) {
   let rotatedArray: number[] = [];
   let counter = 0;
