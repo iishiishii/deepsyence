@@ -38,7 +38,7 @@ const NestedMenuItem = React.forwardRef<HTMLLIElement | null, NestedMenuItemProp
   const menuItemRef = useRef<any>(null);
   useImperativeHandle(ref, () => menuItemRef?.current);
 
-  const containerRef = useRef<any>(null);
+  const containerRef = useRef<HTMLInputElement>(null);
   useImperativeHandle(containerRefProp, () => containerRef.current);
 
   const menuContainerRef = useRef<any>(null);
@@ -62,7 +62,7 @@ const NestedMenuItem = React.forwardRef<HTMLLIElement | null, NestedMenuItemProp
 
   // Check if any immediate children are active
   const isSubmenuFocused = () => {
-    const active = containerRef?.current.ownerDocument.activeElement;
+    const active = containerRef?.current!.ownerDocument.activeElement;
     /* eslint-disable-next-line no-unsafe-optional-chaining */
     for (const child of menuContainerRef?.current.children) {
       if (child === active) {
@@ -91,10 +91,10 @@ const NestedMenuItem = React.forwardRef<HTMLLIElement | null, NestedMenuItemProp
       e.stopPropagation();
     }
 
-    const active = containerRef.current.ownerDocument.activeElement;
+    const active = containerRef.current!.ownerDocument.activeElement;
 
     if (e.key === "ArrowLeft" && isSubmenuFocused()) {
-      containerRef.current.focus();
+      containerRef.current!.focus();
     }
 
     if (e.key === "ArrowRight" && e.target === containerRef.current && e.target === active) {

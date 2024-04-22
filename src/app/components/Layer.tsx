@@ -21,7 +21,7 @@ import CircularWithValueLabel from "./ProgressLoad";
 
 export default function Layer(props) {
   const image = props.image;
-  console.log("image", image);
+  // console.log("image", image);
   // const [processedImage, setImage] = React.useState(image.img)
   const [detailsOpen, setDetailsOpen] = useState(image.opacity != 0);
   const [visibilityIcon, setVisibilityIcon] = useState(image.opacity != 0);
@@ -57,15 +57,36 @@ export default function Layer(props) {
       const end = 91;
 
       try {
+        let UPDATE_AMOUNT = (1 / ((end - start)*10)) * 10;
+        setProgress(UPDATE_AMOUNT);
+      
         for (let i = start; i < end; i++) {
           console.log("image.dimsRAS[1], image.dimsRAS[2]", image.dimsRAS[1], image.dimsRAS[2])
           // swap height and width to get row major order from npy array to column order
-          await samModel!.process(image, i) //.then((result) => {
-            setProgress((prevProgress) =>
-              prevProgress >= 100
-                ? 100
-                : prevProgress + (1 / (end - start)) * 100,
+
+            let updater = setInterval(
+              () => {
+                setProgress((prevProgress) => {
+                  let newProgress = prevProgress + UPDATE_AMOUNT;
+                  if (newProgress >= 90) {
+                    clearInterval(updater);
+                    newProgress = 90;
+                  }
+                  return newProgress;
+                });
+              },
+              1000,
             );
+            await samModel!.process(image, i).then(() => {
+              clearInterval(updater);
+              setProgress(100);
+              props.onAlert("Embedding loaded", false);
+            });
+            // setProgress((prevProgress) =>
+            //   prevProgress >= 100
+            //     ? 100
+            //     : prevProgress + (1 / (end - start)) * 100,
+            // );
         }
         setDone(!done);
         let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };

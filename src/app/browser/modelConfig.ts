@@ -28,32 +28,6 @@ export const ListImageModels = (
 
 export const models: ImageMetadata[] = [
   {
-    id: "segment-anything-quant",
-    title: "Segment Anything quantized",
-    description: "",
-    memEstimateMB: 2600,
-    type: ModelType.SegmentAnything,
-    sizeMB: 108,
-    configPath:
-      "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
-    modelPaths: new Map<string, string>([
-      ["encoder", new URL("./model/encoder-quant.onnx", document.baseURI).href],
-      [
-        "decoder",
-        new URL(
-          "./model/litemedsam_decoder_nomaskinput.opt.onnx",
-          document.baseURI
-        ).href,
-      ],
-    ]),
-    preprocessorPath: new URL(
-      "./model/segmen-anything-preprocess.json",
-      document.baseURI
-    ).href,
-    tags: ["segment-anything"],
-    referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
-  },
-  {
     id: "lite-medsam",
     title: "LiteMedSAM",
     description: "",
