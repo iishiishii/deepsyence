@@ -1,4 +1,7 @@
 const webpack = require("webpack");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const WriteFilePlugin = require("write-file-webpack-plugin");
+const path = require("path");
 
 module.exports = function override(config) {
   const fallback = config.resolve.fallback || {};
@@ -23,13 +26,10 @@ module.exports = function override(config) {
     }),
   ]);
   config.ignoreWarnings = [/Failed to parse source map/];
-  config.module.rules.push({
-    test: /\.(js|mjs|jsx)$/,
-    enforce: "pre",
-    loader: require.resolve("source-map-loader"),
-    resolve: {
-      fullySpecified: false,
-    },
-  });
+
+  // config.module.rules[0] = { parser: { requireEnsure: true } };
+  // console.log(config.module.rules);
+
+  config.plugins.push(new WriteFilePlugin());
   return config;
 };
