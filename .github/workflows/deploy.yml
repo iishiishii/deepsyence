@@ -49,7 +49,7 @@ jobs:
           OS_USER_DOMAIN_NAME: "Default"
           OS_REGION_NAME: "Melbourne"
         run:
-          ./run.sh
+          ./github/workflows/run.sh
 
       - name: Copy onnx wasm artifacts
         run: |
