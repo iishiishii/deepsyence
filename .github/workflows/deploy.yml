@@ -49,9 +49,9 @@ jobs:
           OS_USER_DOMAIN_NAME: "Default"
           OS_REGION_NAME: "Melbourne"
         run:
-          apt-get install rclone
+          sudo apt-get install rclone
           mkdir -p ~/.config/rclone
-          touch ~/.config/rclone/rclone.conf 
+          touch ~/.config/rclone/rclone.conf
           echo "[nectar-swift]" >> ~/.config/rclone/rclone.conf
           echo "type = swift" >> ~/.config/rclone/rclone.conf
           echo "env_auth = true" >> ~/.config/rclone/rclone.conf
