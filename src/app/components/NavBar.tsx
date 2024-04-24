@@ -105,13 +105,14 @@ export default function NavBar(props) {
 
   const loadSamModel = async (id) => {
     setLoading(true);
-    const result = await ImageModel.create(id);
+    const result = await ImageModel.create(id)
     setSamModel(result.model as SegmentAnythingModel);
-    setLoading(false);
+    setLoading(false); 
+
   };
 
   useEffect(() => {
-    loadSamModel("segment-anything-quant");
+    loadSamModel("efficient-sam");
   }, []);
 
   function handleTutorialRun() {
@@ -313,6 +314,17 @@ export default function NavBar(props) {
           </IconButton>
         </Tooltip>
         {tutorial}
+        <Dropdown 
+        trigger={<Button className="navbar-model" sx={{ color: "white" }}>Model</Button>}
+        menu={[
+          <DropdownMenuItem>          
+            <ModelSelector
+            tags={undefined}
+            imageType={ModelType.SegmentAnything}
+            callback={loadSamModel}/>
+        </DropdownMenuItem>
+        ]} />
+
       </Box>
     </div>
   );

@@ -9,13 +9,10 @@ import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import DeleteIcon from "@mui/icons-material/Delete";
-import * as ort from "onnxruntime-web";
 import AppContext from "../hooks/createContext";
 import { useContext, useEffect, useMemo, useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
-import { processImage } from "../helpers/niimath";
 import { brainExtractionModel } from "../helpers/brainExtractionModel";
-import npyjs from "npyjs";
 import CircularWithValueLabel from "./ProgressLoad";
 
 
