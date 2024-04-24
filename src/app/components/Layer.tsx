@@ -163,10 +163,6 @@ export default function Layer(props) {
     setVisibilityIcon(!visibilityIcon);
   }
 
-  function handleNiimath() {
-    processImage(image, props.onPreprocess);
-  }
-
   return (
     <Paper
       elevation={20}
