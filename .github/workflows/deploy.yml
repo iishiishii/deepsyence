@@ -50,6 +50,7 @@ jobs:
           OS_REGION_NAME: "Melbourne"
         run:
           apt-get install rclone
+          mkdir -p ~/.config/rclone
           touch ~/.config/rclone/rclone.conf 
           echo "[nectar-swift]" >> ~/.config/rclone/rclone.conf
           echo "type = swift" >> ~/.config/rclone/rclone.conf
