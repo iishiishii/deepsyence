@@ -39,6 +39,24 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: install
+      - name: push to nectar object storage
+        env:
+          OS_APPLICATION_CREDENTIAL_ID: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_ID }}
+          OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
+          OS_AUTH_URL: https://keystone.rc.nectar.org.au:5000/v3/
+          OS_AUTH_TYPE: v3applicationcredential
+          OS_PROJECT_NAME: "neurodesk"
+          OS_USER_DOMAIN_NAME: "Default"
+          OS_REGION_NAME: "Melbourne"
+        run:
+          apt-get install rclone
+          touch ~/.config/rclone/rclone.conf 
+          echo "[nectar-swift]" >> ~/.config/rclone/rclone.conf
+          echo "type = swift" >> ~/.config/rclone/rclone.conf
+          echo "env_auth = true" >> ~/.config/rclone/rclone.conf
+          echo "[DEBUG] Uploading via swift..."
+          rclone copy ~/.config/rclone/rclone.conf nectar-swift:deepsyence/model
+
       - name: Copy onnx wasm artifacts
         run: |
           cp node_modules/onnxruntime-web/dist/*.js public/js
