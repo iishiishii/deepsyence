@@ -25,3 +25,5 @@ __pycache__
 .vscode
 env_installer/
 !env_installer/construct.yaml
+public/js/*
+public/model/*

@@ -39,21 +39,15 @@ export const models: ImageMetadata[] = [
     modelPaths: new Map<string, string>([
       [
         "encoder",
-        new URL("./model/lite_medsam_encoder_optimized.onnx", document.baseURI)
-          .href,
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model/lite_medsam_encoder.onnx",
       ],
       [
         "decoder",
-        new URL(
-          "./model/litemedsam_decoder_nomaskinput.opt.onnx",
-          document.baseURI
-        ).href,
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model/lite_medsam_decoder.onnx",
       ],
     ]),
-    preprocessorPath: new URL(
-      "./model/lite-medsam-preprocess.json",
-      document.baseURI
-    ).href,
+    preprocessorPath:
+      "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model/lite-medsam-preprocess.json",
     tags: ["lite-medsam"],
     referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
   },
@@ -69,19 +63,15 @@ export const models: ImageMetadata[] = [
     modelPaths: new Map<string, string>([
       [
         "encoder",
-        new URL("./model/efficient_sam_vitt_encoder.onnx", document.baseURI)
-          .href,
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model/efficient_sam_vitt_encoder.onnx",
       ],
       [
         "decoder",
-        new URL("./model/efficient_sam_vitt_decoder.onnx", document.baseURI)
-          .href,
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model//efficient_sam_vitt_decoder.onnx",
       ],
     ]),
-    preprocessorPath: new URL(
-      "./model/efficient-sam-preprocess.json",
-      document.baseURI
-    ).href,
+    preprocessorPath:
+      "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model/efficient-sam-preprocess.json",
     tags: ["efficient-sam"],
     referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
   },
