@@ -1,4 +1,5 @@
 const webpack = require("webpack");
+const WorkBoxPlugin = require("workbox-webpack-plugin");
 
 module.exports = function override(config) {
   const fallback = config.resolve.fallback || {};
@@ -16,6 +17,12 @@ module.exports = function override(config) {
     path: require.resolve("path-browserify"),
   });
   config.resolve.fallback = fallback;
+  config.plugins.forEach((plugin) => {
+    if (plugin instanceof WorkBoxPlugin.InjectManifest) {
+      plugin.config.maximumFileSizeToCacheInBytes = 50 * 1024 * 1024;
+    }
+  });
+
   config.plugins = (config.plugins || []).concat([
     new webpack.ProvidePlugin({
       process: "process/browser",
