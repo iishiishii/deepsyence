@@ -42,8 +42,7 @@ jobs:
 
       - name: Buld production bundle
         uses: borales/actions-yarn@v4
-        env:
-          CI: false
+
         with:
           cmd: run build
       - name: Setup Pages
