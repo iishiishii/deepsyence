@@ -31,7 +31,7 @@ module.exports = function override(config) {
   ]);
   config.ignoreWarnings = [/Failed to parse source map/];
   config.module.rules.push({
-    test: /\.(js|mjs|jsx)$/,
+    test: /\.(js|mjs|jsx|ts|tsx)$/,
     enforce: "pre",
     loader: require.resolve("source-map-loader"),
     resolve: {
