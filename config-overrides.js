@@ -18,11 +18,6 @@ module.exports = function override(config) {
     path: require.resolve("path-browserify"),
   });
   config.resolve.fallback = fallback;
-  config.plugins.forEach((plugin) => {
-    if (plugin instanceof WorkBoxPlugin.InjectManifest) {
-      plugin.config.maximumFileSizeToCacheInBytes = 50 * 1024 * 1024;
-    }
-  });
 
   config.plugins = (config.plugins || []).concat([
     new webpack.ProvidePlugin({
@@ -42,7 +37,7 @@ module.exports = function override(config) {
     })
   );
   config.module.rules.push({
-    test: /\.(js|mjs|jsx|ts)$/,
+    test: /\.(js|mjs|jsx|ts|tsx)$/,
     enforce: "pre",
     loader: require.resolve("source-map-loader"),
     resolve: {
