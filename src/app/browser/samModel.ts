@@ -3,7 +3,7 @@ import * as ort from "onnxruntime-web";
 import { BaseImageModel } from "./base";
 import { boundingBox, modelInputProps } from "../helpers/Interfaces";
 import { modelData } from "../helpers/onnxModelAPI";
-import { maskImage } from "../helpers/imageHelpers";
+import { maskImage } from "../helpers/utils/maskHandlers";
 
 export type SAMResult = {
   elapsed: number;

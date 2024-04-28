@@ -1,9 +1,9 @@
 import * as ort from "onnxruntime-web";
-import { colToRow, rowToCol } from "./imageHelpers";
+import { colToRow, rowToCol } from "./utils/channelHandlers";
 
 export const brainExtractionModel = async (
   image: any,
-  onModel: (id: any, name: any, array: any) => void,
+  onModel: (id: any, name: any, array: any) => void
 ) => {
   try {
     let id = image.id;
@@ -27,7 +27,7 @@ export const brainExtractionModel = async (
     const inputTensor = new ort.Tensor(
       "float32",
       float32Data,
-      image.dims.slice(1).concat([1]),
+      image.dims.slice(1).concat([1])
     );
 
     // eslint-disable-next-line camelcase

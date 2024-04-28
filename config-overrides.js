@@ -42,7 +42,7 @@ module.exports = function override(config) {
     })
   );
   config.module.rules.push({
-    test: /\.(js|mjs|jsx|ts|tsx)$/,
+    test: /\.(js|mjs|jsx|ts)$/,
     enforce: "pre",
     loader: require.resolve("source-map-loader"),
     resolve: {

@@ -66,3 +66,35 @@ export function transposeChannelDim(
   const transposedData = redArray.concat(greenArray).concat(blueArray);
   return transposedData;
 }
+
+export function colToRow(image: any, colArray: any) {
+  let dims = image.dimsRAS;
+  let rowArray = new Float32Array(dims[1] * dims[2] * dims[3]);
+  console.log(dims);
+  for (let i = 0; i < dims[1]; i++) {
+    for (let j = 0; j < dims[2]; j++) {
+      for (let k = 0; k < dims[3]; k++) {
+        let indexCol = i + j * dims[1] + k * dims[1] * dims[2];
+        let indexRow = i * dims[2] * dims[3] + j * dims[3] + k;
+        rowArray[indexRow] = colArray[indexCol];
+      }
+    }
+  }
+  return rowArray;
+}
+
+export function rowToCol(image: any, rowArray: any) {
+  let dims = image.dimsRAS;
+  let colArray = new Float32Array(dims[1] * dims[2] * dims[3]);
+  console.log(dims);
+  for (let i = 0; i < dims[1]; i++) {
+    for (let j = 0; j < dims[2]; j++) {
+      for (let k = 0; k < dims[3]; k++) {
+        let indexCol = i + j * dims[1] + k * dims[1] * dims[2];
+        let indexRow = i * dims[2] * dims[3] + j * dims[3] + k;
+        colArray[indexCol] = rowArray[indexRow];
+      }
+    }
+  }
+  return colArray;
+}
