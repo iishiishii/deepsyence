@@ -39,15 +39,17 @@ export const models: ImageMetadata[] = [
     modelPaths: new Map<string, string>([
       [
         "encoder",
-        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model/lite_medsam_encoder.onnx",
+        new URL("./model/lite_medsam_encoder.onnx", document.baseURI).href,
       ],
       [
         "decoder",
-        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model/lite_medsam_decoder.onnx",
+        new URL("./model/lite_medsam_decoder.onnx", document.baseURI).href,
       ],
     ]),
-    preprocessorPath:
-      "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model/lite-medsam-preprocess.json",
+    preprocessorPath: new URL(
+      "./model/lite-medsam-preprocess.json",
+      document.baseURI
+    ).href,
     tags: ["lite-medsam"],
     referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
   },
@@ -63,15 +65,19 @@ export const models: ImageMetadata[] = [
     modelPaths: new Map<string, string>([
       [
         "encoder",
-        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model/efficient_sam_vitt_encoder.onnx",
+        new URL("./model/efficient_sam_vitt_encoder.onnx", document.baseURI)
+          .href,
       ],
       [
         "decoder",
-        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model//efficient_sam_vitt_decoder.onnx",
+        new URL("./model//efficient_sam_vitt_decoder.onnx", document.baseURI)
+          .href,
       ],
     ]),
-    preprocessorPath:
-      "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model/efficient-sam-preprocess.json",
+    preprocessorPath: new URL(
+      "./model/efficient-sam-preprocess.json",
+      document.baseURI
+    ).href,
     tags: ["efficient-sam"],
     referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
   },

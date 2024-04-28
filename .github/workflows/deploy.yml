@@ -39,7 +39,10 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: install
-
+      - name: Copy onnx wasm artifacts
+        run: |
+          cp node_modules/onnxruntime-web/dist/*.js public/js
+          cp node_modules/onnxruntime-web/dist/*.wasm public/js
       - name: Buld production bundle
         uses: borales/actions-yarn@v4
         env:

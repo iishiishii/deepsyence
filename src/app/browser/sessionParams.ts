@@ -3,7 +3,7 @@ export const SessionParams: SessionParameters = {
   executionProviders: ["wasm"],
   memoryLimitMB: 0,
   cacheSizeMB: 2500,
-  wasmRoot: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.0/dist/",
+  wasmRoot: new URL("./js/", document.baseURI).href,
 };
 
 export interface SessionParameters {

@@ -26,6 +26,6 @@ __pycache__
 env_installer/
 !env_installer/construct.yaml
 public/js/*
-public/model/*
+
 !public/model/sub-M2002_ses-a1440_T2w.nii
 !public/model/lesion_mask.nii
