@@ -1,7 +1,6 @@
 import Jimp from "jimp";
 import { Tensor } from "onnxruntime-web";
-import cv from "opencv-ts";
-// import { cv } from "opencv-wasm";
+import { cv } from "opencv-web";
 import { addChannel } from "./channelHandlers";
 
 export function convertArrayToTensor(

@@ -10150,12 +10150,10 @@ open@^9.1.0:
     is-inside-container "^1.0.0"
     is-wsl "^2.2.0"
 
-opencv-ts@^1.3.6:
-  version "1.3.6"
-  resolved "https://registry.yarnpkg.com/opencv-ts/-/opencv-ts-1.3.6.tgz#2242f2c051be272861edc8d7d6ab18b590f842f3"
-  integrity sha512-8iG+ujpzsvc5W7vP0WH0TFUOODZFulp7SBzy2Av2xXmHrHVKw7HWKyutLxmstAkNa7nD6BgnDrEVxTsI/mDkeQ==
-  dependencies:
-    typescript "^4.2.3"
+opencv-web@^4.9.0:
+  version "4.9.0"
+  resolved "https://registry.yarnpkg.com/opencv-web/-/opencv-web-4.9.0.tgz#c35b5c785dd6e222afa06c2faa45993fa5c2b971"
+  integrity sha512-k/KVRWG0J/NmE27ksd0itOiGWnAMng9QyJH3NsGo2Yhev1SNbdaVH/nnyGl8ygSPMfRn0JZL3QibAZlkwEypEg==
 
 optionator@^0.8.1:
   version "0.8.3"
@@ -13722,7 +13720,7 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==
 
-typescript@^4.2.3, typescript@^4.9.5:
+typescript@^4.9.5:
   version "4.9.5"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
   integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==

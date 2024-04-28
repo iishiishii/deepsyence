@@ -1,4 +1,4 @@
-import cv, { Scalar } from "opencv-ts";
+import { cv } from "opencv-web";
 import { addChannel, stackSliceToRGB } from "./channelHandlers";
 
 export function getMax(arr) {
@@ -76,7 +76,7 @@ export function pad(image: any, target_size: number) {
   if (image.type() !== cv.CV_8UC4) {
     image4Channels = addChannel(image.data);
   }
-  const value: Scalar = new cv.Scalar(0, 0, 0, 0);
+  // const value: Scalar = new cv.Scalar(0, 0, 0, 0);
   //  copyMakeBorder( src, dst, top, bottom, left, right, borderType, value );
   cv.copyMakeBorder(
     image,
@@ -86,7 +86,7 @@ export function pad(image: any, target_size: number) {
     0,
     padw,
     cv.BORDER_CONSTANT,
-    value
+    new cv.Scalar(0, 0, 0, 0)
   );
 
   return dstPadded;

@@ -28,7 +28,7 @@
     "npyjs": "^0.4.0",
     "numjs": "^0.16.1",
     "onnxruntime-web": "^1.15.1",
-    "opencv-ts": "^1.3.6",
+    "opencv-web": "^4.9.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.10.1",

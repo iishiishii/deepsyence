@@ -1,3 +1,4 @@
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 const WorkBoxPlugin = require("workbox-webpack-plugin");
 
@@ -30,12 +31,29 @@ module.exports = function override(config) {
     }),
   ]);
   config.ignoreWarnings = [/Failed to parse source map/];
+  config.plugins.push(
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: "node_modules/opencv-web/opencv_js.wasm",
+          to: "static/js",
+        },
+      ],
+    })
+  );
   config.module.rules.push({
     test: /\.(js|mjs|jsx|ts|tsx)$/,
     enforce: "pre",
     loader: require.resolve("source-map-loader"),
     resolve: {
       fullySpecified: false,
+    },
+  });
+  config.module.rules.push({
+    test: /opencv_js\.wasm$/,
+    loader: "file-loader",
+    options: {
+      publicPath: "build/static/js",
     },
   });
   return config;
