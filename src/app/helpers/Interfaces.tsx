@@ -19,12 +19,14 @@ export interface modelInputProps {
   clickType: number;
 }
 
-export interface modeDataProps {
-  clicks?: Array<modelInputProps>;
-  tensor: Tensor;
-  modelScale: modelScaleProps;
+export interface boundingBox {
+  topLeft: modelInputProps;
+  bottomRight: modelInputProps;
 }
 
-export interface ToolProps {
-  handleMouseMove: (e: any) => void;
+export interface modeDataProps {
+  clicks?: modelInputProps[];
+  bbox?: boundingBox;
+  tensor: Tensor;
+  modelScale: modelScaleProps;
 }

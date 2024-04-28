@@ -1,7 +1,7 @@
-import { viewType } from "../types";
+import { ViewType } from "../types";
 import { v4 as uuid } from "uuid";
 
-export function updateSliceType(nv: any, newSliceType: viewType) {
+export function updateSliceType(nv: any, newSliceType: ViewType) {
   if (newSliceType === "axial") {
     nv.setSliceType(nv.sliceTypeAxial);
   } else if (newSliceType === "coronal") {
@@ -19,26 +19,20 @@ function setImage(
   nv: any,
   id: any,
   name: any,
-  array: Float32Array,
+  array: Float32Array | Uint8Array | Uint16Array | Int16Array | Uint32Array,
   niimath: boolean,
 ) {
   let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
-  console.log(
-    "processed image ",
-    modelOutput.img.reduce(
-      (partialSum: number, a: number) => partialSum + a,
-      0,
-    ),
-  );
+  // console.log("processed image ", array);
   if (!modelOutput) {
     console.log("image not found");
     return;
   }
-  console.log("model output ", modelOutput);
+  // console.log("model output ", modelOutput);
   let processedImage = modelOutput.clone();
   processedImage.id = uuid();
   processedImage.name = name.split(".")[0] + "_processed.nii.gz";
-  processedImage.permRAS = [1,2,3];
+  processedImage.permRAS = [1, 2, 3];
   if (niimath) {
     processedImage.img = array;
     switch (processedImage.hdr.datatypeCode) {
@@ -66,23 +60,23 @@ function setImage(
         throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
     }
   } else {
-    processedImage.hdr.datatypeCode = processedImage.DT_FLOAT;
+    processedImage.hdr.datatypeCode = processedImage.DT_RGB;
     processedImage.img = array;
   }
   processedImage.trustCalMinMax = false;
   processedImage.calMinMax();
   processedImage.dims = modelOutput.dims;
-  console.log("processed image", processedImage);
-  console.log(
-    processedImage.img.reduce(
-      (partialSum: number, a: number) => partialSum + a,
-      0,
-    ),
-  );
+  // console.log("processed image", processedImage);
+  // console.log(
+  //   processedImage.img.reduce(
+  //     (partialSum: number, a: number) => partialSum + a,
+  //     0,
+  //   ),
+  // );
   return processedImage;
 }
 
-export function nvPostSam(nv: any, id: any, name: any, array: Float32Array) {
+export function nvPostSam(nv: any, id: any, name: any, array: Uint8Array) {
   let processedImage = setImage(nv, id, name, array, false);
   nv.loadDrawing(processedImage);
   nv.setDrawColormap("$slicer3d");

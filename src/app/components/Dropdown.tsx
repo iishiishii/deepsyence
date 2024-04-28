@@ -37,6 +37,10 @@ export const Dropdown = React.forwardRef(
       }
     };
 
+    const handleForceClose = () => {
+      onControlledOpen ? onControlledOpen(null) : setInternalOpen(null);
+    };
+
     const handleClose = (event: any) => {
       event.stopPropagation();
 
@@ -45,10 +49,6 @@ export const Dropdown = React.forwardRef(
       }
 
       handleForceClose();
-    };
-
-    const handleForceClose = () => {
-      onControlledOpen ? onControlledOpen(null) : setInternalOpen(null);
     };
 
     const renderMenu: any = (menuItem: any, index: number) => {

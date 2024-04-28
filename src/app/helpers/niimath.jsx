@@ -19,16 +19,16 @@ let niimathWasm = await (async () => {
 })();
 
 export function processImage(image, onPreprocess) {
-  let process_image = image.clone();
+  let processImage = image.clone();
   // let image = nv.volumes[nv.getVolumeIndexByID(id)].clone();
-  process_image.img = new Uint8Array(process_image.img);
-  process_image.hdr.datatypeCode = process_image.DT_UNSIGNED_CHAR;
-  let imageMetadata = process_image.getImageMetadata();
-  let imageBytes = process_image.img.buffer;
+  processImage.img = new Uint8Array(processImage.img);
+  processImage.hdr.datatypeCode = processImage.DT_UNSIGNED_CHAR;
+  let imageMetadata = processImage.getImageMetadata();
+  let imageBytes = processImage.img.buffer;
 
   // const input = document.getElementById('command');
   const cmd = "-round";
-  // instance.postMessage([imageMetadata, process_image.img.buffer, cmd, isNewLayer]);
+  // instance.postMessage([imageMetadata, processImage.img.buffer, cmd, isNewLayer]);
   console.log(imageMetadata);
   // niimathWasmPromise.then((niimathWasm) => {
   // const niimathWasm = niimathWasmPromise;

@@ -5,11 +5,15 @@ import reportWebVitals from "./reportWebVitals";
 import "./app/styles/index.css";
 import NiiVue from "./app/niivue";
 import AppContextProvider from "./app/hooks/context";
+import Tutorial from "./app/components/Tutorial";
 
 const root = ReactDOM.createRoot(document.getElementById("app") as HTMLElement);
 root.render(
   <AppContextProvider>
-    <NiiVue />
+    <>
+      <Tutorial />
+      <NiiVue />
+    </>
   </AppContextProvider>,
 );
 

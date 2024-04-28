@@ -1,3 +1,4 @@
+/* eslint-disable camelcase*/
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 // All rights reserved.
 
@@ -7,40 +8,75 @@
 import { Tensor } from "onnxruntime-web";
 import { modeDataProps } from "./Interfaces";
 
-const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
+const modelData = ({ clicks, bbox, tensor, modelScale }: modeDataProps) => {
   const imageEmbedding = tensor;
-  let pointCoords;
-  let pointLabels;
   let pointCoordsTensor;
   let pointLabelsTensor;
-  console.log("clicks", clicks, "tensor", tensor, "modelScale", modelScale);
+  let pointCoords;
+  let pointLabels;
+
+  const widthScale =
+    Math.floor(modelScale.width * modelScale.samScale + 0.5) / modelScale.width;
+  const heightScale =
+    Math.floor(modelScale.height * modelScale.samScale + 0.5) /
+    modelScale.height;
+
+  // console.log(
+  //   "clicks",
+  //   clicks,
+  //   "tensor",
+  //   tensor,
+  //   "modelScale",
+  //   modelScale,
+  //   "bbox",
+  //   bbox,
+  // );
   // Check there are input click prompts
   if (clicks) {
-    let n = clicks.length;
-    console.log("n ", n);
+    let clickLength = clicks.length;
+    const padding = bbox ? 2 : 1;
+    pointCoords = new Float32Array(2 * (clickLength + padding));
+    pointLabels = new Float32Array(clickLength + padding);
     // If there is no box input, a single padding point with
     // label -1 and coordinates (0.0, 0.0) should be concatenated
     // so initialize the array to support (n + 1) points.
-    pointCoords = new Float32Array(2 * (n + 1));
-    pointLabels = new Float32Array(n + 1);
 
     // Add clicks and scale to what SAM expects
-    for (let i = 0; i < n; i++) {
-      pointCoords[2 * i] = clicks[i].x * modelScale.samScale;
-      pointCoords[2 * i + 1] = clicks[i].y * modelScale.samScale;
+    for (let i = 0; i < clickLength; i++) {
+      pointCoords[2 * i] = clicks[i].x * widthScale;
+      pointCoords[2 * i + 1] = clicks[i].y * heightScale;
       pointLabels[i] = clicks[i].clickType;
     }
 
-    // Add in the extra point/label when only clicks and no box
-    // The extra point is at (0, 0) with label -1
-    pointCoords[2 * n] = 0.0;
-    pointCoords[2 * n + 1] = 0.0;
-    pointLabels[n] = -1.0;
+    if (bbox) {
+      // console.log("bbox loop", bbox);
+      pointCoords[2 * clickLength] = bbox.topLeft.x * widthScale;
+      pointCoords[2 * clickLength + 1] = bbox.topLeft.y * heightScale;
+      pointLabels[clickLength] = bbox.topLeft.clickType;
+      pointCoords[2 * clickLength + 2] = bbox.bottomRight.x * widthScale;
+      pointCoords[2 * clickLength + 3] = bbox.bottomRight.y * heightScale;
+      pointLabels[clickLength + 1] = bbox.bottomRight.clickType;
+    } else {
+      // Add in the extra point/label when only clicks and no box
+      // The extra point is at (0, 0) with label -1
+      pointCoords[2 * clickLength] = 0.0;
+      pointCoords[2 * clickLength + 1] = 0.0;
+      pointLabels[clickLength] = -1.0;
+    }
+    // console.log("bbox length", pointCoords, pointLabels);
 
     // Create the tensor
-    pointCoordsTensor = new Tensor("float32", pointCoords, [1, n + 1, 2]);
-    pointLabelsTensor = new Tensor("float32", pointLabels, [1, n + 1]);
+    pointCoordsTensor = new Tensor("float32", pointCoords, [
+      1,
+      clickLength + padding,
+      2,
+    ]);
+    pointLabelsTensor = new Tensor("float32", pointLabels, [
+      1,
+      clickLength + padding,
+    ]);
   }
+
   const imageSizeTensor = new Tensor("float32", [
     modelScale.height,
     modelScale.width,
@@ -58,20 +94,6 @@ const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
   // There is no previous mask, so default to 0
   const hasMaskInput = new Tensor("float32", [0]);
 
-  console.log(
-    "imageEmbedding",
-    imageEmbedding,
-    "pointCoordsTensor",
-    pointCoordsTensor,
-    "pointLabelsTensor",
-    pointLabelsTensor,
-    "imageSizeTensor",
-    imageSizeTensor,
-    "maskInput",
-    maskInput,
-    "hasMaskInput",
-    hasMaskInput,
-  );
   return {
     image_embeddings: imageEmbedding,
     point_coords: pointCoordsTensor,

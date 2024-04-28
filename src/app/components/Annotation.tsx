@@ -1,21 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Box, Grid, Select } from "@mui/material";
-import { MenuItem } from "@mui/material";
-import BrushIcon from "@mui/icons-material/Brush";
-import { BsDot, BsFillEraserFill } from "react-icons/bs";
+import { useContext } from "react";
+import { Grid } from "@mui/material";
+import { BsFillEraserFill } from "react-icons/bs";
 import { RiPaintFill } from "react-icons/ri";
-import { AiOutlineEdit } from "react-icons/ai";
-import { RxDotFilled } from "react-icons/rx";
+import { AiOutlineClose, AiOutlineEdit } from "react-icons/ai";
 import Divider from "@mui/material/Divider";
-import {
-  ColorResult,
-  getContrastingColor,
-  color as handleColor,
-  hexToHsva,
-  HsvaColor,
-  hsvaToHex,
-  validHex,
-} from "@uiw/color-convert";
+import { color as handleColor, hsvaToHex } from "@uiw/color-convert";
 import Swatch from "@uiw/react-color-swatch";
 import { IconContext } from "react-icons";
 import AppContext from "../hooks/createContext";
@@ -37,30 +26,31 @@ export default function Annotation({ niivue }: Props) {
   const colors = ["#80AE80", "#F1D691", "#B17A65", "#6FB8D2", "#D8654F"];
 
   function doDrawPen(event: any) {
-    console.log(event);
-    let hex = hsvaToHex(event);
-    console.log(hex);
-    let colorIndex = colors.indexOf(hex.toUpperCase());
-    console.log(colorIndex);
-    const mode = modeValueMaps[colorIndex];
-    console.log(mode);
+    let mode = event;
+    if (event !== 0 && event !== -1) {
+      let hex = hsvaToHex(event);
+      let colorIndex = colors.indexOf(hex.toUpperCase());
+      mode = modeValueMaps[colorIndex];
+    }
     nv.setDrawingEnabled(mode >= 0);
     nv.setPenValue(mode, filled);
-    if (mode === 12)
-      //erase selected cluster
-      nv.setPenValue(-0);
     setPenMode(mode);
   }
 
   function handleFill(fill: boolean) {
-    console.log(fill);
-    nv.setPenValue(penMode, fill);
+    nv.setDrawingEnabled(true);
+    if (penMode < 0) {
+      nv.setPenValue(1, fill);
+      setPenMode(1);
+    } else {
+      nv.setPenValue(penMode, fill);
+    }
     setFill(fill);
-    console.log(filled);
+    // console.log(filled);
   }
 
   return (
-    <div style={{ width: "210px" }}>
+    <div className="navbar-draw" style={{ width: "210px" }}>
       {/* <Grid container spacing={1} alignItems="flex-end"> */}
       <Grid item xs={10} marginLeft={"10px"}>
         <Swatch
@@ -87,14 +77,31 @@ export default function Annotation({ niivue }: Props) {
         sx={{ my: "1px", borderWidth: "1px" }}
       />
       <Grid container spacing={1} alignItems="flex-end">
-        <Grid item xs={3} marginLeft={"20px"}>
-          <BsFillEraserFill size={22} />
-        </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={2} marginLeft={"20px"}>
           <IconContext.Provider
             value={{
               style: {
-                boxShadow: filled == true ? "inset 1px 1px 1px #496A81" : "",
+                boxShadow: penMode == 0 ? "inset 1px 1px 1px #496A81" : "",
+              },
+            }}
+          >
+            <BsFillEraserFill
+              size={22}
+              onClick={(e) => {
+                e.stopPropagation();
+                doDrawPen(0);
+              }}
+            />
+          </IconContext.Provider>
+        </Grid>
+        <Grid item xs={2}>
+          <IconContext.Provider
+            value={{
+              style: {
+                boxShadow:
+                  filled == true && penMode > 0
+                    ? "inset 1px 1px 1px #496A81"
+                    : "",
               },
             }}
           >
@@ -109,11 +116,14 @@ export default function Annotation({ niivue }: Props) {
             />
           </IconContext.Provider>
         </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={2}>
           <IconContext.Provider
             value={{
               style: {
-                boxShadow: filled == false ? "inset 1px 1px 1px #496A81" : "",
+                boxShadow:
+                  filled == false && penMode > 0
+                    ? "inset 1px 1px 1px #496A81"
+                    : "",
               },
             }}
           >
@@ -123,6 +133,24 @@ export default function Annotation({ niivue }: Props) {
                 e.stopPropagation();
                 e.preventDefault();
                 handleFill(false);
+              }}
+            />
+          </IconContext.Provider>
+        </Grid>
+        <Grid item xs={2}>
+          <IconContext.Provider
+            value={{
+              style: {
+                boxShadow: penMode < 0 ? "inset 1px 1px 1px #496A81" : "",
+              },
+            }}
+          >
+            <AiOutlineClose
+              size={22}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                doDrawPen(-1);
               }}
             />
           </IconContext.Provider>

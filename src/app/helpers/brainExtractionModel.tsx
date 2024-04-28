@@ -1,5 +1,5 @@
 import * as ort from "onnxruntime-web";
-import { colToRow, rowToCol } from "./maskUtils";
+import { colToRow, rowToCol } from "./imageHelpers";
 
 export const brainExtractionModel = async (
   image: any,
@@ -14,11 +14,10 @@ export const brainExtractionModel = async (
     console.log(ort.env.wasm.wasmPaths);
     // @ts-ignore
 
-    let model_url = new URL("./model/model_dynamic.onnx", document.baseURI)
-      .href;
-    console.log(model_url);
+    let modelUrl = new URL("./model/model_dynamic.onnx", document.baseURI).href;
+    console.log(modelUrl);
 
-    let session = await ort.InferenceSession.create(model_url, {
+    let session = await ort.InferenceSession.create(modelUrl, {
       executionProviders: ["wasm"],
     });
 
@@ -31,8 +30,7 @@ export const brainExtractionModel = async (
       image.dims.slice(1).concat([1]),
     );
 
-    // prepare feeds. use model input names as keys
-    //const feeds = { a: tensorA, b: tensorB }
+    // eslint-disable-next-line camelcase
     let feeds = { input_2: inputTensor };
 
     // feed inputs and run

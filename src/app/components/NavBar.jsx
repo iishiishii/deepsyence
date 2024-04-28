@@ -1,32 +1,41 @@
 /* eslint-disable react/jsx-key*/
-
-import * as React from "react";
-import AppBar from "@mui/material/AppBar";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
+import { useContext, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import View from "./View";
 import Annotation from "./Annotation";
-import { Box, Link } from "@mui/material";
+import { Box } from "@mui/material";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { Dropdown, DropdownMenuItem, DropdownNestedMenuItem } from "./Dropdown";
-import NestedMenuItem from "./NestedMenuItem";
 import NVTick from "./Tick";
+import ModelSelector from "./ModelSelector";
+import { ModelType } from "../browser/modelConfig";
+import { SegmentAnythingModel } from "../browser/samModel";
+import { ImageModel } from "../browser/imageModel";
+import AppContext from "../hooks/createContext";
+import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { IconButton } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
+import Tutorial from "./Tutorial";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 
 export default function NavBar(props) {
   const nv = props.nv;
 
-  const [color, setColor] = React.useState("Gray");
-  const [sliceType, setSliceType] = React.useState("multi");
-  const [radiological, setRadiological] = React.useState(false);
-  const [crosshair3D, setCrosshair3D] = React.useState(false);
-  const [colorBar, setColorBar] = React.useState(nv.opts.isColorbar);
-  const [clipPlane, setClipPlane] = React.useState(
+  const [color, setColor] = useState("Gray");
+  const [sliceType, setSliceType] = useState("multi");
+  const [radiological, setRadiological] = useState(false);
+  const [crosshair3D, setCrosshair3D] = useState(false);
+  const [colorBar, setColorBar] = useState(nv.opts.isColorbar);
+  const [clipPlane, setClipPlane] = useState(
     nv.currentClipPlaneIndex > 0 ? true : false,
   );
+  const [tutorialRun, setTutorialRun] = useState(false);
+  let tutorial = tutorialRun ? <Tutorial /> : null;
+  const {
+    clicks: [, setClicks],
+    model: [, setSamModel],
+    modelLoading: [, setLoading],
+    positivePoints: [, setPositivePoints],
+  } = useContext(AppContext);
 
   function nvUpdateCrosshair3D() {
     nv.opts.show3Dcrosshair = !crosshair3D;
@@ -80,29 +89,50 @@ export default function NavBar(props) {
     input.multiple = true;
 
     input.onchange = async function () {
-      for (var i = 0; i < input.files.length; i++) {
+      for (let i = 0; i < input.files.length; i++) {
         props.onAddLayer(input.files[i]);
       }
     };
 
     input.click();
+    setClicks(null);
   }
 
   function handleSaveImage() {
     nv.saveImage("draw.nii", false);
   }
 
+  const loadSamModel = async (id) => {
+    setLoading(true);
+    const result = await ImageModel.create(id);
+    setSamModel(result.model);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadSamModel("segment-anything-quant");
+  }, []);
+
+  function handleTutorialRun() {
+    // console.log("tutorial run", tutorialRun);
+    setTutorialRun(!tutorialRun);
+  }
+
   return (
     <div style={{ width: "100%" }}>
       <Box sx={{ height: "36px", backgroundColor: "#496A81" }}>
         <Dropdown
-          trigger={<Button sx={{ color: "white" }}>File</Button>}
+          trigger={
+            <Button className="navbar-file" sx={{ color: "white" }}>
+              File
+            </Button>
+          }
           menu={[
-            <DropdownMenuItem onClick={handleAddLayer}>
-              {"Upload File"}
-            </DropdownMenuItem>,
+            // <DropdownMenuItem onClick={handleAddLayer}>
+            //   {"Upload File"}
+            // </DropdownMenuItem>,
             <DropdownMenuItem onClick={handleSaveImage}>
-              {"Download File"}
+              {"Download Annotation"}
             </DropdownMenuItem>,
           ]}
         />
@@ -241,9 +271,46 @@ export default function NavBar(props) {
           ]}
         />
         <Dropdown
-          trigger={<Button sx={{ color: "white" }}>Annotation</Button>}
+          trigger={
+            <Button className="navbar-draw" sx={{ color: "white" }}>
+              Annotation
+            </Button>
+          }
           menu={[<Annotation niivue={nv} />]}
         />
+        <Tooltip title="Region of Interest point">
+          <IconButton
+            className="navbar-foreground-point"
+            sx={{ color: "white" }}
+            onClick={(e) => {
+              setPositivePoints(true);
+            }}
+          >
+            <PlusCircleOutlined />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Background point">
+          <IconButton
+            className="navbar-background-point"
+            sx={{ color: "white" }}
+            onClick={(e) => {
+              setPositivePoints(false);
+            }}
+          >
+            <MinusCircleOutlined />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Tutorial">
+          <IconButton
+            sx={{ color: "white" }}
+            onClick={(e) => {
+              handleTutorialRun();
+            }}
+          >
+            <MenuBookIcon sx={{ color: "white" }} />
+          </IconButton>
+        </Tooltip>
+        {tutorial}
       </Box>
     </div>
   );

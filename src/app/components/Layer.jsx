@@ -11,230 +11,243 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import DeleteIcon from "@mui/icons-material/Delete";
 import * as ort from "onnxruntime-web";
 import AppContext from "../hooks/createContext";
-import React, { useContext, useEffect, useState } from "react";
-import Checkbox from "@mui/material/Checkbox";
-import npyjs from "npyjs";
+import { useContext, useEffect, useMemo, useState } from "react";
+import Tooltip from "@mui/material/Tooltip";
 import { processImage } from "../helpers/niimath";
 import { brainExtractionModel } from "../helpers/brainExtractionModel";
-import { samDecoder, samEncoder } from "../helpers/samModel";
-import { resizeImageData } from "../helpers/scaleHelper";
-import { colToRow } from "../helpers/maskUtils"
-import { convertArrayToImg, convertFloatToImg, convertFloatToInt8, convertImgToFloat, imageToDataURL, normalize, normalizeAndTranspose, padImageToSquare, padToSquare, resize, resize_longer, transposeChannelDim } from "../helpers/imageHelpers"
+import {
+  convertArrayToImg,
+  imagedataToImage,
+  normalize,
+  padToSquare,
+  resizeLonger,
+  stackSliceToRGB,
+  transposeChannelDim,
+} from "../helpers/imageHelpers";
+import npyjs from "npyjs";
+import CircularWithValueLabel from "./ProgressLoad";
 
 export default function Layer(props) {
   const image = props.image;
   // const [processedImage, setImage] = React.useState(image.img)
-  const [detailsOpen, setDetailsOpen] = React.useState(false);
-  const [visibilityIcon, setVisibilityIcon] = React.useState(true);
-  const [opacity, setOpacity] = React.useState(image.opacity);
-  const [selected, setSelected] = React.useState();
+  const [detailsOpen, setDetailsOpen] = useState(image.opacity != 0);
+  const [visibilityIcon, setVisibilityIcon] = useState(image.opacity != 0);
+  const [opacity, setOpacity] = useState(image.opacity);
+  const [selected, setSelected] = useState();
+  const [done, setDone] = useState(false);
   const {
     clicks: [clicks],
-    embedded: [embedded, setEmbedded],
-    maskImg: [, setMaskImg],
+    bbox: [bbox, setBbox],
+    maskImg: [maskImg, setMaskImg],
+    model: [samModel],
+    penMode: [penMode],
+    modelLoading: [loading],
   } = useContext(AppContext);
-
+  const [progress, setProgress] = useState(0);
+  const [fetchRate, setFetchRate] = useState(0);
+  const [embedded, setEmbedded] = useState(null);
   let Visibility = visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />;
   let ArrowIcon = detailsOpen ? (
     <KeyboardArrowUpIcon />
   ) : (
     <KeyboardArrowDownIcon />
   );
-  // let SelectIcon = selected ? <Checkbox checked /> : <Checkbox />;
-
-  // function handleSelect() {
-  //   setSelected(!selected);
-  //   props.onSelect(image);
-  // }
-
-  // pre-computed image embedding
-  // useEffect(() => {
-  //   if (clicks) {
-  //     console.log("embedded array", embedded[clicks[0].z])
-  //     setSelected(embedded[clicks[0].z])
-
-  //   }
-  //   const click = {
-  //     x: 50,
-  //     y: 40,
-  //     clickType: 1,
-  //   };
-  //   setClick([click]);
-  //   Load the Segment Anything pre-computed embedding
-  //     Promise.resolve(samEncoder(image)).then(
-  //       (embedding) => {
-  //         setTensor(encodedTensor)}
-  //     );
-  // }, [clicks]);
 
   useEffect(() => {
-    console.log("selected array", selected)
+    async function checkResponseTime(testURL) {
+      let time1 = performance.now();
+      await fetch(testURL);
+      let time2 = performance.now();
+      return 43783 / (time2 - time1);
+    }
 
-    if (clicks && selected !== null) { // Check if clicks changed and selected is not null
-      console.log("selected array", selected)
-      
+    (async () => {
+      // for the purpose of this snippet example, some host with CORS response
+      let rate = await checkResponseTime(
+        "https://iishiishii.github.io/deepsyence/process-image.wasm",
+      );
+      console.log(rate);
+      setFetchRate(rate);
+    })();
+  }, []);
+
+  const preprocess = (sliceId) => {
+    const MEAN = [123.675, 116.28, 103.53],
+      STD = [58.395, 57.12, 57.375];
+    const imageRAS = image.img2RAS();
+    const imageArray = imageRAS.slice(
+      image.dims[1] * image.dims[2] * sliceId,
+      image.dims[1] * image.dims[2] * (sliceId + 1),
+    );
+
+    const imageUint8 = new Uint8Array(imageArray);
+    const image3Channels = stackSliceToRGB(imageUint8);
+    const arrayToImage = convertArrayToImg(image3Channels, [
+      image.dims[1],
+      image.dims[2],
+    ]);
+    const resizedImage = resizeLonger(arrayToImage, 1024);
+    const normalizedArray = normalize(resizedImage.bitmap.data, MEAN, STD);
+    const paddedImage = padToSquare(
+      normalizedArray,
+      resizedImage.bitmap.width,
+      resizedImage.bitmap.height,
+      [0, 0, 0],
+    );
+
+    const transposedArray = transposeChannelDim(paddedImage, 3);
+    return transposedArray;
+  };
+
+  const runEncoder = async () => {
+    // console.log("image name", image);
+    if (image.name === "sub-M2002_ses-a1440_T2w.nii") {
+      const IMAGE_EMBEDDING =
+        "https://objectstorage.us-ashburn-1.oraclecloud.com/n/sd63xuke79z3/b/neurodesk/o/sub-M2002_ses-a1440_T2w.npy";
+      // const IMAGE_EMBEDDING = new URL(
+      //   "./model/sub-M2002_ses-a1440_T2w.npy",
+      //   document.baseURI,
+      // ).href;
+      // Load the Segment Anything pre-computed embedding
+      let updateAmount = (1 / 90) * 100;
+      setProgress(updateAmount);
+      try {
+        let updater = setInterval(
+          () => {
+            setProgress((prevProgress) => {
+              let newProgress = prevProgress + updateAmount;
+              if (newProgress >= 90) {
+                clearInterval(updater);
+                newProgress = 90;
+              }
+              return newProgress;
+            });
+          },
+          922747008 / fetchRate / 10,
+        );
+
+        loadNpyTensor(IMAGE_EMBEDDING, "float32")
+          .then((embedding) => {
+            if (embedding) {
+              setEmbedded([...embedding]);
+            } else {
+              console.debug("Server didn't start in time");
+            }
+          })
+          .then(() => {
+            clearInterval(updater);
+            setProgress(100);
+            props.onAlert("Embedding loaded", false);
+          });
+
+        let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
+        let bottomRight = { x: 153, y: 214, z: 0, clickType: 3 };
+        setBbox({ topLeft, bottomRight });
+        setMaskImg(
+          new Uint8Array(
+            image.dimsRAS[1] * image.dimsRAS[2] * image.dimsRAS[3],
+          ).fill(0),
+        );
+      } catch (error) {
+        props.onAlert(`error embedding ${error}`);
+        console.log("error embedding", error);
+      }
+    } else {
+      setEmbedded([]);
+      const start = 50;
+      const end = Math.floor((image.dims[2] / 3) * 2);
+
+      for (let i = 0; i < start; i++) {
+        setEmbedded((embedded) => [...embedded, []]);
+      }
+      try {
+        for (let i = start; i < end; i++) {
+          const preprocessedImage = preprocess(i);
+          // console.log("samModel", samModel);
+          await samModel.process(preprocessedImage).then((result) => {
+            if (i === end - 1) {
+              // https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
+              setEmbedded((embedded) => [...embedded, ...result.embedding]);
+            }
+          });
+          setProgress((prevProgress) =>
+            prevProgress >= 100
+              ? 100
+              : prevProgress + (1 / (end - start)) * 100,
+          );
+        }
+        setDone(!done);
+      } catch (error) {
+        props.onAlert(`Encoder ${error}`);
+        console.log("error encoder", error);
+      }
+    }
+  };
+
+  const runDecoder = async () => {
+    try {
+      if (image.name === "lesion_mask.nii") return;
+      if (clicks.length === 0 && bbox.length === 0) return;
+      if (embedded === undefined || embedded == null) {
+        console.log(`No embedding found for ${image.name}`);
+        throw new Error(
+          `No embedding found for ${image.name}. Please click the play button to run encoder.`,
+        );
+      }
+      if (loading) {
+        throw new Error("Model is loading. Please wait.");
+      }
+      if (samModel === undefined || samModel == null) {
+        console.log("No model found");
+        throw new Error("No model found. Select one in the top bar.");
+      }
+
+      await samModel
+        .processDecoder(image, embedded[clicks[0].z], clicks, bbox, maskImg)
+        .then((result) => {
+          props.onModel(image.id, image.name, result);
+          setMaskImg(result);
+        });
+    } catch (error) {
+      props.onAlert(`Decoder ${error}`);
+      console.log("error decoder", error);
+    }
+  };
+
+  // pre-computed image embedding
+  useEffect(() => {
+    if (clicks && penMode < 0) {
+      // Check if clicks changed and selected is not null
       runDecoder();
     }
   }, [clicks]);
+
   // Decode a Numpy file into a tensor.
   const loadNpyTensor = async (tensorFile, dType) => {
     let npLoader = new npyjs();
     let npArray = await npLoader.load(tensorFile).then((npArray) => {
-      console.log("embedding npy", npArray.data, npArray.data.reduce(
-        (partialSum, a) => partialSum + a,
-        0,
-      ),)
       return npArray;
-    }
+    });
+    let tensorArray = [];
+    for (let i = 0; i < npArray.shape[0]; i++) {
+      let slice = npArray.data.slice(
+        i * npArray.shape[1] * npArray.shape[2] * npArray.shape[3],
+        (i + 1) * npArray.shape[1] * npArray.shape[2] * npArray.shape[3],
       );
-
-    const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
-    console.log("tensor ", tensor, npArray.shape);
-    return tensor;
+      tensorArray.push(
+        new ort.Tensor(dType, slice, [
+          1,
+          npArray.shape[1],
+          npArray.shape[2],
+          npArray.shape[3],
+        ]),
+      );
+    }
+    return tensorArray;
   };
 
   const brainExtract = async () => {
     brainExtractionModel(image, props.onModel);
-  };
-
-  function Float32Concat(buffer)
-  {
-    let bufferLength = buffer.length,
-          result = new Uint8Array(bufferLength * 3);
-
-      for(let i = 0; i < bufferLength; i++) {
-        result[3*i] = (buffer[i]);
-        result[3*i+1] = (buffer[i]);
-        result[3*i+2] = (buffer[i]);
-        // result[4*i+3] = 255;
-      }
-      return result;
-  }
-
-  function addChannelDim(buffer) {
-    let bufferLength = buffer.length,
-          result = new Uint8Array(bufferLength / 3 * 4);
-
-      for(let i = 0; i < bufferLength; i+=3) {
-        result[4*i/3] = buffer[i]*255;
-        result[4*i/3+1] = buffer[i+1]*255;
-        result[4*i/3+2] = buffer[i+2]*255;
-        result[4*i/3+3] = 255;
-      }
-      return result;
-  }
-
-  function imagedata_to_image(imagedata) {
-    let addedChannel = addChannelDim(imagedata)
-    console.log("addedChannel", addedChannel)
-    let imageUint8Clamped = new Uint8ClampedArray(addedChannel)
-    let imageData = new ImageData(imageUint8Clamped, 1024, 1024);
-    
-    let canvas = document.createElement('canvas');
-    let ctx = canvas.getContext('2d');
-    canvas.width = imageData.width;
-    canvas.height = imageData.height;
-    ctx.putImageData(imageData, 0, 0);
-
-
-    let image = new Image();
-    image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
-    window.location.href=image; 
-    return image;
-}
-
-  const downloadToFile = (content, filename, contentType) => {
-    const a = document.createElement('a');
-    const file = new Blob([content], {type: contentType});
-    
-    a.href= URL.createObjectURL(file);
-    a.download = filename;
-    a.click();
-    
-    URL.revokeObjectURL(a.href);
-  };
-
-  const preprocess = (sliceId) => {
-    const imageRAS = image.img2RAS();
-    console.log("imageRAS", imageRAS, sliceId)
-    // const rowArray = colToRow(image, image.img)
-    const imageArray = imageRAS.slice(image.dims[1]*image.dims[2]*sliceId, image.dims[1]*image.dims[2]*(sliceId+1) )
-    console.log("imageArray", imageArray, image.dims, imageArray.reduce(
-      (partialSum, a) => partialSum + a,
-      0,
-    ))
-    let imageUint8 = new Uint8Array(imageArray)
-    console.log("imageUint8", imageUint8.reduce(
-      (partialSum, a) => partialSum + a,
-      0,
-    ))
-    let imageBuffer = Float32Concat(imageUint8)
-    console.log("imageBuffer", imageBuffer, imageBuffer.reduce(
-      (partialSum, a) => partialSum + a,
-      0,
-    ))
-    let image0 = convertArrayToImg(imageBuffer, [image.dims[1], image.dims[2]])
-    console.log("image0", image0, image0.bitmap.data.reduce((a,b) => a+b, 0))
-
-    const resizedImage = resize_longer(image0, 1024,true)
-    console.log("resizedImage", resizedImage, resizedImage.bitmap.data.reduce((a,b) => a+b, 0))
-    const normalizedArray = normalize(resizedImage.bitmap.data, [123.675, 116.28, 103.53], [58.395, 57.12, 57.375])
-    const paddedImage = padImageToSquare(normalizedArray, resizedImage.bitmap.width, resizedImage.bitmap.height, [0, 0, 0])
-    console.log("paddedImage", paddedImage, paddedImage.reduce((a,b) => a+b, 0))
-    imagedata_to_image(paddedImage)
-    const transposedArray = transposeChannelDim(paddedImage, 3)
-    return transposedArray
-  }
-
-  const runEncoder = async () => {
-    // if (!embedded) {
-    setEmbedded([])
-    // }
-    for (let i=0; i<59; i++) {
-      setEmbedded(embedded => [...embedded, []])
-    }
-    try {    
-      for (let i = 59; i < 62; i++)
-      {
-        const preprocessedImage = preprocess(i)
-        //https://stackoverflow.com/questions/37435334/correct-way-to-push-into-state-array
-        await samEncoder(preprocessedImage).then((embedding) => {
-          setEmbedded(embedded => [...embedded, embedding])
-        });
-      }
-    }
-    catch (error) {
-      console.log("error encoder", error)
-    }
-    // console.log("embedded", embedded)
-  }
-
-  const runDecoder = async () => {
-    console.log("rundecoder", embedded[clicks[0].z])
-    let encodedTensor = new ort.Tensor(
-      "float32",
-      embedded[clicks[0].z],
-      [1, 256, 64, 64],
-    );
-    // setTensor(encodedTensor)
-    samDecoder(image, encodedTensor, clicks, props.onModel);
-  };
-
-  const runSam = async () => {
-    const preprocessedImage = preprocess()
-    await samEncoder(preprocessedImage).then((embedding) => {
-      console.log("embedding", embedding, embedding.reduce(
-        (partialSum, a) => partialSum + a,
-        0,
-      ),)
-      let encodedTensor = new ort.Tensor(
-        "float32",
-        embedding,
-        [1, 256, 64, 64],
-      );
-      // setTensor(encodedTensor)
-      samDecoder(image, encodedTensor, clicks, props.onModel);
-    });
   };
 
   function handleDetails() {
@@ -248,7 +261,7 @@ export default function Layer(props) {
   function handleOpacity() {
     let idx = image.id;
     let currentOpacity = opacity;
-    console.log(currentOpacity);
+    // console.log(currentOpacity);
     const newOpacity = currentOpacity > 0 ? 0 : 1;
     props.onSetOpacity(idx, newOpacity);
     setOpacity(newOpacity);
@@ -299,7 +312,8 @@ export default function Layer(props) {
         <IconButton onClick={handleDetails} style={{ marginRight: "auto" }}>
           {ArrowIcon}
         </IconButton>
-
+        {/* <Box style={{ marginRight: "auto" }}>{DoneIcon}</Box> */}
+        <CircularWithValueLabel progress={progress} />
       </Box>
       <Box
         sx={{
@@ -315,15 +329,11 @@ export default function Layer(props) {
           }}
           m={1}
         >
-          <IconButton onClick={runEncoder}>
-            <PlayCircleFilledWhiteIcon />
-          </IconButton>
-          <IconButton
-            sx={{ fontSize: "13px", borderRadius: "5px" }}
-            onClick={handleNiimath}
-          >
-            NiiMath
-          </IconButton>
+          <Tooltip title="Image Encoder">
+            <IconButton onClick={runEncoder}>
+              <PlayCircleFilledWhiteIcon />
+            </IconButton>
+          </Tooltip>
           <IconButton onClick={handleDelete}>
             <DeleteIcon />
           </IconButton>
