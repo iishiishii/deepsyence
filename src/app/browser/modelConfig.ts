@@ -39,15 +39,15 @@ export const models: ImageMetadata[] = [
     modelPaths: new Map<string, string>([
       [
         "encoder",
-        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model/lite_medsam_encoder.onnx",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model/lite_medsam_encoder.onnx",
       ],
       [
         "decoder",
-        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model/lite_medsam_decoder.onnx",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model/lite_medsam_decoder.onnx",
       ],
     ]),
     preprocessorPath:
-      "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model/lite-medsam-preprocess.json",
+      "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model/lite-medsam-preprocess.json",
     tags: ["lite-medsam"],
     referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
   },
@@ -63,15 +63,15 @@ export const models: ImageMetadata[] = [
     modelPaths: new Map<string, string>([
       [
         "encoder",
-        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model/efficient_sam_vitt_encoder.onnx",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model/efficient_sam_vitt_encoder.onnx",
       ],
       [
         "decoder",
-        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model//efficient_sam_vitt_decoder.onnx",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model//efficient_sam_vitt_decoder.onnx",
       ],
     ]),
     preprocessorPath:
-      "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/model/efficient-sam-preprocess.json",
+      "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/model/efficient-sam-preprocess.json",
     tags: ["efficient-sam"],
     referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
   },
