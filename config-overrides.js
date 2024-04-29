@@ -18,7 +18,11 @@ module.exports = function override(config) {
     path: require.resolve("path-browserify"),
   });
   config.resolve.fallback = fallback;
-
+  config.plugins.forEach((plugin) => {
+    if (plugin instanceof WorkBoxPlugin.InjectManifest) {
+      plugin.config.maximumFileSizeToCacheInBytes = 10 * 1024 * 1024;
+    }
+  });
   config.plugins = (config.plugins || []).concat([
     new webpack.ProvidePlugin({
       process: "process/browser",
@@ -26,11 +30,7 @@ module.exports = function override(config) {
     }),
   ]);
   config.ignoreWarnings = [/Failed to parse source map/];
-  config.plugins.forEach((plugin) => {
-    if (plugin instanceof WorkBoxPlugin.InjectManifest) {
-      plugin.config.maximumFileSizeToCacheInBytes = 10 * 1024 * 1024;
-    }
-  });
+
   config.plugins.push(
     new CopyWebpackPlugin({
       patterns: [
@@ -42,18 +42,18 @@ module.exports = function override(config) {
     })
   );
   config.module.rules.push({
+    test: /opencv_js\.wasm$/,
+    loader: "file-loader",
+    options: {
+      publicPath: "build/static/js",
+    },
+  });
+  config.module.rules.push({
     test: /\.(js|mjs|jsx|ts|tsx)$/,
     enforce: "pre",
     loader: require.resolve("source-map-loader"),
     resolve: {
       fullySpecified: false,
-    },
-  });
-  config.module.rules.push({
-    test: /opencv_js\.wasm$/,
-    loader: "file-loader",
-    options: {
-      publicPath: "build/static/js",
     },
   });
   return config;
