@@ -12,7 +12,7 @@ export enum ModelType {
 
 export const ListImageModels = (
   tags?: string[],
-  type?: ModelType,
+  type?: ModelType
 ): ImageMetadata[] => {
   if (!tags && !type) {
     return models;
@@ -65,13 +65,13 @@ export const models: ImageMetadata[] = [
     configPath:
       "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
     modelPaths: new Map<string, string>([
-      ["encoder", new URL("./model/encoder-quant.onnx", document.baseURI).href],
+      [
+        "encoder",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/efficient_sam_vitt_encoder.onnx",
+      ],
       [
         "decoder",
-        new URL(
-          "./model/sam_finetuned_M2002_decoder_quant_masksigmoid.onnx",
-          document.baseURI,
-        ).href,
+        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/efficient_sam_vitt_decoder.onnx",
       ],
     ]),
     preprocessorPath:
