@@ -13,13 +13,34 @@ function srcPaths(src) {
 const isEnvProduction = process.env.NODE_ENV === 'production';
 const isEnvDevelopment = process.env.NODE_ENV === 'development';
 
+const preloadPrefix = 'dist';
+const preloadFiles = 'preload.js';
+const entries = {};
+
+preload = `${preloadPrefix}/${preloadFiles}`;
+entries[preload] = path.resolve(__dirname, `./${preload}`);
+
+
+var preload_config = {
+  mode: isEnvProduction ? 'production' : 'development',
+  target: 'electron-preload',
+  entry: path.resolve(__dirname, `${preloadPrefix}/${preloadFiles}`),
+  output: {
+    path: __dirname + '/dist',
+    filename: 'preload.js'
+  },
+  optimization: {
+    minimize: false
+  }
+}
+
   // main process
 var main_config = {
     mode: isEnvProduction ? 'production' : 'development',
     entry: './src/main/main.ts',
     target: 'electron-main',
     resolve: {
-      extensions: ['.jsx', '.js', 'ts'],
+      extensions: ['.ts', '.jsx', '.js'],
     },
     // https://github.com/slackapi/node-slack-sdk/issues/746#issuecomment-778804407
     externals: [
@@ -224,6 +245,7 @@ var renderer_config =  {
 }
 
 module.exports = [
+  preload_config,
   main_config,
   renderer_config,
 ];
