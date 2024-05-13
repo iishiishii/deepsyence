@@ -5,7 +5,6 @@
     "module": "commonjs",
     "lib": ["dom", "es2015", "ESNext"],
     "outDir": "dist",
-    //"jsx": "react",
     "jsx": "react-jsx",
     "baseUrl": "./src",
     "paths": {

@@ -1,7 +1,7 @@
 ## Development setup
 Install dependencies
 ```sh
-yarn install
+yarn
 ```
 
 then start the application

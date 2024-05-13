@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "npx webpack --config ./webpack.config.js",
-    "start": "yarn run build && ELECTRON_DISABLE_SECURITY_WARNINGS=true electron ."
+    "build": "webpack --config webpack.config.js",
+    "start": "tsc && yarn run build && ELECTRON_DISABLE_SECURITY_WARNINGS=true electron ."
   },
-  "main": "./dist/main.js",
+  "main": "./dist/main/main.js",
   "standard": {
     "ignore": [
       "/src/css/",
@@ -33,7 +33,7 @@
       "./src/assets/**"
     ],
     "extraMetadata": {
-      "main": "dist/main.js"
+      "main": "./dist/main.js"
     },
     "extends": null,
     "buildVersion": "1"

@@ -41,6 +41,14 @@ export default function NiiVue(props) {
   const [multiplanarPadPixels, setMultiplanarPadPixels] = React.useState(nv.opts.multiplanarPadPixels)
   const [array, handleArray] = React.useState()
 
+  React.useEffect(() => {
+    nv.addVolumeFromUrl({
+      url: new URL("./assets/model/head.nii.gz", document.baseURI)
+        .href,
+    })
+  }, []);
+
+
   nv.opts.onImageLoaded = ()=>{
     setLayers([...nv.volumes])
   }

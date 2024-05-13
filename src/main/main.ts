@@ -1,20 +1,10 @@
 'use strict'
 
 import * as path from 'path';
-import * as url from 'url';
 
 import {
   app,
   BrowserWindow,
-  ipcMain,
-  MessageChannelMain,
-  Menu,
-  dialog,
-  BrowserView,
-  webContents,
-  clipboard,
-  Tray,
-  ipcRenderer,
 } from 'electron';
 
 
@@ -61,14 +51,7 @@ function createMainWindow () {
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: false,
-      //enableRemoteModule: false,
-      contextIsolation: true,
-      nodeIntegrationInWorker: false,
-      nodeIntegrationInSubFrames: false,
-      webSecurity: true,
-      webviewTag: false,
-      preload: path.join(__dirname, "./preload/preload.js"), /* eng-disable PRELOAD_JS_CHECK */
+      preload: path.join(__dirname, "./preload/preload.js"),
     }
   })
 

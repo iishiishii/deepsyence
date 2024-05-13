@@ -148,7 +148,6 @@ export default function Layer(props){
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            width:600,
             height: 20
           }}
         >
@@ -173,7 +172,7 @@ export default function Layer(props){
             sx={{
               display: 'flex',
               flexDirection:'row',
-              justifyContent: 'space-between',
+              justifyContent: 'left',
               width: '100%'
             }}
             m={1}
