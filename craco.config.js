@@ -1,11 +1,12 @@
 const CracoWorkboxPlugin = require("craco-workbox");
 const webpack = require("webpack");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const BabelTransformRuntime = require("@babel/plugin-transform-runtime");
 
 module.exports = {
   plugins: [
     {
-      plugin: CracoWorkboxPlugin,
+      plugin: [CracoWorkboxPlugin, BabelTransformRuntime],
     },
   ],
   webpack: {

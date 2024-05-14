@@ -1,11 +1,11 @@
 {
   "name": "pwa-deepsyence",
   "version": "0.1.0",
-  "homepage": "https://iishiishii.github.io/deepsyence/",
   "private": true,
   "author": "Thuy Dao",
   "description": "Deep learning in the browser for medical images",
   "dependencies": {
+    "@babel/runtime": "^7.24.5",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.11.16",
@@ -88,6 +88,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/plugin-transform-runtime": "^7.24.3",
     "@craco/craco": "^7.1.0",
     "@types/antd": "^1.0.0",
     "@types/underscore": "^1.11.6",
