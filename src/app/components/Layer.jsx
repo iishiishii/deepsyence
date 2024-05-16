@@ -15,7 +15,6 @@ import Tooltip from "@mui/material/Tooltip";
 import { brainExtractionModel } from "../helpers/brainExtractionModel";
 import CircularWithValueLabel from "./ProgressLoad";
 
-
 export default function Layer(props) {
   const image = props.image;
   // console.log("image", image);
@@ -31,7 +30,7 @@ export default function Layer(props) {
     model: [samModel],
     penMode: [penMode],
     modelLoading: [loading],
-  } = useContext(AppContext)!;
+  } = useContext(AppContext);
   const [progress, setProgress] = useState(0);
   // const [embedded, setEmbedded] = useState([] as ort.Tensor[] || null);
 
@@ -46,60 +45,66 @@ export default function Layer(props) {
     // console.log("image name", image);
     setMaskImg(
       new Uint8Array(
-        image.dimsRAS[1] * image.dimsRAS[2] * image.dimsRAS[3],
-      ).fill(0),
+        image.dimsRAS[1] * image.dimsRAS[2] * image.dimsRAS[3]
+      ).fill(0)
     );
-      // setEmbedded([]);
-      const start = 90;
-      const end = 91;
+    // setEmbedded([]);
+    const start = 90;
+    const end = 91;
 
-      try {
-        let UPDATE_AMOUNT = (1 / ((end - start)*10)) * 10;
-        setProgress(UPDATE_AMOUNT);
-      
-        for (let i = start; i < end; i++) {
-          console.log("image.dimsRAS[1], image.dimsRAS[2]", image.dimsRAS[1], image.dimsRAS[2])
-          // swap height and width to get row major order from npy array to column order
+    try {
+      let UPDATE_AMOUNT = (1 / ((end - start) * 10)) * 10;
+      setProgress(UPDATE_AMOUNT);
 
-            let updater = setInterval(
-              () => {
-                setProgress((prevProgress) => {
-                  let newProgress = prevProgress + UPDATE_AMOUNT;
-                  if (newProgress >= 90) {
-                    clearInterval(updater);
-                    newProgress = 90;
-                  }
-                  return newProgress;
-                });
-              },
-              1000,
-            );
-            await samModel!.process(image, i).then(() => {
+      for (let i = start; i < end; i++) {
+        console.log(
+          "image.dimsRAS[1], image.dimsRAS[2]",
+          image.dimsRAS[1],
+          image.dimsRAS[2]
+        );
+        // swap height and width to get row major order from npy array to column order
+
+        let updater = setInterval(() => {
+          setProgress((prevProgress) => {
+            let newProgress = prevProgress + UPDATE_AMOUNT;
+            if (newProgress >= 90) {
               clearInterval(updater);
-              setProgress(100);
-              props.onAlert("Embedding loaded", false);
-            });
-            // setProgress((prevProgress) =>
-            //   prevProgress >= 100
-            //     ? 100
-            //     : prevProgress + (1 / (end - start)) * 100,
-            // );
-        }
-        setDone(!done);
-        let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
-        let bottomRight = { x: image.dimsRAS[1], y: image.dimsRAS[2], z: 0, clickType: 3 };
-        setBbox({ topLeft, bottomRight });
-        // console.log("embedded end", embedded);
-      } catch (error) {
-        props.onAlert(`Encoder ${error}`);
-        console.log("error encoder", error);
+              newProgress = 90;
+            }
+            return newProgress;
+          });
+        }, 1000);
+        await samModel.process(image, i).then(() => {
+          clearInterval(updater);
+          setProgress(100);
+          props.onAlert("Embedding loaded", false);
+        });
+        // setProgress((prevProgress) =>
+        //   prevProgress >= 100
+        //     ? 100
+        //     : prevProgress + (1 / (end - start)) * 100,
+        // );
       }
+      setDone(!done);
+      let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
+      let bottomRight = {
+        x: image.dimsRAS[1],
+        y: image.dimsRAS[2],
+        z: 0,
+        clickType: 3,
+      };
+      setBbox({ topLeft, bottomRight });
+      // console.log("embedded end", embedded);
+    } catch (error) {
+      props.onAlert(`Encoder ${error}`);
+      console.log("error encoder", error);
+    }
   };
 
   const runDecoder = async () => {
     try {
       if (image.name === "lesion_mask.nii") return;
-      if (clicks!.length === 0 && !bbox) return;
+      if (clicks.length === 0 && !bbox) return;
 
       if (loading) {
         throw new Error("Model is loading. Please wait.");
@@ -111,10 +116,10 @@ export default function Layer(props) {
       // console.log("running decoder, embedding: ", embedded, maskImg);
 
       await samModel
-        .processDecoder(image, clicks![0].z, clicks!, bbox!)
+        .processDecoder(image, clicks[0].z, clicks, bbox)
         .then((result) => {
           props.onModel(image.id, image.name, result);
-          setMaskImg(result!);
+          setMaskImg(result);
         });
     } catch (error) {
       props.onAlert(`Decoder ${error}`);
