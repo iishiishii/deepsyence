@@ -35,17 +35,7 @@ module.exports = {
           path: require.resolve("path-browserify"),
         },
       };
-      config.plugins.push(
-        new CopyWebpackPlugin({
-          patterns: [
-            {
-              from: "node_modules/opencv-web/opencv_js.wasm",
-              to: "static/js",
-            },
-          ],
-        })
-      );
-
+ 
       config.plugins.unshift(
         new webpack.ProvidePlugin({
           process: "process/browser",
