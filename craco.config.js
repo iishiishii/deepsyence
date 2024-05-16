@@ -1,12 +1,10 @@
 const CracoWorkboxPlugin = require("craco-workbox");
 const webpack = require("webpack");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const BabelTransformRuntime = require("@babel/plugin-transform-runtime");
 
 module.exports = {
   plugins: [
     {
-      plugin: [CracoWorkboxPlugin, BabelTransformRuntime],
+      plugin: [CracoWorkboxPlugin],
     },
   ],
   webpack: {
@@ -35,7 +33,7 @@ module.exports = {
           path: require.resolve("path-browserify"),
         },
       };
- 
+
       config.plugins.unshift(
         new webpack.ProvidePlugin({
           process: "process/browser",
