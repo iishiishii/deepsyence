@@ -1,6 +1,7 @@
 {
   "name": "pwa-deepsyence",
   "version": "0.1.0",
+  "homepage": "https://iishiishii.github.io/deepsyence/",
   "private": true,
   "author": "Thuy Dao",
   "description": "Deep learning in the browser for medical images",
