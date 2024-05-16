@@ -41,40 +41,6 @@ module.exports = {
         })
       );
 
-      config.module.rules.push({
-        test: /\.(js|mjs|jsx|ts|tsx)$/,
-        enforce: "pre",
-        loader: require.resolve("source-map-loader"),
-        resolve: {
-          fullySpecified: false,
-        },
-      });
-
-      config.module.rules.push({
-        test: /opencv_js\.wasm$/,
-        loader: "file-loader",
-        options: {
-          publicPath: "build/static/js",
-        },
-      });
-
-      // overwrite react-scripts default svg loader to allow inlining of svgs,
-      // could break after react-scripts update
-      const oneOfRuleIndex = config.module.rules.findIndex(
-        (rule) => !!rule.oneOf
-      );
-      if (oneOfRuleIndex > -1) {
-        const svgRuleIndex = config.module.rules[
-          oneOfRuleIndex
-        ].oneOf.findIndex((oneOf) => oneOf.test.source === /\.svg$/.source);
-        if (svgRuleIndex > -1) {
-          config.module.rules[oneOfRuleIndex].oneOf[svgRuleIndex] = {
-            test: /\.svg$/,
-            type: "asset/inline",
-          };
-        }
-      }
-
       return config;
     },
   },
