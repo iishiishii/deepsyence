@@ -1,6 +1,7 @@
 import { Session } from "./session";
-import { models, ModelType } from "./modelConfig";
+import { models } from "./modelConfig";
 import { SegmentAnythingModel } from "./samModel";
+import { ModelType } from "./metadata";
 
 export interface InitImageModelResult {
   model: ImageModel;
@@ -10,7 +11,7 @@ export interface InitImageModelResult {
 export class ImageModel {
   static create = async (
     id: string,
-    proxy = true,
+    proxy = true
   ): Promise<InitImageModelResult> => {
     for (const modelMetadata of models) {
       if (modelMetadata.id === id) {

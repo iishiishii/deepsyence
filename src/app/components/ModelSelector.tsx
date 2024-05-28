@@ -1,9 +1,11 @@
 import { useRef, useState } from "react";
 import { Metadata } from "../browser/metadata";
 import {
-  ModelType as ImageModelType,
   ListImageModels,
 } from "../browser/modelConfig";
+import {
+  ModelType as ImageModelType
+} from "../browser/metadata";
 
 interface ModelSelectorProps {
   tags: string[] | undefined;
