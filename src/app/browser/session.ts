@@ -25,6 +25,7 @@ export class Session {
     ort.env.wasm.numThreads = this.params.numThreads;
     ort.env.wasm.wasmPaths = this.params.wasmRoot;
     const modelData = await this.fetchData(modelPath);
+    // const opencv = await this.fetchData(new URL("./opencv.wasm", document.baseURI).href)
     const session = await ort.InferenceSession.create(modelData, {
       executionProviders: this.params.executionProviders,
       graphOptimizationLevel: "all",
@@ -40,11 +41,11 @@ export class Session {
   };
 
   run = async (
-    input: ort.InferenceSession.OnnxValueMapType,
+    input: ort.InferenceSession.OnnxValueMapType
   ): Promise<ort.InferenceSession.OnnxValueMapType> => {
     if (!this.ortSession) {
       throw Error(
-        "the session is not initialized. Call `init()` method first.",
+        "the session is not initialized. Call `init()` method first."
       );
     }
     return await this.ortSession.run(input);
@@ -53,7 +54,7 @@ export class Session {
   inputNames = (): readonly string[] => {
     if (!this.ortSession) {
       throw Error(
-        "the session is not initialized. Call `init()` method first.",
+        "the session is not initialized. Call `init()` method first."
       );
     }
     return this.ortSession.inputNames;
@@ -62,7 +63,7 @@ export class Session {
   outputNames = (): readonly string[] => {
     if (!this.ortSession) {
       throw Error(
-        "the session is not initialized. Call `init()` method first.",
+        "the session is not initialized. Call `init()` method first."
       );
     }
     return this.ortSession.outputNames;

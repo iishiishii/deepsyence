@@ -16,6 +16,7 @@ import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import Tutorial from "./Tutorial";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import MenuItem from "@mui/material/MenuItem";
 
 export default function NavBar(props) {
   const nv = props.nv;
@@ -26,7 +27,7 @@ export default function NavBar(props) {
   const [crosshair3D, setCrosshair3D] = useState(false);
   const [colorBar, setColorBar] = useState(nv.opts.isColorbar);
   const [clipPlane, setClipPlane] = useState(
-    nv.currentClipPlaneIndex > 0 ? true : false,
+    nv.currentClipPlaneIndex > 0 ? true : false
   );
   const [tutorialRun, setTutorialRun] = useState(false);
   let tutorial = tutorialRun ? <Tutorial /> : null;
@@ -110,7 +111,7 @@ export default function NavBar(props) {
   };
 
   useEffect(() => {
-    loadSamModel("segment-anything-quant");
+    loadSamModel("efficient-sam");
   }, []);
 
   function handleTutorialRun() {
@@ -185,89 +186,89 @@ export default function NavBar(props) {
               ></NVTick>
             </DropdownMenuItem>,
             <DropdownNestedMenuItem
+              parentMenuOpen={true}
               label="Display Mode"
               rightIcon={<ArrowRight />}
-              menu={[
-                <DropdownMenuItem
-                  selected={sliceType == "axial"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSliceTypeChange("axial");
-                  }}
-                >
-                  Axial
-                </DropdownMenuItem>,
-                <DropdownMenuItem
-                  selected={sliceType == "coronal"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSliceTypeChange("coronal");
-                  }}
-                >
-                  Coronal
-                </DropdownMenuItem>,
-                <DropdownMenuItem
-                  selected={sliceType == "sagittal"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSliceTypeChange("sagittal");
-                  }}
-                >
-                  Sagittal
-                </DropdownMenuItem>,
-                <DropdownMenuItem
-                  selected={sliceType == "multi"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSliceTypeChange("multi");
-                  }}
-                >
-                  Multi
-                </DropdownMenuItem>,
-                <DropdownMenuItem
-                  selected={sliceType == "3d"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSliceTypeChange("3d");
-                  }}
-                >
-                  3D
-                </DropdownMenuItem>,
-              ]}
-            />,
+            >
+              <DropdownMenuItem
+                selected={sliceType == "axial"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSliceTypeChange("axial");
+                }}
+              >
+                Axial
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                selected={sliceType == "coronal"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSliceTypeChange("coronal");
+                }}
+              >
+                Coronal
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                selected={sliceType == "sagittal"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSliceTypeChange("sagittal");
+                }}
+              >
+                Sagittal
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                selected={sliceType == "multi"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSliceTypeChange("multi");
+                }}
+              >
+                Multi
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                selected={sliceType == "3d"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSliceTypeChange("3d");
+                }}
+              >
+                3D
+              </DropdownMenuItem>
+            </DropdownNestedMenuItem>,
             <DropdownNestedMenuItem
+              parentMenuOpen={true}
               label="Colormap"
               rightIcon={<ArrowRight />}
-              menu={[
-                <DropdownMenuItem
-                  selected={color == "blue2red"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleColorChange("blue2red");
-                  }}
-                >
-                  Blue2red
-                </DropdownMenuItem>,
-                <DropdownMenuItem
-                  selected={color == "gray"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleColorChange("gray");
-                  }}
-                >
-                  Gray
-                </DropdownMenuItem>,
-                <DropdownMenuItem
-                  selected={color == "freesurfer"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleColorChange("freesurfer");
-                  }}
-                >
-                  Freesurfer
-                </DropdownMenuItem>,
-              ]}
-            />,
+            >
+              <MenuItem
+                selected={color == "blue2red"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleColorChange("blue2red");
+                }}
+              >
+                Blue2red
+              </MenuItem>
+              <MenuItem
+                selected={color == "gray"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleColorChange("gray");
+                }}
+              >
+                Gray
+              </MenuItem>
+              <MenuItem
+                selected={color == "freesurfer"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleColorChange("freesurfer");
+                }}
+              >
+                Freesurfer
+              </MenuItem>
+            </DropdownNestedMenuItem>,
           ]}
         />
         <Dropdown
@@ -311,6 +312,22 @@ export default function NavBar(props) {
           </IconButton>
         </Tooltip>
         {tutorial}
+        <Dropdown
+          trigger={
+            <Button className="navbar-model" sx={{ color: "white" }}>
+              Model
+            </Button>
+          }
+          menu={[
+            <DropdownMenuItem>
+              <ModelSelector
+                tags={undefined}
+                imageType={ModelType.SegmentAnything}
+                callback={loadSamModel}
+              />
+            </DropdownMenuItem>,
+          ]}
+        />
       </Box>
     </div>
   );
