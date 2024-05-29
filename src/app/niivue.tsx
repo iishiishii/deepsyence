@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import AppContext from "./hooks/createContext";
 import { Box } from "@mui/material";
 import { Grid } from "@mui/material";
 import { Niivue, NVImage } from "@niivue/niivue";
@@ -7,6 +8,7 @@ import { LayersPanel } from "./components/LayersPanel";
 import { NiivuePanel } from "./components/NiivuePanel";
 import Layer from "./components/Layer";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Popover from "@mui/material/Popover";
 import { ViewType } from "./types";
 /* @ts-ignore */
 import {
@@ -63,6 +65,9 @@ export default function NiiVue(props: any) {
   const [openLayers, setOpenLayers] = useState(false);
   const [layers, setLayers] = useState(nv.volumes);
   const [selectedLayer, setSelectedLayer] = useState([]);
+  const {
+    modelLoading: [loading],
+  } = useContext(AppContext)!;
 
   useEffect(() => {
     nv.addVolumeFromUrl({
@@ -171,14 +176,8 @@ export default function NiiVue(props: any) {
             marginTop: "auto",
           }}
         >
+          <Popover open={loading} className="loader"></Popover>
           <NiivuePanel nv={nv} volumes={layers}></NiivuePanel>
-          {/* <Box
-            sx={{
-              width: "25%",
-              display: "flex",
-              flexDirection: "row",
-            }}
-          > */}
           <LayersPanel
             open={openLayers}
             onToggleMenu={toggleLayers}
