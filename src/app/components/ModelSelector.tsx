@@ -1,11 +1,9 @@
 import { useRef, useState } from "react";
-import { Metadata } from "../browser/metadata";
+import { Metadata } from "../browser/sessionParams";
 import {
-  ListImageModels,
-} from "../browser/modelConfig";
-import {
-  ModelType as ImageModelType
-} from "../browser/metadata";
+  ModelType as ImageModelType,
+  ListImageModels
+} from "../browser/sessionParams";
 
 interface ModelSelectorProps {
   tags: string[] | undefined;

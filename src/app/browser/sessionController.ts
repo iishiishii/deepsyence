@@ -5,13 +5,13 @@ import { SessionParams } from "./sessionParams";
 
 export const createSession = async (
   modelPath: string,
-  proxy: boolean,
+  proxy: boolean
 ): Promise<Session> => {
   if (proxy && typeof document !== "undefined") {
     ort.env.wasm.proxy = true;
     console.log(
       "create session with proxy",
-      new URL("./session.worker.js", import.meta.url),
+      new URL("./session.worker.js", import.meta.url)
     );
     const worker = new Worker(new URL("./session.worker.js", import.meta.url), {
       type: "module",

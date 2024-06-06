@@ -1,7 +1,6 @@
-import { Session } from "./session";
-import { models } from "./modelConfig";
+import { models } from "./sessionParams";
 import { SegmentAnythingModel } from "./samModel";
-import { ModelType } from "./metadata";
+import { ModelType } from "./sessionParams";
 
 export interface InitImageModelResult {
   model: ImageModel;

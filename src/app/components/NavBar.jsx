@@ -7,7 +7,7 @@ import ArrowRight from "@mui/icons-material/ArrowRight";
 import { Dropdown, DropdownMenuItem, DropdownNestedMenuItem } from "./Dropdown";
 import NVTick from "./Tick";
 import ModelSelector from "./ModelSelector";
-import { ModelType } from "../browser/metadata";
+import { ModelType } from "../browser/sessionParams";
 import { ImageModel } from "../browser/imageModel";
 import AppContext from "../hooks/createContext";
 import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons";

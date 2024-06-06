@@ -1,5 +1,5 @@
 import { Session } from "./session";
-import { ImageMetadata } from "./metadata";
+import { ImageMetadata } from "./sessionParams";
 import Preprocessor from "./preprocessor";
 import { PreprocessorConfig } from "./preprocessorConfig";
 // import Config from "./config";
@@ -20,7 +20,7 @@ export class BaseImageModel {
     ) {
       throw new Error(
         `The model requires ${metadata.memEstimateMB} MB of memory, but the current memory limit is 
-          ${SessionParams.memoryLimitMB} MB.`,
+          ${SessionParams.memoryLimitMB} MB.`
       );
     }
     this.metadata = metadata;
@@ -39,7 +39,7 @@ export class BaseImageModel {
     }
     console.log("session", this.sessions);
     const preprocessorConfig = await PreprocessorConfig.fromFile(
-      this.metadata.preprocessorPath,
+      this.metadata.preprocessorPath
     );
     this.preprocessor = new Preprocessor(preprocessorConfig);
     // if (this.metadata.configPath) {
