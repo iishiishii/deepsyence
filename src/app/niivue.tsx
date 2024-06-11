@@ -177,8 +177,9 @@ export default function NiiVue(props: any) {
             marginTop: "auto",
           }}
         >
-          <Popover open={loading} className="loader" classes={{ paper: "MuiPopover-paper" }}>
-          <Typography variant="h1" component="h2" mt="40%" align="center" alignSelf="center">Loading model</Typography></Popover>
+          <Popover open={loading} className="loader" marginThreshold={0} classes={{ paper: "MuiPopover-paper" }}>
+          <Typography variant="h1" component="h2" mt="40%" align="center" alignSelf="center">Loading model</Typography>
+          </Popover>
           <NiivuePanel nv={nv} volumes={layers}></NiivuePanel>
           <LayersPanel
             open={openLayers}

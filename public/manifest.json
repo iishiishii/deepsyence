@@ -1,0 +1,16 @@
+{
+    "name": "Deepsyence",
+    "icons": [
+    {
+    "src": "/iishiishii.png",
+    "type": "image/png",
+    "sizes": "400x400",
+    "purpose": "any maskable"
+    }
+    ],
+    "start_url": ".",
+    "short_name": "Deepsyence",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff"
+    }
