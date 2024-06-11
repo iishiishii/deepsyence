@@ -99,7 +99,7 @@ export default function NavBar(props) {
   }
 
   function handleSaveImage() {
-    nv.saveImage("draw.nii", false);
+    nv.saveImage("draw.nii", true);
   }
 
   const loadSamModel = async (id) => {

@@ -90,7 +90,7 @@ export function NiivuePanel({ nv, volumes }: any) {
           nv.onDragRelease = doDragRelease;
         }}
         // onMouseOut={() => _.defer(() => setMaskImg(null))}
-        // onTouchStart={handleMouseMove}
+        onTouchStart={handleMouseMove}
       />
       <div
         id="intensity"
