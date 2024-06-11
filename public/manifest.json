@@ -2,7 +2,7 @@
     "name": "Deepsyence",
     "icons": [
     {
-    "src": "/iishiishii.png",
+    "src": "./iishiishii.png",
     "type": "image/png",
     "sizes": "400x400",
     "purpose": "any maskable"
