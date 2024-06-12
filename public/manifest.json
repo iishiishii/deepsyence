@@ -5,7 +5,7 @@
     "src": "./iishiishii.png",
     "type": "image/png",
     "sizes": "400x400",
-    "purpose": "any maskable"
+    "purpose": "Offline Segmentation"
     }
     ],
     "start_url": ".",

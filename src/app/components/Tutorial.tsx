@@ -42,13 +42,13 @@ export default function Tutorial() {
       //     "You can also click the Upload button in the navigation bar to select an image from your computer",
       //   disableBeacon: true,
       // },
-      // {
-      //   target: ".navbar-model",
-      //   title: "Select the Segmentation Model",
-      //   placement: "bottom-start",
-      //   content:
-      //     "Once you have your image loaded, you need to select a segmentation model to process the image.",
-      // },
+      {
+        target: ".navbar-model",
+        title: "Select the Segmentation Model",
+        placement: "bottom-start",
+        content:
+          "Once you have your image loaded, you need to select a segmentation model to process the image.",
+      },
       {
         target: '[data-testid="PlayCircleFilledWhiteIcon"]',
         title: "Start Image Processing",

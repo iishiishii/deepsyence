@@ -11,10 +11,10 @@ export function maskImage(
     for (let i = 0; i < width * height; i++) {
       mask[width * height * sliceId + i] = input[i] > threshold ? 1 : 0;
     }
-    for (let i = width * height; i < width * height * 2; i++) {
+    for (let i = 0; i < width * height; i++) {
       mask[width * height * (sliceId + 1) + i] = input[i] > threshold ? 2 : 0;
     }
-    for (let i = width * height * 2; i < width * height * 3; i++) {
+    for (let i = 0; i < width * height; i++) {
       mask[width * height * (sliceId + 2) + i] = input[i] > threshold ? 3 : 0;
     }
     // output = output.concat(Array.from(input));

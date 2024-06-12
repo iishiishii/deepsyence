@@ -49,7 +49,7 @@ export const models: ImageMetadata[] = [
     description: "",
     memEstimateMB: 2600,
     type: ModelType.SegmentAnything,
-    sizeMB: 108,
+    sizeMB: 45,
     configPath:
       "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
     modelPaths: new Map<string, string>([
@@ -68,36 +68,36 @@ export const models: ImageMetadata[] = [
     referenceURL: "https://github.com/yformer/EfficientSAM",
   },
   {
-    id: "lite-medsam",
+    id: "litemed-sam",
     title: "LiteMedSAM",
     description: "",
     memEstimateMB: 2600,
     type: ModelType.SegmentAnything,
-    sizeMB: 377,
+    sizeMB: 45,
     configPath:
       "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
     modelPaths: new Map<string, string>([
       [
         "encoder",
-        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/lite_medsam_encoder.onnx",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/litemedsam_encoder.onnx",
       ],
       [
         "decoder",
-        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/lite_medsam_decoder.onnx",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/litemedsam_decoder.onnx",
       ],
     ]),
     preprocessorPath:
       "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/lite-medsam-preprocess.json",
-    tags: ["lite-medsam"],
+    tags: ["litemed-sam"],
     referenceURL: "https://github.com/bowang-lab/MedSAM/tree/LiteMedSAM",
   },
   {
-    id: "sam",
+    id: "sam-quantized",
     title: "SAM quantized",
     description: "",
     memEstimateMB: 2600,
     type: ModelType.SegmentAnything,
-    sizeMB: 108,
+    sizeMB: 105,
     configPath:
       "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
     modelPaths: new Map<string, string>([
@@ -112,7 +112,7 @@ export const models: ImageMetadata[] = [
     ]),
     preprocessorPath:
       "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/segmen-anything-preprocess.json",
-    tags: ["sam"],
+    tags: ["sam-quantized"],
     referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
   },
 ];
