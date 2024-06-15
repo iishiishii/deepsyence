@@ -99,7 +99,7 @@ export default function NavBar(props) {
   }
 
   function handleSaveImage() {
-    nv.saveImage("draw.nii", true);
+    nv.saveImage({ filename: "draw.nii", isSaveDrawing: true });
   }
 
   const loadSamModel = async (id) => {
@@ -321,7 +321,7 @@ export default function NavBar(props) {
             <DropdownMenuItem>
               <ModelSelector
                 tags={undefined}
-                imageType={ModelType.SegmentAnything}
+                imageType={[ModelType.Unet, ModelType.SegmentAnything]}
                 callback={loadSamModel}
               />
             </DropdownMenuItem>,
