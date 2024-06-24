@@ -752,7 +752,7 @@ iframe {
 
 
 .MuiPopover-root.loader.MuiModal-root.css-1i0e6f3-MuiModal-root-MuiPopover-root {
-  z-index: 50;
+  z-index: 5;
 }
 .loader .MuiPopover-paper {
   opacity: 0.4 !important;
