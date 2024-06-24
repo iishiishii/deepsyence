@@ -57,26 +57,26 @@ export default function Layer(props) {
     const end = 105;
 
     try {
-      let UPDATE_AMOUNT = (1 / ((end - start) * 100))*10;
+      let UPDATE_AMOUNT = (1 / ((end - start))*100);
       setProgress(UPDATE_AMOUNT);
 
       for (let i = start; i < end; i++) {
-        let updater = setInterval(() => {
+        let newProgress
+        // let updater = setInterval(() => {
           setProgress((prevProgress) => {
-            let newProgress = prevProgress + UPDATE_AMOUNT;
-            if (newProgress >= 90) {
-              clearInterval(updater);
-              newProgress = 90;
-            }
+            prevProgress >= 100
+            ? newProgress = 100 :
+            newProgress = prevProgress + UPDATE_AMOUNT;
+            // if (newProgress >= 90) {
+            //   // clearInterval(updater);
+            //   newProgress = 90;
+            // }
             return newProgress;
           });
-        }, 1000);
-        await samModel.process(image, i).then(() => {
-          clearInterval(updater);
-          setProgress(100);
-          props.onAlert("Embedding loaded", false);
-        });
+        // }, 1000);
+        await samModel.process(image, i)
       }
+      props.onAlert("Embedding loaded", false);
       setDone(!done);
       let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
       let bottomRight = {
