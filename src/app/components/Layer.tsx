@@ -53,11 +53,11 @@ export default function Layer(props) {
       ).fill(0)
     );
     // setEmbedded([]);
-    const start = 95;
+    const start = 90;
     const end = 105;
 
     try {
-      let UPDATE_AMOUNT = (1 / ((end - start) * 10));
+      let UPDATE_AMOUNT = (1 / ((end - start) * 100))*10;
       setProgress(UPDATE_AMOUNT);
 
       for (let i = start; i < end; i++) {

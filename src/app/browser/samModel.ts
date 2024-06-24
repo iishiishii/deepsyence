@@ -29,7 +29,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       if (this.lastProcessedVolume !== volume) {
         this.preprocessor.processVolume(volume);
         this.lastProcessedVolume = volume;
-        for (let i = 95; i < 105; i++) {
+        for (let i = 90; i < 105; i++) {
           this.encoderResult?.concat(new ort.Tensor("float32", [], [0]));
         }
       }
