@@ -57,7 +57,7 @@ export default function Layer(props) {
     const end = 105;
 
     try {
-      let UPDATE_AMOUNT = (1 / ((end - start) * 10)) * 10;
+      let UPDATE_AMOUNT = (1 / ((end - start) * 10));
       setProgress(UPDATE_AMOUNT);
 
       for (let i = start; i < end; i++) {
