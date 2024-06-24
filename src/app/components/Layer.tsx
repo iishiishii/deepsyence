@@ -53,8 +53,8 @@ export default function Layer(props) {
       ).fill(0)
     );
     // setEmbedded([]);
-    const start = 90;
-    const end = 91;
+    const start = 95;
+    const end = 105;
 
     try {
       let UPDATE_AMOUNT = (1 / ((end - start) * 10)) * 10;
