@@ -7,7 +7,7 @@ import {
 
 interface ModelSelectorProps {
   tags: string[] | undefined;
-  imageType?: ImageModelType;
+  imageType?: ImageModelType[];
   callback: (id: string) => void;
 }
 
@@ -20,6 +20,7 @@ export default function ModelSelector(props: ModelSelectorProps) {
   useState(() => {
     if (props.imageType !== undefined) {
       const models = ListImageModels(props.tags, props.imageType);
+      console.log("```````````` models", models, props.imageType);
       setMetadata({ models: models });
     }
   });

@@ -9099,6 +9099,11 @@ open@^9.1.0:
     is-inside-container "^1.0.0"
     is-wsl "^2.2.0"
 
+opencv-wasm@^4.3.0-10:
+  version "4.3.0-10"
+  resolved "https://registry.yarnpkg.com/opencv-wasm/-/opencv-wasm-4.3.0-10.tgz#4cf2c07fb3519a858f7111b7d80e07ec09f6a70e"
+  integrity sha512-EWmWLUzp2suoc6N44Y4ouWT85QwvShx23Q430R+lp6NyS828bjQn6mCgA3NJ6Z/S59aaTeeu+RhqPQIJIYld1w==
+
 opencv-web@^4.9.0:
   version "4.9.0"
   resolved "https://registry.yarnpkg.com/opencv-web/-/opencv-web-4.9.0.tgz#c35b5c785dd6e222afa06c2faa45993fa5c2b971"

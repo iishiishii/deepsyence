@@ -1,4 +1,6 @@
-export function stackSliceToRGB(buffer: Float32Array): Float32Array {
+export function stackSliceToRGB(
+  buffer: Float32Array | Uint16Array | Uint8Array
+): Float32Array {
   let bufferLength = buffer.length,
     result = new Float32Array(bufferLength * 3);
 
@@ -11,7 +13,9 @@ export function stackSliceToRGB(buffer: Float32Array): Float32Array {
 }
 
 // TODO: should work for how many channels?
-export function addChannel(buffer: Float32Array | Uint8Array): Uint8Array {
+export function addChannel(
+  buffer: Float32Array | Uint16Array | Uint8Array
+): Uint8Array {
   let bufferLength = buffer.length,
     result = new Uint8Array((bufferLength / 3) * 4);
 
@@ -24,22 +28,18 @@ export function addChannel(buffer: Float32Array | Uint8Array): Uint8Array {
   return result;
 }
 
-export function filterAlphaChannel(
-  image: Float32Array | Uint8Array | Array<number>
+export function filterChannels(
+  image: Float32Array | Uint8Array | Array<number>,
+  keepChannels: number = 1
 ): Float32Array {
-  // 4. convert to float32
   let i,
-    l = image.length; // length, we need this for the loop
-  console.log("image.length", image.length);
-  // create the Float32Array size 3 * 224 * 224 for these dimensions output
-  const float32Data = new Float32Array((image.length * 3) / 4);
+    l = image.length;
+  const float32Data = new Float32Array((image.length * keepChannels) / 4);
   for (i = 0; i < l; i += 4) {
-    float32Data[(3 * i) / 4] = image[i]; // convert to float
-    float32Data[(3 * i) / 4 + 1] = image[i + 1]; // convert to float
-    float32Data[(3 * i) / 4 + 2] = image[i + 2]; // convert to float
-    // skip image[i + 3] to filter out the alpha channel
+    for (let j = 0; j < keepChannels; j++) {
+      float32Data[(keepChannels * i) / 4 + j] = image[i + j];
+    }
   }
-  // console.log("float32Data", float32Data)
   return float32Data;
 }
 
@@ -67,15 +67,18 @@ export function transposeChannelDim(
   return transposedData;
 }
 
-export function colToRow(image: any, colArray: any) {
-  let dims = image.dimsRAS;
-  let rowArray = new Float32Array(dims[1] * dims[2] * dims[3]);
+export function colToRow(
+  dims: number[],
+  colArray: Float32Array | Uint16Array | Uint8Array
+) {
+  // let dims = image.dimsRAS;
+  let rowArray = new Float32Array(dims[0] * dims[1] * dims[2]);
   console.log(dims);
-  for (let i = 0; i < dims[1]; i++) {
-    for (let j = 0; j < dims[2]; j++) {
-      for (let k = 0; k < dims[3]; k++) {
-        let indexCol = i + j * dims[1] + k * dims[1] * dims[2];
-        let indexRow = i * dims[2] * dims[3] + j * dims[3] + k;
+  for (let i = 0; i < dims[0]; i++) {
+    for (let j = 0; j < dims[1]; j++) {
+      for (let k = 0; k < dims[2]; k++) {
+        let indexCol = i + j * dims[0] + k * dims[0] * dims[1];
+        let indexRow = i * dims[1] * dims[2] + j * dims[2] + k;
         rowArray[indexRow] = colArray[indexCol];
       }
     }
@@ -83,15 +86,18 @@ export function colToRow(image: any, colArray: any) {
   return rowArray;
 }
 
-export function rowToCol(image: any, rowArray: any) {
-  let dims = image.dimsRAS;
-  let colArray = new Float32Array(dims[1] * dims[2] * dims[3]);
+export function rowToCol(
+  dims: number[],
+  rowArray: Float32Array | Uint16Array | Uint8Array
+) {
+  // let dims = image.dimsRAS;
+  let colArray = new Float32Array(dims[0] * dims[1] * dims[2]);
   console.log(dims);
-  for (let i = 0; i < dims[1]; i++) {
-    for (let j = 0; j < dims[2]; j++) {
-      for (let k = 0; k < dims[3]; k++) {
-        let indexCol = i + j * dims[1] + k * dims[1] * dims[2];
-        let indexRow = i * dims[2] * dims[3] + j * dims[3] + k;
+  for (let i = 0; i < dims[0]; i++) {
+    for (let j = 0; j < dims[1]; j++) {
+      for (let k = 0; k < dims[2]; k++) {
+        let indexCol = i + j * dims[0] + k * dims[0] * dims[1];
+        let indexRow = i * dims[1] * dims[2] + j * dims[2] + k;
         colArray[indexCol] = rowArray[indexRow];
       }
     }

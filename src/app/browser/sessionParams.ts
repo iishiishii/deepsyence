@@ -10,7 +10,7 @@ export type Metadata = {
 
 export enum ModelType {
   Unknown = 1,
-  Segmentation,
+  Unet,
   SegmentAnything,
 }
 
@@ -24,20 +24,22 @@ export type ImageMetadata = Metadata & {
 
 export const ListImageModels = (
   tags?: string[],
-  type?: ModelType
+  type?: ModelType[]
 ): ImageMetadata[] => {
   if (!tags && !type) {
     return models;
   }
   return models.filter((model) => {
+    // console.log(".......... model ", model, type, model.type);
     let tagCheck = true;
     if (model.tags && tags && tags.length > 0) {
       tagCheck = tags.every((tag) => model.tags!.includes(tag));
     }
     let typeCheck = true;
-    if (type) {
-      typeCheck = model.type == type;
+    if (type && Array.isArray(type)) {
+      typeCheck = type.includes(model.type as ModelType);
     }
+    // console.log("tagCheck", tagCheck, "typeCheck", typeCheck);
     return tagCheck && typeCheck;
   });
 };
@@ -113,6 +115,26 @@ export const models: ImageMetadata[] = [
     preprocessorPath:
       "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/segmen-anything-preprocess.json",
     tags: ["sam-quantized"],
+    referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
+  },
+  {
+    id: "unet-gw-segmentation",
+    title: "UNET GW segmentation",
+    description: "",
+    memEstimateMB: 2600,
+    type: ModelType.Unet,
+    sizeMB: 10,
+    configPath:
+      "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
+    modelPaths: new Map<string, string>([
+      [
+        "model",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/unet_gw_segmentation.onnx",
+      ],
+    ]),
+    preprocessorPath:
+      "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/unet-gw-preprocess.json",
+    tags: ["unet-gw-segmentation"],
     referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
   },
 ];

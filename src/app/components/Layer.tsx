@@ -14,6 +14,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { brainExtractionModel } from "../helpers/brainExtractionModel";
 import CircularWithValueLabel from "./ProgressLoad";
+import { UnetModel } from "../browser/unetModel";
 
 export default function Layer(props) {
   const image = props.image;
@@ -53,49 +54,85 @@ export default function Layer(props) {
       ).fill(0)
     );
     // setEmbedded([]);
-    const start = 90;
-    const end = 105;
+    const start = 100;
+    const end = 101;
 
-    try {
-      let UPDATE_AMOUNT = (1 / ((end - start))*100);
-      setProgress(UPDATE_AMOUNT);
-
-      for (let i = start; i < end; i++) {
-        let newProgress
-        // let updater = setInterval(() => {
+    if (samModel instanceof UnetModel) {
+      try {
+        let UPDATE_AMOUNT = (1 / ((end - start) * 10)) * 10;
+        let updater = setInterval(() => {
           setProgress((prevProgress) => {
-            prevProgress >= 100
-            ? newProgress = 100 :
-            newProgress = prevProgress + UPDATE_AMOUNT;
-            // if (newProgress >= 90) {
-            //   // clearInterval(updater);
-            //   newProgress = 90;
-            // }
+            let newProgress = prevProgress + UPDATE_AMOUNT;
+            if (newProgress >= 90) {
+              clearInterval(updater);
+              newProgress = 90;
+            }
             return newProgress;
           });
-        // }, 1000);
-        await samModel.process(image, i)
+        }, 1000);
+        await samModel.process(image).then((result) => {
+          props.onModel(image.id, image.name, result);
+          setMaskImg(result!);
+        }).then(() => {
+          clearInterval(updater);
+          setProgress(100);
+          props.onAlert("Embedding loaded", false);
+        });
       }
-      props.onAlert("Embedding loaded", false);
+      catch (error) {
+        props.onAlert(`Unet error ${error}`);
+        console.log("error unet", error);
+      }
       setDone(!done);
-      let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
-      let bottomRight = {
-        x: image.dimsRAS[1],
-        y: image.dimsRAS[2],
-        z: 0,
-        clickType: 3,
-      };
-      setBbox({ topLeft, bottomRight });
-      // console.log("embedded end", embedded);
-    } catch (error) {
-      props.onAlert(`Encoder ${error}`);
-      console.log("error encoder", error);
     }
+    else {
+      try {
+        let UPDATE_AMOUNT = (1 / ((end - start) * 10)) * 10;
+        setProgress(UPDATE_AMOUNT);
+  
+        for (let i = start; i < end; i++) {
+          let updater = setInterval(() => {
+            setProgress((prevProgress) => {
+              let newProgress = prevProgress + UPDATE_AMOUNT;
+              if (newProgress >= 90) {
+                clearInterval(updater);
+                newProgress = 90;
+              }
+              return newProgress;
+            });
+          }, 1000);
+          await samModel.process(image, i).then(() => {
+            clearInterval(updater);
+            setProgress(100);
+            props.onAlert("Embedding loaded", false);
+          });
+        }
+        setDone(!done);
+        let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
+        let bottomRight = {
+          x: image.dimsRAS[1],
+          y: image.dimsRAS[2],
+          z: 0,
+          clickType: 3,
+        };
+        setBbox({ topLeft, bottomRight });
+        // console.log("embedded end", embedded);
+      } catch (error) {
+        props.onAlert(`Encoder ${error}`);
+        console.log("error encoder", error);
+      }
+    }
+   
   };
 
   const runDecoder = async () => {
     try {
+      console.log("typeof samModel", typeof samModel, typeof UnetModel, samModel);
+
       if (image.name === "lesion_mask.nii") return;
+      if (samModel instanceof UnetModel) {
+        return;
+      }
       if (clicks === null || bbox === null || (clicks.length === 0 && !bbox))
         return;
 

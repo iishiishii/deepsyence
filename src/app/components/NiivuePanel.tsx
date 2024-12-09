@@ -42,6 +42,10 @@ export function NiivuePanel({ nv, volumes }: any) {
     // console.log("clicks", clicks);
 
     if (click && clicks) setClicks([...clicks!, click]);
+    if (clicks.length > 10) {
+      clicks.shift();
+      setClicks([...clicks!, click]);
+    }
   }, 15);
 
   const doDragRelease = _.throttle((info) => {

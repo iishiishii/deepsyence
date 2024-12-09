@@ -5,11 +5,12 @@ import {
   getMin,
   normalizeArray,
   pad,
-  resizeLongerSide,
+  padVolume,
+  resize,
   standardizeArray,
 } from "../helpers/utils/imageProcessing";
 import {
-  filterAlphaChannel,
+  filterChannels,
   stackSliceToRGB,
 } from "../helpers/utils/channelHandlers";
 import {
@@ -36,15 +37,50 @@ export class Preprocessor {
     this.maxVal = 0;
   }
 
-  processVolume = (niiVolume: any) => {
+  processVolume = (niiVolume: any): Float32Array => {
     this.dims = [
       niiVolume.dimsRAS[1],
       niiVolume.dimsRAS[2],
       niiVolume.dimsRAS[3],
     ];
     this.maxVal = getMax(niiVolume.img2RAS());
+    console.log(
+      "ori volume",
+      getMin(niiVolume.img2RAS()),
+      getMax(niiVolume.img2RAS()),
+      niiVolume.img2RAS().reduce((a, b) => a + b, 0)
+    );
+    if (this.config.resizeVolume) {
+      console.log("resizeVolume", this.config.volumeSize);
+      if (this.config.pad && this.config.padSize) {
+        this.volume = padVolume(niiVolume.img2RAS(), this.dims, [
+          this.config.padSize,
+          this.config.padSize,
+          this.config.padSize,
+        ]);
+        // this.maxVal = getMax(this.volume);
+        console.log(
+          "resizeVolume",
+          this.volume.reduce((a, b) => a + b, 0),
+          this.volume.length
+        );
+      }
+    } else {
+      this.volume = niiVolume.img2RAS();
+    }
     if (this.config.normalize) {
-      this.volume = normalizeArray(niiVolume.img2RAS(), this.maxVal);
+      this.volume = normalizeArray(
+        this.volume,
+        this.maxVal,
+        getMin(this.volume)
+      );
+      console.log(
+        "normalize",
+        getMin(this.volume),
+        getMax(this.volume),
+        this.volume.reduce((a, b) => a + b, 0),
+        this.volume.length
+      );
     } else {
       this.volume = niiVolume.img2RAS();
     }
@@ -55,11 +91,13 @@ export class Preprocessor {
       this.config.standardize.std
     ) {
       this.volume = standardizeArray(
-        this.volume,
+        niiVolume.img2RAS(),
         this.config.standardize.mean[0],
         this.config.standardize.std[0]
       );
     }
+
+    return this.volume;
   };
 
   process = (sliceId: number): PreprocessorResult => {
@@ -71,16 +109,16 @@ export class Preprocessor {
     );
     let image3Channels = stackSliceToRGB(sliceArray);
 
-    if (this.config.resize) {
+    if (this.config.resizeLonger) {
       let mat = arrayToMat(image3Channels, [this.dims[0], this.dims[1]]);
-      let resizedImage = resizeLongerSide(mat, this.config.size);
+      let resizedImage = resize(mat, this.config.size);
       console.log(
         "resizedImage",
         resizedImage.size().width,
         resizedImage.size().height,
         resizedImage.data.reduce((a, b) => a + b, 0)
       );
-      if (this.config.pad) {
+      if (this.config.pad && this.config.padSize) {
         let paddedImage = pad(resizedImage, this.config.padSize);
         console.log(
           "paddedImage",
@@ -88,7 +126,7 @@ export class Preprocessor {
           paddedImage.size().height,
           paddedImage.data.reduce((a, b) => a + b, 0)
         );
-        let filteredImage = filterAlphaChannel(paddedImage.data);
+        let filteredImage = filterChannels(paddedImage.data, 3); // filter alpha channel
         const maxVal = getMax(filteredImage);
         let normalizedImage = normalizeArray(filteredImage, maxVal);
         console.log(

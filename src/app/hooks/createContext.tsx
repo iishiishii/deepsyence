@@ -7,6 +7,7 @@
 import { createContext } from "react";
 import { boundingBox, modelInputProps } from "../helpers/Interfaces";
 import { SegmentAnythingModel } from "../browser/samModel";
+import { UnetModel } from "../browser/unetModel";
 import * as ort from "onnxruntime-web";
 
 interface contextProps {
@@ -22,8 +23,8 @@ interface contextProps {
   penMode: [penMode: number, setPenMode: (e: number) => void];
   filled: [filled: boolean, setFilled: (e: boolean) => void];
   model: [
-    model: SegmentAnythingModel | null,
-    setModel: (e: SegmentAnythingModel | null) => void,
+    model: SegmentAnythingModel | UnetModel | null,
+    setModel: (e: SegmentAnythingModel | UnetModel | null) => void,
   ];
   modelLoading: [loading: boolean, setLoading: (e: boolean) => void];
   positivePoints: [

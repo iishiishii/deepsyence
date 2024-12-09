@@ -3,7 +3,9 @@ export class PreprocessorConfig {
   standardize: StandardizeConfig;
   resize: boolean;
   resizeLonger: boolean;
+  resizeVolume: boolean;
   size: number;
+  volumeSize: number[];
   centerCrop: boolean;
   cropSize: number;
   flipChannels: boolean;
@@ -20,7 +22,9 @@ export class PreprocessorConfig {
     };
     this.resize = false;
     this.resizeLonger = false;
+    this.resizeVolume = false;
     this.size = 0;
+    this.volumeSize = [];
     this.centerCrop = false;
     this.cropSize = 0;
     this.flipChannels = false;
@@ -61,6 +65,9 @@ export class PreprocessorConfig {
     if ("size" in configData) {
       res.size = configData["size"];
     }
+    if ("volume_size" in configData) {
+      res.volumeSize = configData["volume_size"];
+    }
     if ("do_center_crop" in configData) {
       res.centerCrop = configData["do_center_crop"];
     }
@@ -87,6 +94,9 @@ export class PreprocessorConfig {
     }
     if ("resize_longer" in configData) {
       res.resizeLonger = configData["resize_longer"];
+    }
+    if ("resize_volume" in configData) {
+      res.resizeVolume = configData["resize_volume"];
     }
     return res;
   };

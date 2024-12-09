@@ -8,7 +8,7 @@ export const brainExtractionModel = async (
   try {
     let id = image.id;
     let name = image.name;
-
+    let dims: number[] = [image.dimsRAS[1], image.dimsRAS[2], image.dimsRAS[3]];
     ort.env.wasm.wasmPaths = new URL("./js/", document.baseURI).href;
 
     console.log(ort.env.wasm.wasmPaths);
@@ -21,7 +21,7 @@ export const brainExtractionModel = async (
       executionProviders: ["wasm"],
     });
 
-    const float32Data = colToRow(image, image.img);
+    const float32Data = colToRow(dims, image.imgRAS);
     console.log(image.dims.slice(1).concat([1]));
     console.log(`${float32Data.reduce((partialSum, a) => partialSum + a, 0)}`);
     const inputTensor = new ort.Tensor(
@@ -39,7 +39,7 @@ export const brainExtractionModel = async (
     // read from results
     const newImage = results["conv2d_transpose_9"].data;
     console.log(newImage);
-    const rasImage = rowToCol(image, newImage);
+    const rasImage = rowToCol(dims, newImage as Float32Array);
     onModel(id, name, rasImage);
   } catch (e) {
     console.log(`failed to inference ONNX model: ${e}. `);

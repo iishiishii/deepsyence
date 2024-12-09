@@ -25,7 +25,6 @@ export class Session {
     ort.env.wasm.numThreads = this.params.numThreads;
     ort.env.wasm.wasmPaths = this.params.wasmRoot;
     const modelData = await this.fetchData(modelPath);
-    // const opencv = await this.fetchData(new URL("./opencv.wasm", document.baseURI).href)
     const session = await ort.InferenceSession.create(modelData, {
       executionProviders: this.params.executionProviders,
       graphOptimizationLevel: "all",
