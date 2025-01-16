@@ -4,7 +4,7 @@ name: Deploy static content to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ["pwa-ts"]
+    branches: ["main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -48,12 +48,34 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: run build
+      - name: Get package info
+        shell: bash
+        id: package-info
+        run: echo "version=$(python scripts/get_package_version.py)" >> $GITHUB_OUTPUT
+      - name: "Find Release with tag v${{ steps.package-info.outputs.version}}"
+        uses: actions/github-script@v6
+        id: release-exists
+        env:
+          APP_VERSION: ${{ steps.package-info.outputs.version}}
+        with:
+          script: |
+            const releases = await github.rest.repos.listReleases({
+              owner: '${{ github.repository_owner }}',
+              repo: '${{ github.repository }}'.split('/')[1]
+            })
+            const tagName = `v${process.env.APP_VERSION}`
+            const releaseWithTag = releases.data.find(release => release.tag_name === tagName && (release.draft || release.prerelease))
+            return releaseWithTag ? 'true' : 'false'
+          result-encoding: string
       - name: Setup Pages
         uses: actions/configure-pages@v3
+        if: steps.release-exists.outputs.result == 'true'
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: 'build'
+          path: "build"
+        if: steps.release-exists.outputs.result == 'true'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
+        if: steps.release-exists.outputs.result == 'true'
