@@ -1,25 +1,12 @@
-export type Metadata = {
-  id: string;
-  memEstimateMB: number;
-  title?: string;
-  description?: string;
-  sizeMB?: number;
-  tags?: string[];
-  referenceURL?: string;
-};
+import { ImageMetadata, SessionParameters } from "../helpers/Interfaces";
+import { ModelType } from "../types";
 
-export enum ModelType {
-  Unknown = 1,
-  Unet,
-  SegmentAnything,
-}
-
-export type ImageMetadata = Metadata & {
-  type?: ModelType;
-  modelPaths: Map<string, string>;
-  configPath?: string;
-  preprocessorPath: string;
-  examples?: string[];
+export const SessionParams: SessionParameters = {
+  numThreads: 0,
+  executionProviders: ["wasm"],
+  memoryLimitMB: 0,
+  cacheSizeMB: 2500,
+  wasmRoot: new URL("./js/", document.baseURI).href,
 };
 
 export const ListImageModels = (
@@ -139,18 +126,3 @@ export const models: ImageMetadata[] = [
   },
 ];
 
-export const SessionParams: SessionParameters = {
-  numThreads: 0,
-  executionProviders: ["wasm"],
-  memoryLimitMB: 0,
-  cacheSizeMB: 2500,
-  wasmRoot: new URL("./js/", document.baseURI).href,
-};
-
-export interface SessionParameters {
-  numThreads: number;
-  executionProviders: string[];
-  memoryLimitMB: number;
-  cacheSizeMB: number;
-  wasmRoot: string;
-}

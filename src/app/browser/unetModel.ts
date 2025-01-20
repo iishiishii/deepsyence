@@ -1,29 +1,9 @@
 /* eslint-disable */
-import * as ort from "onnxruntime-web";
 import { BaseImageModel } from "./base";
-import { boundingBox, modelInputProps } from "../helpers/Interfaces";
-import { modelData } from "../helpers/onnxModelAPI";
 import { maskVolume } from "../helpers/utils/maskHandlers";
-import { imageDataToTensor } from "../helpers/utils/imageConversion";
-import {
-  colToRow,
-  filterChannels,
-  rowToCol,
-} from "../helpers/utils/channelHandlers";
-import {
-  getMax,
-  getMin,
-  normalizeArray,
-  resizeVolume,
-} from "../helpers/utils/imageProcessing";
-import { downloadImage } from "../helpers/utils/imageConversion";
-import { stackSliceToRGB } from "../helpers/utils/channelHandlers";
 import { Tensor } from "onnxruntime-web";
+import { UnetResult } from "../helpers/Interfaces";
 
-export type UnetResult = {
-  elapsed: number;
-  mask: Uint8Array | undefined;
-};
 
 export class UnetModel extends BaseImageModel {
   private lastProcessedVolume: any;
@@ -162,7 +142,7 @@ export class UnetModel extends BaseImageModel {
     }
     const inputData = await session.inputNames();
     console.log("session ", session, [1, d, h, w, 1]);
-    const feeds: Record<string, ort.Tensor> = {};
+    const feeds: Record<string, Tensor> = {};
 
     console.log("this.lastProcessedVolume", this.processedVolume);
 

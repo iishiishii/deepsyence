@@ -1,7 +1,7 @@
 import { models } from "./sessionParams";
 import { SegmentAnythingModel } from "./samModel";
 import { UnetModel } from "./unetModel";
-import { ModelType } from "./sessionParams";
+import { ModelType } from "../types";
 
 export interface InitImageModelResult {
   model: ImageModel;

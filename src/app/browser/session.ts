@@ -1,14 +1,6 @@
 import * as ort from "onnxruntime-web";
-import { SessionParameters } from "./sessionParams";
+import { SessionParameters } from "../helpers/Interfaces";
 
-// export interface Session {
-//   init: (modelPath: string) => Promise<void>;
-//   run: (
-//     input: ort.InferenceSession.OnnxValueMapType
-//   ) => Promise<ort.InferenceSession.OnnxValueMapType>;
-//   inputNames: () => readonly string[];
-//   outputNames: () => readonly string[];
-// }
 
 export class Session {
   ortSession: ort.InferenceSession | undefined;

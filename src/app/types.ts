@@ -34,3 +34,9 @@ export type Job = {
 export type JobNotification = {
   job: Job;
 };
+
+export enum ModelType {
+  Unknown = 1,
+  Unet,
+  SegmentAnything,
+}

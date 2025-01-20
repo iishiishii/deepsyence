@@ -18,12 +18,8 @@ import {
   downloadImage,
   imageDataToTensor,
 } from "../helpers/utils/imageConversion";
+import { PreprocessorResult } from "../helpers/Interfaces";
 
-export interface PreprocessorResult {
-  tensor: ort.Tensor;
-  newWidth: number;
-  newHeight: number;
-}
 
 export class Preprocessor {
   config: PreprocessorConfig;

@@ -1,5 +1,5 @@
 import { Session } from "./session";
-import { ImageMetadata } from "./sessionParams";
+import { ImageMetadata } from "../helpers/Interfaces";
 import Preprocessor from "./preprocessor";
 import { PreprocessorConfig } from "./preprocessorConfig";
 // import Config from "./config";

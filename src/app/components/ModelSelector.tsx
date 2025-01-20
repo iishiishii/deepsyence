@@ -1,15 +1,6 @@
 import { useRef, useState } from "react";
-import { Metadata } from "../browser/sessionParams";
-import {
-  ModelType as ImageModelType,
-  ListImageModels
-} from "../browser/sessionParams";
-
-interface ModelSelectorProps {
-  tags: string[] | undefined;
-  imageType?: ImageModelType[];
-  callback: (id: string) => void;
-}
+import { Metadata, ModelSelectorProps } from "../helpers/Interfaces";
+import { ListImageModels } from "../browser/sessionParams";
 
 export default function ModelSelector(props: ModelSelectorProps) {
   const selectRef = useRef<HTMLSelectElement>(null);

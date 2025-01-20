@@ -8,12 +8,10 @@ import { color as handleColor, hsvaToHex } from "@uiw/color-convert";
 import Swatch from "@uiw/react-color-swatch";
 import { IconContext } from "react-icons";
 import AppContext from "../hooks/createContext";
+import { Niivue } from "@niivue/niivue";
 
-interface Props {
-  niivue: any;
-}
 
-export default function Annotation({ niivue }: Props) {
+export default function Annotation({ niivue }: typeof Niivue) {
   const nv = niivue;
   nv.setDrawColormap("$slicer3d");
 
