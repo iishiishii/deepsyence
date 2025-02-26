@@ -5,13 +5,13 @@ import {
   ListImageModels
 } from "../browser/sessionParams";
 
-interface ModelSelectorProps {
+export interface ModelSelectorProps {
   tags: string[] | undefined;
   imageType?: ImageModelType[];
   callback: (id: string) => void;
 }
 
-export default function ModelSelector(props: ModelSelectorProps) {
+export default function ModelSelector (props: ModelSelectorProps) {
   const selectRef = useRef<HTMLSelectElement>(null);
   const [metadata, setMetadata] = useState({
     models: [] as Metadata[],

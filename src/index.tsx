@@ -10,10 +10,10 @@ import Tutorial from "./app/components/Tutorial";
 const root = ReactDOM.createRoot(document.getElementById("app") as HTMLElement);
 root.render(
   <AppContextProvider>
-    <>
-      <Tutorial />
-      <NiiVue />
-    </>
+      <>
+        <Tutorial />
+        <NiiVue />
+      </>
   </AppContextProvider>,
 );
 

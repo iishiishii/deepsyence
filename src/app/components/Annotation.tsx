@@ -8,6 +8,7 @@ import { color as handleColor, hsvaToHex } from "@uiw/color-convert";
 import Swatch from "@uiw/react-color-swatch";
 import { IconContext } from "react-icons";
 import AppContext from "../hooks/createContext";
+import { Typography } from "antd";
 
 interface Props {
   niivue: any;
@@ -50,14 +51,14 @@ export default function Annotation({ niivue }: Props) {
   }
 
   return (
-    <div className="navbar-draw" style={{ width: "210px" }}>
+    <div className="navbar-draw" style={{ width: "100%", backgroundColor: "#ffffff" }}>
       {/* <Grid container spacing={1} alignItems="flex-end"> */}
+      <p style={{padding: "10px", marginBottom: "0", marginTop: "0"}}>Label color</p>
       <Grid item xs={10} marginLeft={"10px"}>
         <Swatch
           colors={colors}
           style={{
             paddingLeft: 10,
-            paddingTop: 10,
           }}
           rectProps={{
             style: {
@@ -73,11 +74,11 @@ export default function Annotation({ niivue }: Props) {
       </Grid>
       <Divider
         orientation="horizontal"
-        component="li"
         sx={{ my: "1px", borderWidth: "1px" }}
       />
-      <Grid container spacing={1} alignItems="flex-end">
-        <Grid item xs={2} marginLeft={"20px"}>
+      <p style={{padding: "10px", marginBottom: "0", marginTop: "0"}}>Pen mode</p>
+      <Grid container spacing={1} justifyContent="space-evenly">
+        <Grid item xs={6} md={2}>
           <IconContext.Provider
             value={{
               style: {
@@ -94,7 +95,7 @@ export default function Annotation({ niivue }: Props) {
             />
           </IconContext.Provider>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={6} md={2}>
           <IconContext.Provider
             value={{
               style: {
@@ -116,7 +117,7 @@ export default function Annotation({ niivue }: Props) {
             />
           </IconContext.Provider>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={6} md={2}>
           <IconContext.Provider
             value={{
               style: {
@@ -137,7 +138,7 @@ export default function Annotation({ niivue }: Props) {
             />
           </IconContext.Provider>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={6} md={2}>
           <IconContext.Provider
             value={{
               style: {

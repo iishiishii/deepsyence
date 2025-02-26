@@ -11,22 +11,10 @@ export function LayersPanel(props: any) {
         borderRadius: 1,
         border: "1px solid grey",
         boxShadow: "3px white inset",
-        // backgroundColor: "#468189",
+        backgroundColor: "#2d2e31",
         // opacity: [0.9, 0.8, 0.8],
       }}
     >
-      {/* <Box
-        sx={{
-          height: 48,
-          display: "flex",
-          flexDirection: "row",
-          // backgroundColor: '#F8F8F8',
-          m: 1,
-          alignItems: "center",
-        }}
-      >
-
-      </Box> */}
 
       <Box
         sx={{

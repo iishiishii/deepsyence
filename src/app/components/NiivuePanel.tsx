@@ -86,7 +86,7 @@ export function NiivuePanel({ nv, volumes }: any) {
   }, []);
 
   return (
-    <div className="niivue" style={{ width: "75%" }}>
+    <div className="niivue" style={{ width: "50%", borderRadius: "1", border: "1px solid grey", boxShadow: "3px white inset", position: "relative" }}>
       <canvas
         ref={canvas}
         onClick={handleMouseMove}
@@ -100,8 +100,8 @@ export function NiivuePanel({ nv, volumes }: any) {
         id="intensity"
         style={{
           height: "30px",
-          width: "200px",
-          position: "fixed",
+          width: "300px",
+          position: "absolute",
           bottom: "0",
           left: "0",
           // backgroundColor: "rgba(0,0,0,0.9)",

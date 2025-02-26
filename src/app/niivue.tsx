@@ -18,6 +18,12 @@ import {
   updateSliceType,
 } from "./helpers/niivueHandler";
 import { handleJobNotification } from "./components/Alert";
+import Annotation from "./components/Annotation";
+import ModelSelector from "./components/ModelSelector";
+import { ImageModel } from "./browser/imageModel";
+import { ModelType } from "./browser/sessionParams";
+import { SegmentAnythingModel } from "./browser/samModel";
+import { UnetModel } from "./browser/unetModel";
 
 const theme = createTheme({
   palette: {
@@ -48,8 +54,9 @@ const theme = createTheme({
 });
 
 function handleIntensityChange(data: any) {
+  console.log("handleIntensityChange", data);
   document.getElementById("intensity")!.innerHTML =
-    data.vox[0] + "×" + data.vox[1] + "×" + data.vox[2];
+    data.string;
 }
 
 const nv = new Niivue({
@@ -67,7 +74,8 @@ export default function NiiVue(props: any) {
   const [layers, setLayers] = useState(nv.volumes);
   const [selectedLayer, setSelectedLayer] = useState([]);
   const {
-    modelLoading: [loading],
+    modelLoading: [loading, setLoading],
+    model: [, setModel]
   } = useContext(AppContext)!;
 
   useEffect(() => {
@@ -156,9 +164,20 @@ export default function NiiVue(props: any) {
     );
   });
 
+  const loadSamModel = async (id) => {
+    setLoading(true);
+    const result = await ImageModel.create(id);
+    setModel(result.model as SegmentAnythingModel | UnetModel);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadSamModel("efficient-sam");
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
-      <Grid container direction={"row"}>
+      {/* <Grid container direction={"row"}> */}
         <NavBar
           theme={theme}
           nv={nv}
@@ -177,6 +196,26 @@ export default function NiiVue(props: any) {
             marginTop: "auto",
           }}
         >
+          <LayersPanel
+            open={openLayers}
+            onToggleMenu={toggleLayers}
+            onSetSliceType={nvUpdateSliceType}
+          >
+            <Grid container spacing={0.5} alignItems={"center"}>
+              <Grid item xs={12} md={12}>
+                <ModelSelector
+                  tags={undefined}
+                  imageType={[ModelType.Unet, ModelType.SegmentAnything]}
+                  callback={loadSamModel}
+                />
+              </Grid>
+              <Grid item xs={12} md={12}>
+                <Annotation niivue={nv}></Annotation>
+              </Grid>
+              <Grid item xs={12} md={12}>
+              </Grid>
+            </Grid>
+          </LayersPanel>
           <Popover open={loading} className="loader" marginThreshold={0} classes={{ paper: "MuiPopover-paper" }}>
           <Typography variant="h1" component="h2" mt="40%" align="center" alignSelf="center">Loading model</Typography>
           </Popover>
@@ -190,7 +229,7 @@ export default function NiiVue(props: any) {
           </LayersPanel>
           {/* </Box> */}
         </Box>
-      </Grid>
+      {/* </Grid> */}
     </ThemeProvider>
   );
 }
