@@ -40,10 +40,11 @@ let niimathWasm = await (async () => {
 export default function Layer(props) {
   const image = props.image;
   // const [processedImage, setImage] = React.useState(image.img)
-  const [detailsOpen, setDetailsOpen] = React.useState(false);
+  const [detailsOpen, setDetailsOpen] = React.useState(true);
   const [visibilityIcon, setVisibilityIcon] = React.useState(true);
   const [opacity, setOpacity] = React.useState(image.opacity);
   const [selected, setSelected] = React.useState(false);
+  const [niimathArgs, setNiimathArgs] = React.useState("-round");
 
   let Visibility = visibilityIcon ? <VisibilityIcon /> : <VisibilityOffIcon />;
   let ArrowIcon = detailsOpen ? (
@@ -172,7 +173,6 @@ export default function Layer(props) {
   }
 
   function processImage() {
-
     let process_image = image.clone();
     // let image = nv.volumes[nv.getVolumeIndexByID(id)].clone();
     process_image.img = new Uint8Array(process_image.img);
@@ -181,7 +181,8 @@ export default function Layer(props) {
     let imageBytes = process_image.img.buffer;
 
     // const input = document.getElementById('command');
-    const cmd = "-round";
+    const cmd = niimathArgs;
+    console.log(cmd);
     // instance.postMessage([imageMetadata, process_image.img.buffer, cmd, isNewLayer]);
     console.log(imageMetadata)
     // niimathWasmPromise.then((niimathWasm) => {
@@ -282,9 +283,6 @@ export default function Layer(props) {
         <IconButton onClick={handleDetails} style={{ marginRight: "auto" }}>
           {ArrowIcon}
         </IconButton>
-        <IconButton onClick={handleSelect} style={{ marginRight: "auto" }}>
-          {SelectIcon}
-        </IconButton>
       </Box>
       <Box
         sx={{
@@ -300,10 +298,14 @@ export default function Layer(props) {
           }}
           m={1}
         >
-          <IconButton onClick={onnxFunct}>
-            <PlayCircleFilledWhiteIcon />
-          </IconButton>
-          <IconButton sx={{ fontSize: "13px", borderRadius: "5px" }} onClick={processImage}>NiiMath</IconButton>
+          {/* <IconButton sx={{ fontSize: "13px", borderRadius: "5px" }} onClick={processImage}>NiiMath</IconButton> */}
+
+          {/* <form onSubmit={processImage}> */}
+            <label>
+              Niimath args: <input value={niimathArgs} onChange={e => setNiimathArgs(e.target.value)} />
+            </label>
+            <button onClick={processImage}>Run niimath</button>
+
           <IconButton onClick={handleDelete}>
             <DeleteIcon />
           </IconButton>

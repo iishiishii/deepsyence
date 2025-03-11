@@ -1,11 +1,8 @@
-To set up the app and install packages using yarn and start the app, you can follow these instructions:
+## Requirements
+- Node.js
+- Yarn
 
-Make sure you have Node.js and Yarn installed on your system.
-
-You will need to have Rust installed. You can get it by visiting https://rustup.rs. This'll also install Cargo, Rust's package/project manager.
-
-Open a terminal or command prompt in the root directory of your app.
-
+## Development
 Run the following command to install the required packages:
 
 `yarn`
@@ -13,3 +10,10 @@ Run the following command to install the required packages:
 Once the packages are installed, you can start the app by running the following command:
 
 `yarn start`
+
+## Usage
+Drag and drop an image into the main canvas.
+
+Once loaded, the image will be listed on the right-side panel.
+
+Set the [niimath arguments](https://github.com/rordenlab/niimath?tab=readme-ov-file#usage) in the box and click run to preprocess the image.
