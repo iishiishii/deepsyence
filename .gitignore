@@ -1,11 +1,22 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
 MANIFEST
 build
 dist
 lib
-node_modules
-.npmrc
-.cache
-.eslintcache
+dist-ssr
+*.local
+openapi.json
+
+# Editor directories and files
 .vscode/*
 !.vscode/launch.json
 *.py[co]
@@ -14,20 +25,16 @@ __pycache__
 *~
 *.bak
 .ipynb_checkpoints
+!.vscode/extensions.json
+.idea
 .DS_Store
-\#*#
-.#*
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.tanstack/*
 
-*.swp
-*.map
-.idea/
-*.log
-.vscode
-env_installer/
-!env_installer/construct.yaml
 public/model/*
 public/js/*
 notebook/*
-!notebook/inference_ts.ipynb
-!public/model/sub-M2002_ses-a1440_T2w.nii
-!public/model/lesion_mask.nii
