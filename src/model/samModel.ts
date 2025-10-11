@@ -68,7 +68,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     const inputData = await session.inputNames();
     console.log("session ", session);
     const inputName = inputData[0];
-    console.log("result.tensor ", result.tensor);
+
     const feeds = {
       [inputName]: result.tensor,
     };

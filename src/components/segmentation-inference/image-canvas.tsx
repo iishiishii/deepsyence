@@ -2,12 +2,12 @@
 
 import { useRef, useEffect, useState } from "react";
 import { Niivue, NVImage } from "@niivue/niivue";
-import ViewSelector from "@/components/view-selector";
-import { ViewMode } from "@/components/view-selector";
-import ImageUploader from "@/components/image-uploader";
-import { Button } from "@/components/ui/button";
+import ViewSelector from "@/components/segmentation-inference/view-selector";
+import { ViewMode } from "@/components/segmentation-inference/view-selector";
+import ImageUploader from "@/components/segmentation-inference/image-uploader";
+import { Button } from "@/components/shadcn-ui/button";
 import { Palette } from "lucide-react";
-import Annotation from "@/components/annotation";
+import Annotation from "@/components/segmentation-inference/annotation";
 
 interface ImageCanvasProps {
   nvRef: React.RefObject<Niivue>;
@@ -26,7 +26,7 @@ export default function ImageCanvas({ nvRef, onFileUpload }: ImageCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [drawFunction, setDrawFunction] = useState<() => void>(() => {});
+  const [drawFunction, setDrawFunction] = useState<() => void>(() => { });
   const [viewMode, setViewMode] = useState<
     "axial" | "coronal" | "sagittal" | "multi" | "render"
   >("axial");

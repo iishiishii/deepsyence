@@ -1,7 +1,7 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import React, { Suspense } from "react";
 
-import NotFound from "@/components/not-found";
+import NotFound from "@/components/segmentation-inference/not-found";
 
 const loadDevtools = () =>
   Promise.all([

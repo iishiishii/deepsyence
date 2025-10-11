@@ -1,5 +1,5 @@
 "use client";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn-ui/toggle-group";
 import { Box, Grid3X3 } from "lucide-react";
 import axialIcon from "/assets/axialSlice24.png";
 import coronalIcon from "/assets/coronalSlice24.png";

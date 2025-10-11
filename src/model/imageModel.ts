@@ -1,4 +1,4 @@
-import { segmentationModels, ModelType } from "@/components/model-selector";
+import { segmentationModels, ModelType } from "@/components/segmentation-inference/model-selector";
 import { SegmentAnythingModel } from "@/model/samModel";
 import { UnetModel } from "@/model/unetModel";
 import { toast } from "sonner";

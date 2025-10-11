@@ -4,17 +4,17 @@ import useAuth from "@/hooks/useAuth";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import type { UserRegister } from "@/client";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/shadcn-ui/button";
+import { Input } from "@/components/shadcn-ui/input";
+import { Label } from "@/components/shadcn-ui/label";
 import {
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { TabsContent } from "@/components/ui/tabs";
+} from "@/components/shadcn-ui/card";
+import { TabsContent } from "@/components/shadcn-ui/tabs";
 import { emailPattern, passwordRules } from "@/lib/auth-utils";
 
 interface UserRegisterForm extends UserRegister {

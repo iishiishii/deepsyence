@@ -1,10 +1,10 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { isLoggedIn } from "@/hooks/useAuth";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/shadcn-ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/shadcn-ui/tabs";
 import niivueIcon from "/assets/niivue-icon.png";
-import Login from "@/components/login";
-import Signup from "@/components/signup";
+import Login from "@/components/segmentation-inference/login";
+import Signup from "@/components/segmentation-inference/signup";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,

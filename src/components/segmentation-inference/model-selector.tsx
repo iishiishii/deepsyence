@@ -4,9 +4,9 @@ import type React from "react";
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Brain, Star } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card } from "@/components/shadcn-ui/card";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/shadcn-ui/badge";
 import { ImageModel } from "@/model/imageModel";
 import { toast } from "sonner";
 import { UnetModel } from "@/model/unetModel";
@@ -189,7 +189,7 @@ export default function ModelSelector({
             !selectedModel
               ? ""
               : selectedModel.id === model.id &&
-                  "ring-2 ring-primary bg-primary/5"
+              "ring-2 ring-primary bg-primary/5"
           )}
           onClick={() => handleSelectModel(model)}
         >

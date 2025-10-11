@@ -1,8 +1,8 @@
 import { Session } from "@/model/session";
-import { ModelMetadata } from "@/components/model-selector";
+import { ModelMetadata } from "@/components/segmentation-inference/model-selector";
 import Preprocessor from "@/model/preprocessor";
 import { PreprocessorConfig } from "@/model/preprocessorConfig";
-import { createSession } from "@/model/sessionController";
+import { createSession, SessionWrapper } from "@/model/sessionController";
 import { SessionParams } from "@/model/sessionParams";
 
 export class BaseImageModel {
@@ -10,7 +10,7 @@ export class BaseImageModel {
   initialized: boolean;
   // config?: Config;
   preprocessor?: Preprocessor;
-  sessions?: Map<string, Session>;
+  sessions?: Map<string, Session | SessionWrapper>;
 
   constructor(metadata: ModelMetadata) {
     if (

@@ -2,26 +2,26 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PanelLeft, PanelRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/shadcn-ui/button";
+import { Card } from "@/components/shadcn-ui/card";
 import { Download, Play, Square } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/shadcn-ui/badge";
+import { Progress } from "@/components/shadcn-ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn-ui/tabs";
+import { ScrollArea } from "@/components/shadcn-ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Niivue, NVImage } from "@niivue/niivue";
-import ImageUploader from "@/components/image-uploader";
-import ImageCanvas from "@/components/image-canvas";
-import ImageList from "@/components/image-list";
-import ModelSelector, { ModelMetadata } from "@/components/model-selector";
-import SamDecoder from "@/components/sam-decoder";
+import ImageUploader from "@/components/segmentation-inference/image-uploader";
+import ImageCanvas from "@/components/segmentation-inference/image-canvas";
+import ImageList from "@/components/segmentation-inference/image-list";
+import ModelSelector, { ModelMetadata } from "@/components/segmentation-inference/model-selector";
+import SamDecoder from "@/components/segmentation-inference/sam-decoder";
 import { toast } from "sonner";
 import { UnetModel } from "@/model/unetModel";
 import { SegmentAnythingModel } from "@/model/samModel";
 import { nvDrawMask } from "@/helpers/niivueHandler";
 import { ImageModel } from "@/model/imageModel";
-import { ModelType } from "@/components/model-selector";
+import { ModelType } from "@/components/segmentation-inference/model-selector";
 // import { SamModel } from "@/model/samModel"; --- IGNORE ---
 export type ImageFile = {
   id: string;
@@ -308,10 +308,10 @@ export default function InferencePanel() {
                       {images.length === 0 || currentImageIndex === null
                         ? null
                         : (
-                            images[currentImageIndex].file.size /
-                            1024 /
-                            1024
-                          ).toFixed(1)}{" "}
+                          images[currentImageIndex].file.size /
+                          1024 /
+                          1024
+                        ).toFixed(1)}{" "}
                       MB
                     </p>
                   </div>

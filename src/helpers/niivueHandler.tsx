@@ -1,4 +1,4 @@
-import { sliceTypeMap } from "@/components/image-canvas";
+import { sliceTypeMap } from "@/components/segmentation-inference/image-canvas";
 import { v4 as uuid } from "uuid";
 
 export function updateSliceType(

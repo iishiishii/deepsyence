@@ -3,13 +3,14 @@
 import type React from "react";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/shadcn-ui/button";
+import { Card } from "@/components/shadcn-ui/card";
+import { Label } from "@/components/shadcn-ui/label";
+import { Slider } from "@/components/shadcn-ui/slider";
 import { cn } from "@/lib/utils";
 import { Brush, Eraser, PaintBucket } from "lucide-react";
 import { Niivue } from "@niivue/niivue";
+import * as ort from "onnxruntime-web";
 
 const annotationColors = [
   "#80AE80",
@@ -73,7 +74,8 @@ export default function Annotation({
 
   const stopDrawing = () => {
     if (!nvRef.current) return;
-
+    let tensor = new ort.Tensor("float32", new Float32Array([1, 2, 3]), [3]); // Example tensor to test comlink
+    console.log("tensor in annotation", tensor);
     setIsErasing(false);
     setIsDrawing(false);
     setIsFilling(false);

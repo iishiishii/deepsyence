@@ -3,12 +3,12 @@
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CardContent, CardFooter } from "@/components/ui/card";
-import { TabsContent } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/shadcn-ui/button";
+import { Input } from "@/components/shadcn-ui/input";
+import { Label } from "@/components/shadcn-ui/label";
+import { CardContent, CardFooter } from "@/components/shadcn-ui/card";
+import { TabsContent } from "@/components/shadcn-ui/tabs";
+import { Checkbox } from "@/components/shadcn-ui/checkbox";
 import type { Body_login_login_access_token as AccessToken } from "@/client";
 import useAuth, { isLoggedIn } from "@/hooks/useAuth";
 import { emailPattern, passwordRules } from "@/lib/auth-utils";

@@ -4,16 +4,16 @@ import type React from "react";
 import { Link as RouterLink } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/shadcn-ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+} from "@/components/shadcn-ui/card";
+import { Input } from "@/components/shadcn-ui/input";
+import { Alert, AlertDescription } from "@/components/shadcn-ui/alert";
 import useAuth from "@/hooks/useAuth";
 
 interface VerifySearchParams {

@@ -3,10 +3,10 @@
 import type React from "react";
 
 import { useCallback, useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { ModelMetadata, ModelType } from "@/components/model-selector";
+import { Card } from "@/components/shadcn-ui/card";
+import { ModelMetadata, ModelType } from "@/components/segmentation-inference/model-selector";
 import { MousePointer2, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/shadcn-ui/button";
 
 interface SamDecoderProps {
   model: ModelMetadata | null;

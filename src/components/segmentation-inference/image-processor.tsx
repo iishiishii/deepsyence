@@ -1,9 +1,9 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
+import { Card } from "@/components/shadcn-ui/card";
 import { Brain, Zap, GraduationCap } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import InferencePanel from "@/components/inference-panel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn-ui/tabs";
+import InferencePanel from "@/components/segmentation-inference/inference-panel";
 
 export type ImageFile = {
   id: string;
