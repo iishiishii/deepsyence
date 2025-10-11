@@ -156,8 +156,8 @@ export default function InferencePanel() {
       const start = 0;
       const end = image.dims![3];
       console.log("processing slices ", start, end);
-      const totalSteps = end - start + 1 || 1; // Avoid division by zero
-      const progressPerStep = 1 / totalSteps; // Reserve 10% for final cleanup
+      const totalSteps = end - start || 1; // Avoid division by zero
+      const progressPerStep = 100 / totalSteps; // Reserve 10% for final cleanup
 
       try {
         // check getVolumeData()
