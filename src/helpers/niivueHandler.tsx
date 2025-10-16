@@ -1,19 +1,20 @@
 import { sliceTypeMap } from "@/components/segmentation-inference/image-canvas";
+import { Niivue, NVImage } from "@niivue/niivue";
 import { v4 as uuid } from "uuid";
+import { TypedVoxelArray } from "@/helpers/utils/imageConversion";
 
 export function updateSliceType(
-  nv: any,
+  nv: Niivue,
   newSliceType: keyof typeof sliceTypeMap
 ) {
   nv.setSliceType(sliceTypeMap[newSliceType]);
 }
 
 function setImage(
-  nv: any,
-  id: any,
-  name: any,
-  array: Float32Array | Uint8Array | Uint16Array | Int16Array | Uint32Array,
-  niimath: boolean
+  nv: Niivue,
+  id: string,
+  name: string,
+  array: Float32Array | Uint8Array | Int16Array | Float64Array | Uint16Array,
 ) {
   let modelOutput = nv.volumes[nv.getVolumeIndexByID(id)];
   // console.log("processed image ", array);
@@ -23,39 +24,17 @@ function setImage(
   }
   // console.log("model output ", modelOutput);
   let processedImage = modelOutput.clone();
-  processedImage.id = uuid();
-  processedImage.name = name.split(".")[0] + "_processed.nii.gz";
-  processedImage.permRAS = [1, 2, 3];
-  if (niimath) {
-    processedImage.img = array;
-    switch (processedImage.hdr.datatypeCode) {
-      case processedImage.DT_UNSIGNED_CHAR:
-        processedImage.img = new Uint8Array(array);
-        break;
-      case processedImage.DT_SIGNED_SHORT:
-        processedImage.img = new Int16Array(array);
-        break;
-      case processedImage.DT_FLOAT:
-        processedImage.img = new Float32Array(array);
-        break;
-      case processedImage.DT_DOUBLE:
-        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
-      case processedImage.DT_RGB:
-        processedImage.img = new Uint8Array(array);
-        break;
-      case processedImage.DT_UINT16:
-        processedImage.img = new Uint16Array(array);
-        break;
-      case processedImage.DT_RGBA32:
-        processedImage.img = new Uint8Array(array);
-        break;
-      default:
-        throw "datatype " + processedImage.hdr.datatypeCode + " not supported";
-    }
-  } else {
-    processedImage.hdr.datatypeCode = processedImage.DT_RGB;
-    processedImage.img = array;
+  if (!processedImage) {
+    console.log("image not found");
+    return;
   }
+  processedImage.zeroImage();
+  processedImage.name = name;
+  processedImage.permRAS = [1, 2, 3];
+
+  processedImage.hdr!.datatypeCode = 2;
+  processedImage.img = array as TypedVoxelArray;
+
   processedImage.trustCalMinMax = false;
   processedImage.calMinMax();
   processedImage.dims = modelOutput.dims;
@@ -69,28 +48,12 @@ function setImage(
   return processedImage;
 }
 
-export function nvDrawMask(nv: any, id: any, name: any, array: Uint8Array) {
-  let processedImage = setImage(nv, id, name, array, false);
+export function nvDrawMask(nv: any, id: string, name: string, array: Uint8Array) {
+  let processedImage = setImage(nv, id, name, array);
   nv.loadDrawing(processedImage);
   nv.setDrawColormap("$slicer3d");
   // nv.addVolume(processedImage);
   // setLayers([...nv.volumes]);
-
-  console.log("image processed");
-}
-
-export function nvNiimathPostProcess(
-  nv: any,
-  id: any,
-  name: any,
-  array: Float32Array,
-  setLayers: (layers: any) => void
-) {
-  let processedImage = setImage(nv, id, name, array, true);
-  // nv.loadDrawing(processedImage);
-  // nv.setDrawColormap("$slicer3d");
-  nv.addVolume(processedImage);
-  setLayers([...nv.volumes]);
 
   console.log("image processed");
 }

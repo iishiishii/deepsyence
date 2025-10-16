@@ -26,10 +26,10 @@ export interface boundingBox {
 
 export interface modelDataProps {
   modelName: string;
-  clicks?: modelInputProps[];
-  bbox?: boundingBox;
   tensor: Tensor;
   modelScale: modelScaleProps;
+  clicks?: modelInputProps[];
+  bbox?: boundingBox;
 }
 
 export interface SAMResult {

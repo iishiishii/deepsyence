@@ -63,6 +63,10 @@ export class Session {
         }
         processedInput[key] = value;
       } else {
+        console.log(`Input ${key} is not a tensor, passing as is.`);
+                console.log(`Data:`, value.data);
+        console.log(`Dims:`, value.dims);
+        console.log(`Type:`, value.type);
         processedInput[key] = value as ort.OnnxValue;
       }
     }
@@ -86,5 +90,12 @@ export class Session {
       );
     }
     return this.ortSession.outputNames;
+  };
+
+  release = () => {
+    if (this.ortSession) {
+      this.ortSession.release();
+      this.ortSession = undefined;
+    }
   };
 }

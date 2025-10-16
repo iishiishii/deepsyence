@@ -10,13 +10,13 @@ import { modelDataProps } from "@/helpers/Interfaces";
 
 const modelData = ({
   modelName,
-  clicks,
-  bbox,
   tensor,
   modelScale,
+  clicks,
+  bbox,
 }: modelDataProps) => {
-  const imageEmbedding = tensor;
-  console.log("image embedding", imageEmbedding);
+  // const imageEmbedding = new Tensor("float32", tensor.data, tensor.dims);
+  console.log("image embedding", tensor);
   let pointCoordsTensor;
   let pointLabelsTensor;
   let pointCoords;
@@ -109,7 +109,7 @@ const modelData = ({
   const hasMaskInput = new Tensor("float32", [0]);
 
   return {
-    image_embeddings: imageEmbedding,
+    image_embeddings: tensor,
     batched_point_coords: pointCoordsTensor,
     batched_point_labels: pointLabelsTensor,
     orig_im_size: imageSizeTensor,

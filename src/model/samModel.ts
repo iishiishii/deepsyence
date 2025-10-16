@@ -8,6 +8,7 @@ import { NVImage } from "@niivue/niivue";
 export class SegmentAnythingModel extends BaseImageModel {
   private lastProcessedVolume: any;
   encoderResult: ort.Tensor[] = [];
+  decoderResult: Uint8Array[] = [];
   samScale: number = 1;
 
   process = async (
@@ -26,10 +27,12 @@ export class SegmentAnythingModel extends BaseImageModel {
         this.lastProcessedVolume = volume;
         // Initialize encoder results array with proper length
         this.encoderResult = new Array(volume.dimsRAS![3]);
+        this.decoderResult = new Array(volume.dimsRAS![3]);
         for (let i = 0; i < volume.dimsRAS![3]; i++) {
           // Initialize with empty tensor - will be replaced during processing
           const emptyData = new Float32Array([0]);
           this.encoderResult[i] = new ort.Tensor("float32", emptyData, [1]);
+          this.decoderResult[i] = new Uint8Array();
         }
       }
       await this.processEncoder(sliceId);
@@ -79,9 +82,9 @@ export class SegmentAnythingModel extends BaseImageModel {
       Math.max(this.preprocessor.dims[0], this.preprocessor.dims[1]);
 
     try {
-      const outputData = await session.run(feeds);
+      const outputData: ort.InferenceSession.OnnxValueMapType = await session.run(feeds);
       const outputNames = await session.outputNames();
-      const output = outputData[outputNames[0]];
+      const output: ort.Tensor = new ort.Tensor("float32", outputData[outputNames[0]].cpuData as Float32Array, outputData[outputNames[0]].dims);
       this.encoderResult![sliceId] = output;
       const end = new Date();
       const inferenceTime = end.getTime() - start.getTime();
@@ -90,7 +93,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log("output ", this.encoderResult);
       console.log(
         "output sum ",
-        (output.data as Float32Array).reduce((a: number, b: number) => a + b, 0)
+        (output.cpuData as Float32Array).reduce((a: number, b: number) => a + b, 0)
       );
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `);
@@ -98,11 +101,11 @@ export class SegmentAnythingModel extends BaseImageModel {
   };
 
   processDecoder = async (
-    image: any,
+    // image: any,
     sliceId: number,
     clicks: modelInputProps[],
-    bbox: boundingBox
-  ): Promise<Uint8Array | undefined> => {
+    bbox: boundingBox | null
+  ) => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       console.log("the model is not initialized");
       throw Error("the model is not initialized");
@@ -113,8 +116,8 @@ export class SegmentAnythingModel extends BaseImageModel {
     const start = new Date();
 
     // const LONG_SIDE_LENGTH = 1024;
-    let w = image.dimsRAS[2];
-    let h = image.dimsRAS[1];
+    let w = this.lastProcessedVolume.dimsRAS[2];
+    let h = this.lastProcessedVolume.dimsRAS[1];
     const modelScale = {
       samScale: this.samScale,
       height: h, // swap height and width to get row major order from npy arrayt to column order ?
@@ -127,8 +130,12 @@ export class SegmentAnythingModel extends BaseImageModel {
     }
     const outputData = await session.outputNames();
     const modelName = this.metadata.id;
-    const tensor = this.encoderResult[sliceId];
-
+    const originalTensor: ort.Tensor = this.encoderResult[sliceId];
+    const originalData = originalTensor.cpuData as Float32Array;
+    const cloneData = new Float32Array(originalData);
+    // Clone tensor to avoid detachment issues with Comlink
+    const tensor = new ort.Tensor("float32", cloneData, originalTensor.dims);
+    console.log("decoder tensor", originalTensor, tensor, this.encoderResult, sliceId);
     // Check if tensor exists and has been processed
     if (!tensor || tensor.size === 1) {
       throw Error(
@@ -140,17 +147,27 @@ export class SegmentAnythingModel extends BaseImageModel {
     if (this.metadata.id === "efficient-sam") {
       feeds = modelData({
         modelName,
-        clicks,
         tensor,
         modelScale,
+        clicks,
       });
     } else {
+      if (!bbox) {
+              let topLeft = { x: 0, y: 0, z: 0, clickType: 2 };
+      let bottomRight = {
+        x: this.lastProcessedVolume.dimsRAS[1],
+        y: this.lastProcessedVolume.dimsRAS[2],
+        z: 0,
+        clickType: 3,
+      };
+      bbox = { topLeft, bottomRight };
+      }
       feeds = modelData({
         modelName,
-        clicks,
-        bbox,
         tensor,
         modelScale,
+        clicks,
+        bbox,
       });
     }
 
@@ -160,17 +177,17 @@ export class SegmentAnythingModel extends BaseImageModel {
     try {
       // feed inputs and run
       let results = await session.run(feeds);
-      let mask = new Uint8Array(w * h * image.dimsRAS[3]);
+      let mask = new Uint8Array(w * h * this.lastProcessedVolume.dimsRAS[3]);
       const end = new Date();
       const inferenceTime = end.getTime() - start.getTime();
       console.log("inference time ", inferenceTime);
 
-      let output = results[outputData[0]].data as Float32Array;
-
-      console.log(
-        "decoder output",
-        (output as Float32Array).reduce((a, b) => a + b, 0)
-      );
+      let output = results[outputData[0]].cpuData;
+      console.log("output data", results[outputData[0]], output);
+      // console.log(
+      //   "decoder output",
+      //   (output as Float32Array).reduce((a, b) => a + b, 0)
+      // );
       // console.log("output ", maxIou, (output as Float32Array).reduce((a, b) => a + b, 0));
 
       const rasImage = maskImage(
@@ -180,10 +197,51 @@ export class SegmentAnythingModel extends BaseImageModel {
         clicks[0].z,
         mask
       );
-      return rasImage;
+      this.decoderResult![sliceId] = rasImage;
+      // return rasImage;
     } catch (e) {
       console.log(`failed to inference ONNX model: ${e}. `);
       throw Error(`failed to inference ONNX model: ${e}. `);
     }
+  };
+
+
+getDecoderResultAsUint8Array(): Uint8Array {
+  if (this.decoderResult.length === 0) {
+    return new Uint8Array(0);
+  }
+  
+  // Calculate total length
+  const totalLength = this.decoderResult.reduce((sum, arr) => sum + arr.length, 0);
+  
+  // Create result array
+  const result = new Uint8Array(totalLength);
+  
+  // Copy all arrays into result
+  let offset = 0;
+  for (const arr of this.decoderResult) {
+    result.set(arr, offset);
+    offset += arr.length;
+  }
+  
+  return result;
+}
+
+  dispose = () => {
+    if (this.sessions) {
+      this.sessions.forEach(async (session) => {
+        await session.release();
+      });
+    }
+    if (this.preprocessor) {
+      this.preprocessor.dispose();
+    }
+    this.memoryPool.clear();
+    this.initialized = false;
+    this.lastProcessedVolume = null;
+    this.encoderResult = [];
+    this.decoderResult = [];
+    this.samScale = 1;
+    
   };
 }

@@ -134,12 +134,11 @@ export const segmentationModels: ModelMetadata[] = [
 
 interface ModelData {
   metadata: ModelMetadata | null;
-  instance: UnetModel | SegmentAnythingModel | null; // <-- ADDED: The actual initialized model object
+  instance: SegmentAnythingModel | null;
 }
 
 interface ModelSelectorProps {
   selectedModel: ModelMetadata | null;
-  // Change the callback signature to accept the full ModelData
   onSelectModel: (data: ModelData) => void;
   onSetModelReady: (ready: boolean) => void;
 }
@@ -149,6 +148,9 @@ export default function ModelSelector({
   onSelectModel,
   onSetModelReady,
 }: ModelSelectorProps) {
+  // Add local state for visual selection
+  const [visuallySelectedModel, setVisuallySelectedModel] = useState<ModelMetadata | null>(selectedModel);
+
   const getSizeColor = (size: number) => {
     switch (true) {
       case size < 20:
@@ -163,6 +165,9 @@ export default function ModelSelector({
   };
 
   const handleSelectModel = async (selectedModel: ModelMetadata) => {
+    // Set visual selection immediately
+    setVisuallySelectedModel(selectedModel);
+
     try {
       // Initialize the model and wait for it to be ready
       await ImageModel.create(selectedModel.id).then(({ model, elapsed }) => {
@@ -176,6 +181,8 @@ export default function ModelSelector({
     } catch (error) {
       console.error("Error selecting model:", error);
       toast("Error selecting model:" + error);
+      // Reset visual selection on error
+      setVisuallySelectedModel(null);
     }
   };
 
@@ -186,10 +193,9 @@ export default function ModelSelector({
           key={model.id}
           className={cn(
             "p-3 border rounded-lg cursor-pointer transition-all hover:shadow-sm",
-            !selectedModel
-              ? ""
-              : selectedModel.id === model.id &&
-              "ring-2 ring-primary bg-primary/5"
+            // Use visuallySelectedModel instead of selectedModel
+            visuallySelectedModel?.id === model.id &&
+            "ring-2 ring-primary bg-primary/5"
           )}
           onClick={() => handleSelectModel(model)}
         >

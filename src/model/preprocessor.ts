@@ -21,37 +21,52 @@ import {
 } from "@/helpers/utils/imageConversion";
 import { PreprocessorResult } from "@/helpers/Interfaces";
 import { Tensor } from "onnxruntime-web";
-
+import MemoryPool from "@/helpers/utils/memoryPool";
+import { NVImage } from "@niivue/niivue";
+import { TypedVoxelArray } from "@/helpers/utils/imageConversion";
 export class Preprocessor {
+  private memoryPool: MemoryPool;
   config: PreprocessorConfig;
   volume: any;
   dims: number[];
   maxVal: number;
 
-  constructor(config: PreprocessorConfig) {
+  constructor(config: PreprocessorConfig, memoryPool?: MemoryPool) {
     this.config = config;
     this.dims = [0, 0, 0];
     this.maxVal = 0;
+    this.memoryPool = memoryPool ? memoryPool : new MemoryPool();
   }
 
-  processVolume = (niiVolume: any): Float32Array => {
+  processVolume = (niiVolume: NVImage): Float32Array => {
+    if (!niiVolume.img2RAS) {
+      throw new Error("The volume does not contain image data");
+    }
+    if (!niiVolume.dimsRAS) {
+      throw new Error("The volume does not contain dimension data");
+    }
+    if (niiVolume.dimsRAS.length < 3) {
+      throw new Error("The volume does not have 3 dimensions");
+    }
+    if (niiVolume.dimsRAS[1] * niiVolume.dimsRAS[2] * niiVolume.dimsRAS[3] !== niiVolume.img2RAS().length) {
+      throw new Error("The volume dimensions do not match the image data length");
+    }
     this.dims = [
       niiVolume.dimsRAS[1],
       niiVolume.dimsRAS[2],
       niiVolume.dimsRAS[3],
     ];
-    this.maxVal = getMax(niiVolume.img2RAS());
+    this.maxVal = getMax(niiVolume.img2RAS() as TypedVoxelArray);
     console.log(
       "ori volume",
       new Tensor("float32", [2.4]),
-      getMin(niiVolume.img2RAS()),
-      getMax(niiVolume.img2RAS()),
-      niiVolume.img2RAS().reduce((a: number, b: number) => a + b, 0)
+      getMin(niiVolume.img2RAS() as TypedVoxelArray),
+      getMax(niiVolume.img2RAS() as TypedVoxelArray),
     );
     if (this.config.resizeVolume) {
       console.log("resizeVolume", this.config.volumeSize);
       if (this.config.pad && this.config.padSize) {
-        this.volume = padVolume(niiVolume.img2RAS(), this.dims, [
+        this.volume = padVolume(niiVolume.img2RAS() as TypedVoxelArray, this.dims, [
           this.config.padSize,
           this.config.padSize,
           this.config.padSize,
@@ -89,7 +104,7 @@ export class Preprocessor {
       this.config.standardize.std
     ) {
       this.volume = standardizeArray(
-        niiVolume.img2RAS(),
+        niiVolume.img2RAS() as TypedVoxelArray,
         this.config.standardize.mean[0],
         this.config.standardize.std[0]
       );
@@ -169,6 +184,13 @@ export class Preprocessor {
       newHeight: inputTensor.dims[3],
     };
     return result;
+  };
+
+  dispose = () => {
+    this.volume = null;
+    this.dims = [0, 0, 0];
+    this.maxVal = 0;
+    this.memoryPool.clear();
   };
 }
 

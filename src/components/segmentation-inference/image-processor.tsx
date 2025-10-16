@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Card } from "@/components/shadcn-ui/card";
 import { Brain, Zap, GraduationCap } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn-ui/tabs";
@@ -28,6 +29,7 @@ type ProcessingTool = {
 
 export default function MedicalImageProcessor() {
   // const { logout } = useAuth();
+  const [activeTab, setActiveTab] = useState("inference");
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,7 +63,7 @@ export default function MedicalImageProcessor() {
 
       {/* Main Content */}
       <main className="container mx-auto px-2 py-3">
-        <Tabs defaultValue="inference" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 bg-card">
             <TabsTrigger value="inference" className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
@@ -73,7 +75,7 @@ export default function MedicalImageProcessor() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="inference" className="space-y-6">
+          <TabsContent value="inference" forceMount className={activeTab !== "inference" ? "hidden" : "space-y-6"}>
             <Card className="p-6">
               {/* <h2 className="text-lg font-semibold mb-4">
                 Model Selection & Inference

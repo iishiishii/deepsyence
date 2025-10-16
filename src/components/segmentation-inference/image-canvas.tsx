@@ -1,17 +1,25 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { Niivue, NVImage } from "@niivue/niivue";
+import { useRef, useEffect, useMemo, useState } from "react";
+import { Niivue, NVImage, DRAG_MODE } from "@niivue/niivue";
 import ViewSelector from "@/components/segmentation-inference/view-selector";
 import { ViewMode } from "@/components/segmentation-inference/view-selector";
 import ImageUploader from "@/components/segmentation-inference/image-uploader";
 import { Button } from "@/components/shadcn-ui/button";
 import { Palette } from "lucide-react";
 import Annotation from "@/components/segmentation-inference/annotation";
+import * as _ from "underscore";
+import { boundingBox, modelInputProps } from "@/helpers/Interfaces";
+import { UnetModel } from "@/model/unetModel";
+import { SegmentAnythingModel } from "@/model/samModel";
+import { toast } from "sonner";
 
 interface ImageCanvasProps {
   nvRef: React.RefObject<Niivue>;
   onFileUpload: (files: File[]) => Promise<void>;
+  segmentationMode: "none" | "foreground" | "background" | "box";
+  selectedModel: SegmentAnythingModel | null;
+  drawMask: (mask: Uint8Array, suffix: string) => void;
 }
 
 export const sliceTypeMap: { [type: string]: number } = {
@@ -22,16 +30,26 @@ export const sliceTypeMap: { [type: string]: number } = {
   render: 4,
 };
 
-export default function ImageCanvas({ nvRef, onFileUpload }: ImageCanvasProps) {
+export const segmentationModeMap: { [mode: string]: number } = {
+  background: 0,
+  foreground: 1,
+  boxTopLeft: 2,
+  boxBottomRight: 3,
+};
+
+
+export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, selectedModel, drawMask }: ImageCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [drawFunction, setDrawFunction] = useState<() => void>(() => { });
+  const [annotateFunction, setAnnotateFunction] = useState<() => void>(() => { });
   const [viewMode, setViewMode] = useState<
     "axial" | "coronal" | "sagittal" | "multi" | "render"
   >("axial");
   const [showColorBoard, setShowColorBoard] = useState(false);
   const [isAnnotating, setIsAnnotating] = useState(false);
+  const [clicks, setClicks] = useState<modelInputProps[] | null>(null);
+  const [bbox, setBbox] = useState<boundingBox | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -82,6 +100,106 @@ export default function ImageCanvas({ nvRef, onFileUpload }: ImageCanvasProps) {
     );
   };
 
+
+  const getClick = (x: number, y: number, z: number): modelInputProps | null => {
+    let clickType: number;
+    if (segmentationMode === "none") return null;
+    clickType = segmentationModeMap[segmentationMode];
+    if (clickType === undefined) return null;
+    return { x, y, z, clickType };
+  };
+
+  // // Get mouse position and scale the (x, y) coordinates back to the natural
+  // // scale of the image. Update the state of clicks with setClicks to trigger
+  // // the ONNX model to run and generate a new mask via a useEffect in App.tsx
+  const handleMouseMoveLogic = (e: any) => {
+    const nv = nvRef.current;
+    let el = canvasRef.current || e.target;
+    if (!el) return;
+    if (!nv) return;
+
+    let x = nv.frac2vox(nv.scene.crosshairPos)[0];
+    let y = nv.frac2vox(nv.scene.crosshairPos)[1];
+    let z = nv.frac2vox(nv.scene.crosshairPos)[2];
+    const click = getClick(x, y, z);
+    if (!click) return;
+    if (!clicks || (clicks.length > 0 && z !== clicks[0].z)) {
+      // console.log("resetting clicks");
+      setClicks([click]);
+      return;
+    }
+    // console.log("clicks", clicks);
+
+    if (click && clicks) setClicks([...clicks!, click]);
+  };
+
+  // Use useMemo to create the throttled function ONCE
+  const handleMouseMove = useMemo(() => {
+    return _.throttle(handleMouseMoveLogic, 15);
+  }, [nvRef.current, getClick, clicks, setClicks]); // Dependencies: nv, getClick, and state setters/getters
+
+
+  const doDragReleaseLogic = (info) => {
+    const nv = nvRef.current;
+    if (!nv) return;
+    nv.opts.dragMode = DRAG_MODE.callbackOnly;
+    if (info.tileIdx < 0) console.log("Invalid drag");
+    else if (info.voxStart[2] !== info.voxEnd[2]) return;
+
+    if (bbox) {
+      let topLeft: modelInputProps = {
+        x: info.voxStart[0],
+        y: info.voxEnd[1],
+        z: info.voxStart[2],
+        clickType: 2,
+      };
+      let bottomRight: modelInputProps = {
+        x: info.voxEnd[0],
+        y: info.voxStart[1],
+        z: info.voxEnd[2],
+        clickType: 3,
+      };
+      let box: boundingBox = { topLeft, bottomRight };
+      setBbox(box);
+
+      console.log("bbox", [topLeft, bottomRight]);
+    }
+
+    // return [info.voxStart[0], info.voxEnd[0], info.voxStart[1], info.voxEnd[1], info.voxStart[2], info.voxEnd[2]]
+  };
+
+  const doDragRelease = useMemo(() => {
+    return _.throttle(doDragReleaseLogic, 15);
+  }, [nvRef.current, setBbox, bbox]);
+
+  const runDecoder = async () => {
+    console.log("runDecoder", clicks, bbox);
+    try {
+      if (clicks === null || (clicks.length === 0 && !bbox))
+        return;
+      if (!selectedModel) return;
+      console.log("running decoder", clicks, bbox);
+      await selectedModel
+        .processDecoder(clicks[0].z, clicks, bbox)
+        .then(() => {
+          let result = selectedModel.getDecoderResultAsUint8Array()
+
+          drawMask(new Uint8Array(result), selectedModel.metadata.id);
+
+        });
+    } catch (error) {
+      toast(`Decoder ${error}`);
+      console.log("error decoder", error);
+    }
+  };
+
+  useEffect(() => {
+    if (clicks) {
+      runDecoder();
+    }
+    console.log("clicks", clicks);
+  }, [clicks]);
+
   return (
     <div className="relative flex flex-col h-full">
       <div className="flex-1 overflow-hidden">
@@ -89,7 +207,11 @@ export default function ImageCanvas({ nvRef, onFileUpload }: ImageCanvasProps) {
           ref={containerRef}
           className="niivue-canvas w-full h-full relative bg-[#111]"
         >
-          <canvas ref={canvasRef} onMouseMove={drawFunction}></canvas>
+          <canvas ref={canvasRef} onMouseMove={annotateFunction} onClick={handleMouseMove}
+            onContextMenu={() => {
+              if (!nvRef.current) return;
+              nvRef.current.onDragRelease = doDragRelease;
+            }}></canvas>
           {getViewLabel()}
           {renderMultiView()}
           {!imageLoaded && (
@@ -116,7 +238,8 @@ export default function ImageCanvas({ nvRef, onFileUpload }: ImageCanvasProps) {
             <Annotation
               nvRef={nvRef}
               isAnnotating={isAnnotating}
-              onDrawFunction={setDrawFunction}
+              onSetIsAnnotating={setIsAnnotating}
+              onAnnotateFunction={setAnnotateFunction}
             />
           )}
           <ImageUploader onUpload={onFileUpload} compact={true} />

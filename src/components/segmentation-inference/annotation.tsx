@@ -10,7 +10,6 @@ import { Slider } from "@/components/shadcn-ui/slider";
 import { cn } from "@/lib/utils";
 import { Brush, Eraser, PaintBucket } from "lucide-react";
 import { Niivue } from "@niivue/niivue";
-import * as ort from "onnxruntime-web";
 
 const annotationColors = [
   "#80AE80",
@@ -23,22 +22,24 @@ const annotationColors = [
 interface AnnotationProps {
   nvRef: React.RefObject<Niivue>;
   isAnnotating: boolean;
-  onDrawFunction?: (drawFn: () => void) => void;
+  onSetIsAnnotating: (isAnnotating: boolean) => void;
+  onAnnotateFunction?: (annotateFn: () => void) => void;
 }
 export default function Annotation({
   nvRef,
   isAnnotating,
-  onDrawFunction,
+  onSetIsAnnotating,
+  onAnnotateFunction,
 }: AnnotationProps) {
   const [selectedColor, setSelectedColor] = useState(annotationColors[0]);
   const [brushSize, setBrushSize] = useState(5);
   const [brushOpacity, setBrushOpacity] = useState(1);
   const [isErasing, setIsErasing] = useState(false);
-  const [isDrawing, setIsDrawing] = useState(false);
+  // const [isAnnotateing, setIsAnnotating] = useState(false);
   const [isFilling, setIsFilling] = useState(false);
 
-  const draw = useCallback(() => {
-    if ((!isDrawing && !isFilling && !isErasing) || !isAnnotating) return;
+  const annotate = useCallback(() => {
+    if ((!isAnnotating && !isFilling && !isErasing) || !isAnnotating) return;
     if (!nvRef.current) return;
 
     const nv = nvRef.current;
@@ -56,7 +57,7 @@ export default function Annotation({
       nv.setPenValue(mode, filled);
     }
   }, [
-    isDrawing,
+    isAnnotating,
     isAnnotating,
     isErasing,
     isFilling,
@@ -65,19 +66,17 @@ export default function Annotation({
     selectedColor,
   ]);
 
-  // Pass the draw function to the parent component
+  // Pass the annotate function to the parent component
   useEffect(() => {
-    if (onDrawFunction) {
-      onDrawFunction(draw);
+    if (onAnnotateFunction) {
+      onAnnotateFunction(annotate);
     }
-  }, [draw, onDrawFunction]);
+  }, [annotate, onAnnotateFunction]);
 
-  const stopDrawing = () => {
+  const stopAnnotating = () => {
     if (!nvRef.current) return;
-    let tensor = new ort.Tensor("float32", new Float32Array([1, 2, 3]), [3]); // Example tensor to test comlink
-    console.log("tensor in annotation", tensor);
     setIsErasing(false);
-    setIsDrawing(false);
+    onSetIsAnnotating(false);
     setIsFilling(false);
     const nv = nvRef.current;
     nv.setDrawingEnabled(false);
@@ -99,7 +98,7 @@ export default function Annotation({
             <Button size="sm" variant="outline" onClick={clearAnnotations}>
               Clear All
             </Button>
-            <Button size="sm" variant="outline" onClick={stopDrawing}>
+            <Button size="sm" variant="outline" onClick={stopAnnotating}>
               Close
             </Button>
           </div>
@@ -109,16 +108,16 @@ export default function Annotation({
           <div className="flex items-center gap-4">
             <Button
               size="sm"
-              variant={isDrawing ? "default" : "outline"}
+              variant={isAnnotating ? "default" : "outline"}
               onClick={(e) => {
                 e.stopPropagation();
                 setIsErasing(false);
-                setIsDrawing(true);
+                onSetIsAnnotating(true);
                 setIsFilling(false);
               }}
             >
               <Brush className="h-3 w-3 mr-1" />
-              Draw
+              Annotate
             </Button>
             <Button
               size="sm"
@@ -127,7 +126,7 @@ export default function Annotation({
                 e.stopPropagation();
                 setIsErasing(false);
                 setIsFilling(true);
-                setIsDrawing(false);
+                onSetIsAnnotating(false);
               }}
             >
               <PaintBucket className="h-3 w-3 mr-1" />
@@ -140,7 +139,7 @@ export default function Annotation({
                 e.stopPropagation();
                 setIsErasing(true);
                 setIsFilling(false);
-                setIsDrawing(false);
+                onSetIsAnnotating(false);
               }}
             >
               <Eraser className="h-3 w-3 mr-1" />

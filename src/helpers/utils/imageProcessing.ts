@@ -2,8 +2,10 @@ import { cv } from "opencv-web";
 import { addChannel, stackSliceToRGB } from "@/helpers/utils/channelHandlers";
 import { arrayToMat } from "@/helpers/utils/imageConversion";
 import { downloadImage } from "@/helpers/utils/imageConversion";
+import { TypedVoxelArray } from "@/helpers/utils/imageConversion";
+
 export function getMax(
-  arr: Float32Array | Uint16Array | Uint8Array | number[]
+  arr: TypedVoxelArray
 ) {
   let len = arr.length;
   let max = -Infinity;
@@ -15,7 +17,7 @@ export function getMax(
 }
 
 export function getMin(
-  arr: Float32Array | Uint16Array | Uint8Array | number[]
+  arr: TypedVoxelArray
 ) {
   console.log("getMin arr", arr);
   let len = arr.length;
@@ -28,7 +30,7 @@ export function getMin(
 }
 
 export function normalizeArray(
-  array: Float32Array | Uint16Array | Uint8Array,
+  array: TypedVoxelArray,
   max: number,
   min: number = 0
 ): Float32Array {
@@ -40,7 +42,7 @@ export function normalizeArray(
 }
 
 export function standardizeArray(
-  array: Float32Array | Uint8Array,
+  array: TypedVoxelArray,
   mean: number,
   std: number
 ): Float32Array {
@@ -158,7 +160,7 @@ function interpolateSlices(
 }
 
 export function resizeVolume(
-  niiVolume: Float32Array | Uint16Array | Uint8Array,
+  niiVolume: TypedVoxelArray,
   srcDim: number[],
   destDim: number[]
 ): Float32Array {
@@ -286,7 +288,7 @@ export function resizeVolume(
 }
 
 export function padVolume(
-  niiVolume: Float32Array | Uint16Array | Uint8Array,
+  niiVolume: TypedVoxelArray,
   srcDim: number[],
   destDim: number[]
 ): Float32Array {

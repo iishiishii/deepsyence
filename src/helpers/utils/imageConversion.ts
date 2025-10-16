@@ -3,6 +3,8 @@ import { Tensor } from "onnxruntime-web";
 import { cv } from "opencv-web";
 import { addChannel } from "@/helpers/utils/channelHandlers";
 
+export type TypedVoxelArray =  Float32Array | Uint8Array | Int16Array | Float64Array | Uint16Array;
+
 export function convertArrayToTensor(
   float32image: Float32Array,
   dims: number[]
@@ -55,27 +57,29 @@ export function imagedataToImage(
 }
 
 export function imageDataToTensor(data: any, dims: number[]): any {
-  // 1a. Extract the R, G, and B channels from the data to form a 3D int array
-  const [R, G, B]: number[][] = [[], [], []];
-  for (let i = 0; i < data.length; i += 3) {
-    R.push(data[i]);
-    G.push(data[i + 1]);
-    B.push(data[i + 2]);
-    // 2. skip data[i + 3] thus filtering out the alpha channel
+  console.log("data in imageDataToTensor", data.reduce((a: number, b: number) => a + b, 0), dims);
+  const [batch, channels, height, width] = dims;
+  const pixelCount = height * width;
+  
+  if (data.length !== pixelCount * 3) {
+    throw new Error(`Expected ${pixelCount * 3} values, got ${data.length}`);
   }
-  // 1b. concatenate RGB ~= transpose [224, 224, 3] -> [3, 224, 224]
-  const transposedData = R.concat(G).concat(B);
-
-  // 3. convert to float32
-  let i,
-    l = transposedData.length; // length, we need this for the loop
-  const float32Data = new Float32Array(dims[3] * dims[1] * dims[2]); // create the Float32Array for output
-  for (i = 0; i < l; i++) {
-    float32Data[i] = transposedData[i]; // divide by max value to convert to float
+  // Pre-allocate output
+  const float32Data = new Float32Array(pixelCount * 3);
+  
+  // Transpose in single pass: [H,W,C] -> [C,H,W]
+  for (let i = 0; i < pixelCount; i++) {
+    const srcIdx = i * 3;
+    float32Data[i] = data[srcIdx];                    // R channel
+    float32Data[i + pixelCount] = data[srcIdx + 1];   // G channel
+    float32Data[i + pixelCount * 2] = data[srcIdx + 2]; // B channel
   }
-
+  
+  console.log("float32Data sum:", float32Data.reduce((a, b) => a + b, 0), float32Data);
+  
   const inputTensor = new Tensor("float32", float32Data, dims);
-  console.log("----------------- inputTensor", inputTensor);
+  console.log("inputTensor:", inputTensor);
+  
   return inputTensor;
 }
 

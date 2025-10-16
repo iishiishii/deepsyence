@@ -15,14 +15,12 @@ import ImageUploader from "@/components/segmentation-inference/image-uploader";
 import ImageCanvas from "@/components/segmentation-inference/image-canvas";
 import ImageList from "@/components/segmentation-inference/image-list";
 import ModelSelector, { ModelMetadata } from "@/components/segmentation-inference/model-selector";
-import SamDecoder from "@/components/segmentation-inference/sam-decoder";
+import SamDecoder from "@/components/segmentation-inference/interactive-segmentation";
 import { toast } from "sonner";
 import { UnetModel } from "@/model/unetModel";
 import { SegmentAnythingModel } from "@/model/samModel";
 import { nvDrawMask } from "@/helpers/niivueHandler";
-import { ImageModel } from "@/model/imageModel";
-import { ModelType } from "@/components/segmentation-inference/model-selector";
-// import { SamModel } from "@/model/samModel"; --- IGNORE ---
+
 export type ImageFile = {
   id: string;
   name: string;
@@ -45,15 +43,18 @@ export default function InferencePanel() {
   );
   const [progress, setProgress] = useState(0);
   const [modelReady, setModelReady] = useState(false);
-  const [results, setResults] = useState<Uint8Array>(new Uint8Array());
+  // const [results, setResults] = useState<Uint8Array>(new Uint8Array());
   const [selectedModel, setSelectedModel] = useState<
-    UnetModel | SegmentAnythingModel | null
+    SegmentAnythingModel | null
   >(null);
   const [modelMetadata, setModelMetadata] = useState<ModelMetadata | null>(
     null
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [segmentationMode, setSegmentationMode] = useState<
+    "none" | "foreground" | "background" | "box"
+  >("none");
   const nvRef = useRef<Niivue | null>(nv);
 
   let handleIntensityChange = (data: any) => {
@@ -124,7 +125,7 @@ export default function InferencePanel() {
 
     setIsProcessing(true);
     setProgress(0);
-    setResults(new Uint8Array());
+    // setResults(new Uint8Array());
 
     // const progressInterval = setInterval(() => {
     //   setProgress((prev) => {
@@ -136,47 +137,51 @@ export default function InferencePanel() {
     //   });
     // }, 200);
     console.log("start inference with model:", selectedModel);
-    if (selectedModel instanceof UnetModel) {
-      setProgress(5); // Start progress bar
-      try {
-        const result = await selectedModel.process(image); // T_heavy: Actual work
+    // if (selectedModel instanceof UnetModel) {
+    //   setProgress(5); // Start progress bar
+    //   try {
+    //     const result = await selectedModel.process(image); // T_heavy: Actual work
 
-        if (!result) throw Error("No result from model encoder");
-        drawMask(result, "_unet");
-        setResults(result);
-        setProgress(100);
-        toast("Embedding loaded");
-      } catch (error) {
-        toast(`Unet error ${error}`);
-        console.log("error unet", error);
+    //     if (!result) throw Error("No result from model encoder");
+    //     drawMask(result, "_unet");
+    //     // setResults(result);
+    //     setProgress(100);
+    //     toast("Embedding loaded");
+    //   } catch (error) {
+    //     toast(`Unet error ${error}`);
+    //     console.log("error unet", error);
+    //   }
+    // } else {
+    // SamModel Encoder Loop
+    // Use a single progress update at the start of the loop
+    // const start = 0;
+    // const end = image.dims![3];
+    const start = 100;
+    const end = 102;
+    console.log("processing slices ", start, end);
+    const totalSteps = end - start || 1; // Avoid division by zero
+    const progressPerStep = 100 / totalSteps; // Reserve 10% for final cleanup
+
+    try {
+      // check getVolumeData()
+      // https://github.com/niivue/niivue/blob/main/packages/niivue/src/nvimage/index.ts#L3597
+      for (let i = start; i < end; i++) {
+        await selectedModel.process(image, i); // T_heavy: Actual work
+        // Update progress based on completed step
+        setProgress((prev) => prev + progressPerStep);
       }
-    } else {
-      // SamModel Encoder Loop
-      // Use a single progress update at the start of the loop
-      const start = 0;
-      const end = image.dims![3];
-      console.log("processing slices ", start, end);
-      const totalSteps = end - start || 1; // Avoid division by zero
-      const progressPerStep = 100 / totalSteps; // Reserve 10% for final cleanup
-
-      try {
-        // check getVolumeData()
-        // https://github.com/niivue/niivue/blob/main/packages/niivue/src/nvimage/index.ts#L3597
-        for (let i = start; i < end; i++) {
-          await selectedModel.process(image, i); // T_heavy: Actual work
-          // Update progress based on completed step
-          setProgress((prev) => prev + progressPerStep);
-        }
-
-        // Finalize after the loop
-        setProgress(100);
-        toast("Embedding loaded");
-        // ... setBbox and other cleanup ...
-      } catch (error) {
-        toast(`Encoder ${error}`);
-        console.log("error encoder", error);
-      }
+      const result = selectedModel.encoderResult;
+      if (!result) throw Error("No result from model encoder");
+      // setResults(result[0].data as Uint8Array);
+      // Finalize after the loop
+      setProgress(100);
+      toast("Embedding loaded");
+      // ... setBbox and other cleanup ...
+    } catch (error) {
+      toast(`Encoder ${error}`);
+      console.log("error encoder", error);
     }
+    // }
 
     // clearInterval(progressInterval);
     setProgress(100);
@@ -191,12 +196,13 @@ export default function InferencePanel() {
 
   const handleModelSelection = (data: {
     metadata: ModelMetadata | null;
-    instance: UnetModel | SegmentAnythingModel | null;
+    instance: SegmentAnythingModel | null;
   }) => {
     // 1. Store the metadata (for the selector component)
     setModelMetadata(data.metadata);
     // 2. Store the actual initialized model instance (for segmentation logic)
     setSelectedModel(data.instance);
+    selectedModel?.dispose(); // Dispose of previous model if any
   };
 
   return (
@@ -232,7 +238,7 @@ export default function InferencePanel() {
               </div>
             ) : (
               <div className="flex flex-col h-full">
-                <ImageCanvas nvRef={nvRef} onFileUpload={handleFileUpload} />
+                <ImageCanvas nvRef={nvRef} onFileUpload={handleFileUpload} segmentationMode={segmentationMode} selectedModel={selectedModel as SegmentAnythingModel} drawMask={drawMask} />
               </div>
             )}
           </div>
@@ -325,7 +331,7 @@ export default function InferencePanel() {
 
                 <div className="space-y-4">
                   <div className="flex flex-row flex-wrap items-center gap-2 mb-3">
-                    {!modelMetadata && (
+                    {!modelMetadata && !modelReady && (
                       <Badge variant="destructive">No Model</Badge>
                     )}
                     {currentImageIndex === null && (
@@ -375,11 +381,11 @@ export default function InferencePanel() {
                       </Button>
                     )}
 
-                    {!isProcessing && results.length > 0 && (
-                      <SamDecoder model={modelMetadata} />
+                    {!isProcessing && progress == 100 && (
+                      <SamDecoder segmentationMode={segmentationMode} onSetSegmentationMode={setSegmentationMode} />
                     )}
 
-                    {results.length > 0 && (
+                    {/* {results.length > 0 && (
                       <Button
                         variant="outline"
                         className="w-full flex items-center gap-2 bg-transparent"
@@ -400,7 +406,7 @@ export default function InferencePanel() {
                         <Download className="h-4 w-4" />
                         Export Results
                       </Button>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </Card>

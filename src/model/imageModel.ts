@@ -4,7 +4,7 @@ import { UnetModel } from "@/model/unetModel";
 import { toast } from "sonner";
 
 export interface InitImageModelResult {
-  model: UnetModel | SegmentAnythingModel | null;
+  model: SegmentAnythingModel | null;
   elapsed: number;
 }
 
@@ -27,14 +27,14 @@ export class ImageModel {
                 elapsed: elapsed,
               };
             }
-            case ModelType.Unet: {
-              const model = new UnetModel(modelMetadata);
-              const elapsed = await model.init(proxy);
-              return {
-                model: model,
-                elapsed: elapsed,
-              };
-            }
+            // case ModelType.Unet: {
+            //   const model = new UnetModel(modelMetadata);
+            //   const elapsed = await model.init(proxy);
+            //   return {
+            //     model: model,
+            //     elapsed: elapsed,
+            //   };
+            // }
           }
         }
       }

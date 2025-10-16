@@ -48,6 +48,10 @@ export class SessionWrapper {
   async outputNames(): Promise<readonly string[]> {
     return await this.session.outputNames();
   }
+
+  async release(): Promise<void> {
+    return await this.session.release();
+  }
 }
 
 export const createSession = async (

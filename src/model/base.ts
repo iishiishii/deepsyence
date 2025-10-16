@@ -4,13 +4,14 @@ import Preprocessor from "@/model/preprocessor";
 import { PreprocessorConfig } from "@/model/preprocessorConfig";
 import { createSession, SessionWrapper } from "@/model/sessionController";
 import { SessionParams } from "@/model/sessionParams";
-
+import MemoryPool from "@/helpers/utils/memoryPool";
 export class BaseImageModel {
   metadata: ModelMetadata;
   initialized: boolean;
   // config?: Config;
   preprocessor?: Preprocessor;
   sessions?: Map<string, Session | SessionWrapper>;
+  memoryPool: MemoryPool = new MemoryPool();
 
   constructor(metadata: ModelMetadata) {
     if (
@@ -40,7 +41,8 @@ export class BaseImageModel {
     const preprocessorConfig = await PreprocessorConfig.fromFile(
       this.metadata.preprocessorPath
     );
-    this.preprocessor = new Preprocessor(preprocessorConfig);
+
+    this.preprocessor = new Preprocessor(preprocessorConfig, this.memoryPool);
     // if (this.metadata.configPath) {
     //   this.config = await Config.fromFile(this.metadata.configPath);
     // }
