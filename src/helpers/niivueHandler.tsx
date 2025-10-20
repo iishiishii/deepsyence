@@ -10,7 +10,7 @@ export function updateSliceType(
   nv.setSliceType(sliceTypeMap[newSliceType]);
 }
 
-function setImage(
+function setMaskToNiivue(
   nv: Niivue,
   id: string,
   name: string,
@@ -22,22 +22,28 @@ function setImage(
     console.log("image not found");
     return;
   }
-  // console.log("model output ", modelOutput);
-  let processedImage = modelOutput.clone();
-  if (!processedImage) {
-    console.log("image not found");
-    return;
+ let maskVolume = nv.volumes.find((v: NVImage) => v.name === name);
+
+  if (!maskVolume) {
+    // 3. If the mask volume doesn't exist, CLONE the template volume ONCE.
+    // This is the only time cloning is acceptable, to set up the header/dims.
+    maskVolume = modelOutput.clone(); 
+    if (!maskVolume) return null;
+    
+    // Set initial properties
+    maskVolume.name = name;
+    maskVolume.zeroImage();
+    // Use the most memory-efficient datatype for binary masks (Uint8)
+    maskVolume.hdr!.datatypeCode = 2; // DT_UNSIGNED_CHAR (Uint8)
+    maskVolume.permRAS = [1, 2, 3];
+    // NOTE: If you use nv.loadDrawing(), you don't necessarily need to add it here.
+    // nv.loadDrawing will add the mask volume internally if it's not present.
   }
-  processedImage.zeroImage();
-  processedImage.name = name;
-  processedImage.permRAS = [1, 2, 3];
+  maskVolume.img = array as TypedVoxelArray;
 
-  processedImage.hdr!.datatypeCode = 2;
-  processedImage.img = array as TypedVoxelArray;
-
-  processedImage.trustCalMinMax = false;
-  processedImage.calMinMax();
-  processedImage.dims = modelOutput.dims;
+  maskVolume.trustCalMinMax = false;
+  maskVolume.calMinMax();
+  maskVolume.dims = modelOutput.dims;
   // console.log("processed image", processedImage);
   // console.log(
   //   processedImage.img.reduce(
@@ -45,11 +51,11 @@ function setImage(
   //     0,
   //   ),
   // );
-  return processedImage;
+  return maskVolume;
 }
 
 export function nvDrawMask(nv: any, id: string, name: string, array: Uint8Array) {
-  let processedImage = setImage(nv, id, name, array);
+  let processedImage = setMaskToNiivue(nv, id, name, array);
   nv.loadDrawing(processedImage);
   nv.setDrawColormap("$slicer3d");
   // nv.addVolume(processedImage);

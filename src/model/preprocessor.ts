@@ -25,17 +25,15 @@ import MemoryPool from "@/helpers/utils/memoryPool";
 import { NVImage } from "@niivue/niivue";
 import { TypedVoxelArray } from "@/helpers/utils/imageConversion";
 export class Preprocessor {
-  private memoryPool: MemoryPool;
   config: PreprocessorConfig;
   volume: any;
   dims: number[];
   maxVal: number;
 
-  constructor(config: PreprocessorConfig, memoryPool?: MemoryPool) {
+  constructor(config: PreprocessorConfig) {
     this.config = config;
     this.dims = [0, 0, 0];
     this.maxVal = 0;
-    this.memoryPool = memoryPool ? memoryPool : new MemoryPool();
   }
 
   processVolume = (niiVolume: NVImage): Float32Array => {
@@ -48,8 +46,13 @@ export class Preprocessor {
     if (niiVolume.dimsRAS.length < 3) {
       throw new Error("The volume does not have 3 dimensions");
     }
-    if (niiVolume.dimsRAS[1] * niiVolume.dimsRAS[2] * niiVolume.dimsRAS[3] !== niiVolume.img2RAS().length) {
-      throw new Error("The volume dimensions do not match the image data length");
+    if (
+      niiVolume.dimsRAS[1] * niiVolume.dimsRAS[2] * niiVolume.dimsRAS[3] !==
+      niiVolume.img2RAS().length
+    ) {
+      throw new Error(
+        "The volume dimensions do not match the image data length"
+      );
     }
     this.dims = [
       niiVolume.dimsRAS[1],
@@ -61,16 +64,16 @@ export class Preprocessor {
       "ori volume",
       new Tensor("float32", [2.4]),
       getMin(niiVolume.img2RAS() as TypedVoxelArray),
-      getMax(niiVolume.img2RAS() as TypedVoxelArray),
+      getMax(niiVolume.img2RAS() as TypedVoxelArray)
     );
     if (this.config.resizeVolume) {
       console.log("resizeVolume", this.config.volumeSize);
       if (this.config.pad && this.config.padSize) {
-        this.volume = padVolume(niiVolume.img2RAS() as TypedVoxelArray, this.dims, [
-          this.config.padSize,
-          this.config.padSize,
-          this.config.padSize,
-        ]);
+        this.volume = padVolume(
+          niiVolume.img2RAS() as TypedVoxelArray,
+          this.dims,
+          [this.config.padSize, this.config.padSize, this.config.padSize]
+        );
         // this.maxVal = getMax(this.volume);
         console.log(
           "resizeVolume",
@@ -124,40 +127,59 @@ export class Preprocessor {
 
     if (this.config.resizeLonger) {
       let mat = arrayToMat(image3Channels, [this.dims[0], this.dims[1]]);
-      let resizedImage = resize(mat, this.config.size);
-      console.log(
-        "resizedImage",
-        resizedImage.size().width,
-        resizedImage.size().height,
-        resizedImage.data.reduce((a: number, b: number) => a + b, 0)
-      );
-      if (this.config.pad && this.config.padSize) {
-        let paddedImage = pad(resizedImage, this.config.padSize);
-        console.log(
-          "paddedImage",
-          paddedImage.size().width,
-          paddedImage.size().height,
-          paddedImage.data.reduce((a: number, b: number) => a + b, 0)
-        );
-        let filteredImage = filterChannels(paddedImage.data, 3); // filter alpha channel
-        const maxVal = getMax(filteredImage);
-        let normalizedImage = normalizeArray(filteredImage, maxVal);
-        console.log(
-          "normalizedImage",
-          normalizedImage.reduce((a, b) => a + b, 0)
-        );
-        inputTensor = new Tensor("float32", normalizedImage, [
+      try {
+        let resizedImage = resize(mat, this.config.size);
+        // console.log(
+        //   "resizedImage",
+        //   resizedImage.size().width,
+        //   resizedImage.size().height,
+        //   resizedImage.data.reduce((a: number, b: number) => a + b, 0)
+        // );
+        try {
+          if (this.config.pad && this.config.padSize) {
+            let paddedImage = pad(resizedImage, this.config.padSize);
+            // console.log(
+            //   "paddedImage",
+            //   paddedImage.size().width,
+            //   paddedImage.size().height,
+            //   paddedImage.data.reduce((a: number, b: number) => a + b, 0)
+            // );
+            try {
+              let filteredImage = filterChannels(paddedImage.data, 3); // filter alpha channel
+              const maxVal = getMax(filteredImage);
+              let normalizedImage = normalizeArray(filteredImage, maxVal);
+              console.log(
+                "normalizedImage",
+                normalizedImage.reduce((a, b) => a + b, 0)
+              );
+              inputTensor = new Tensor("float32", normalizedImage, [
+                1,
+                3,
+                this.config.size,
+                this.config.size,
+              ]);
+            } finally {
+              if (paddedImage) paddedImage.delete();
+            }
+          } else {
+            inputTensor = new Tensor("float32", resizedImage.data, [
+              1,
+              3,
+              this.config.size,
+              this.config.size,
+            ]);
+          }
+        } finally {
+          if (mat) mat.delete();
+          if (resizedImage) resizedImage.delete();
+        }
+      } catch (error) {
+        console.log("error during resizing", error);
+        inputTensor = new Tensor("float32", image3Channels, [
           1,
           3,
-          this.config.size,
-          this.config.size,
-        ]);
-      } else {
-        inputTensor = new Tensor("float32", resizedImage.data, [
-          1,
-          3,
-          this.config.size,
-          this.config.size,
+          this.dims[0],
+          this.dims[1],
         ]);
       }
     } else {
@@ -190,7 +212,6 @@ export class Preprocessor {
     this.volume = null;
     this.dims = [0, 0, 0];
     this.maxVal = 0;
-    this.memoryPool.clear();
   };
 }
 

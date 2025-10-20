@@ -1,12 +1,9 @@
 import { cv } from "opencv-web";
 import { addChannel, stackSliceToRGB } from "@/helpers/utils/channelHandlers";
-import { arrayToMat } from "@/helpers/utils/imageConversion";
 import { downloadImage } from "@/helpers/utils/imageConversion";
 import { TypedVoxelArray } from "@/helpers/utils/imageConversion";
 
-export function getMax(
-  arr: TypedVoxelArray
-) {
+export function getMax(arr: TypedVoxelArray) {
   let len = arr.length;
   let max = -Infinity;
 
@@ -16,9 +13,7 @@ export function getMax(
   return max;
 }
 
-export function getMin(
-  arr: TypedVoxelArray
-) {
+export function getMin(arr: TypedVoxelArray) {
   console.log("getMin arr", arr);
   let len = arr.length;
   let min = Infinity;
@@ -55,29 +50,37 @@ export function standardizeArray(
 
 export function resize(image: any, target: number | number[]) {
   let dstResized = new cv.Mat();
-  let image4Channels;
-  let oldw = image.size().width;
-  let oldh = image.size().height;
-  let neww, newh;
-  // console.log("resize ", target, oldw, oldh);
-  if (Array.isArray(target)) {
-    neww = target[0];
-    newh = target[1];
-  } else {
-    let scale = (target * 1.0) / Math.max(oldh, oldw);
-    newh = oldh * scale;
-    neww = oldw * scale;
-  }
-  // console.log("neww, newh ", neww, newh);
-  if (image.type() !== cv.CV_8UC4) {
-    image4Channels = addChannel(image.data);
-  }
-  let src = cv.matFromArray(oldw, oldh, cv.CV_8UC4, image4Channels);
+  let src: any = null;
+  try {
+    let image4Channels;
+    let oldw = image.size().width;
+    let oldh = image.size().height;
+    let neww, newh;
+    // console.log("resize ", target, oldw, oldh);
+    if (Array.isArray(target)) {
+      neww = target[0];
+      newh = target[1];
+    } else {
+      let scale = (target * 1.0) / Math.max(oldh, oldw);
+      newh = oldh * scale;
+      neww = oldw * scale;
+    }
+    // console.log("neww, newh ", neww, newh);
+    if (image.type() !== cv.CV_8UC4) {
+      image4Channels = addChannel(image.data);
+    }
+    let src = cv.matFromArray(oldw, oldh, cv.CV_8UC4, image4Channels);
 
-  cv.resize(src, dstResized, new cv.Size(newh, neww), 0, 0, cv.INTER_CUBIC);
-  // console.log("dstResized ", dstResized.size(), dstResized.type());
+    cv.resize(src, dstResized, new cv.Size(newh, neww), 0, 0, cv.INTER_CUBIC);
+    // console.log("dstResized ", dstResized.size(), dstResized.type());
 
-  return dstResized;
+    return dstResized;
+  } finally {
+    // Clean up intermediate Mat objects
+    if (src && src !== image) {
+      src.delete();
+    }
+  }
 }
 
 export function resizeTypedArray(image: any, target: number | number[]) {

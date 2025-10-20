@@ -3,7 +3,12 @@ import { Tensor } from "onnxruntime-web";
 import { cv } from "opencv-web";
 import { addChannel } from "@/helpers/utils/channelHandlers";
 
-export type TypedVoxelArray =  Float32Array | Uint8Array | Int16Array | Float64Array | Uint16Array;
+export type TypedVoxelArray =
+  | Float32Array
+  | Uint8Array
+  | Int16Array
+  | Float64Array
+  | Uint16Array;
 
 export function convertArrayToTensor(
   float32image: Float32Array,
@@ -57,29 +62,37 @@ export function imagedataToImage(
 }
 
 export function imageDataToTensor(data: any, dims: number[]): any {
-  console.log("data in imageDataToTensor", data.reduce((a: number, b: number) => a + b, 0), dims);
+  console.log(
+    "data in imageDataToTensor",
+    data.reduce((a: number, b: number) => a + b, 0),
+    dims
+  );
   const [batch, channels, height, width] = dims;
   const pixelCount = height * width;
-  
+
   if (data.length !== pixelCount * 3) {
     throw new Error(`Expected ${pixelCount * 3} values, got ${data.length}`);
   }
   // Pre-allocate output
   const float32Data = new Float32Array(pixelCount * 3);
-  
+
   // Transpose in single pass: [H,W,C] -> [C,H,W]
   for (let i = 0; i < pixelCount; i++) {
     const srcIdx = i * 3;
-    float32Data[i] = data[srcIdx];                    // R channel
-    float32Data[i + pixelCount] = data[srcIdx + 1];   // G channel
+    float32Data[i] = data[srcIdx]; // R channel
+    float32Data[i + pixelCount] = data[srcIdx + 1]; // G channel
     float32Data[i + pixelCount * 2] = data[srcIdx + 2]; // B channel
   }
-  
-  console.log("float32Data sum:", float32Data.reduce((a, b) => a + b, 0), float32Data);
-  
+
+  console.log(
+    "float32Data sum:",
+    float32Data.reduce((a, b) => a + b, 0),
+    float32Data
+  );
+
   const inputTensor = new Tensor("float32", float32Data, dims);
   console.log("inputTensor:", inputTensor);
-  
+
   return inputTensor;
 }
 

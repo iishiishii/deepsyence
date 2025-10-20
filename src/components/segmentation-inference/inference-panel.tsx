@@ -73,22 +73,27 @@ export default function InferencePanel() {
     if (!nvRef.current) return;
     const nv = nvRef.current;
     nv.onLocationChange = handleIntensityChange;
-    files.forEach(async (file) => {
-      const nvimage = await NVImage.loadFromFile({
-        file: file,
+    try {
+      files.forEach(async (file) => {
+        const nvimage = await NVImage.loadFromFile({
+          file: file,
+        });
+        console.log("nv", nv);
+
+        nv.addVolume(nvimage);
+
+        const newImage = {
+          id: nvimage.id,
+          name: nvimage.name,
+          file: file,
+          selected: false,
+        };
+        setImages((prev) => [...prev, ...[newImage]]);
       });
-      console.log("nv", nv);
-
-      nv.addVolume(nvimage);
-
-      const newImage = {
-        id: nvimage.id,
-        name: nvimage.name,
-        file: file,
-        selected: false,
-      };
-      setImages((prev) => [...prev, ...[newImage]]);
-    });
+    } catch (error) {
+      toast.error("Error loading image file(s). Please ensure they are valid NIfTI files.");
+      console.error("Error loading image file(s):", error);
+    }
     console.log("nv volumes", files.length);
     setCurrentImageIndex(0);
   };
@@ -170,8 +175,8 @@ export default function InferencePanel() {
         // Update progress based on completed step
         setProgress((prev) => prev + progressPerStep);
       }
-      const result = selectedModel.encoderResult;
-      if (!result) throw Error("No result from model encoder");
+      // const result = selectedModel.encoderResultCache;
+      // if (!result) throw Error("No result from model encoder");
       // setResults(result[0].data as Uint8Array);
       // Finalize after the loop
       setProgress(100);

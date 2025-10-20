@@ -11,7 +11,6 @@ export class BaseImageModel {
   // config?: Config;
   preprocessor?: Preprocessor;
   sessions?: Map<string, Session | SessionWrapper>;
-  memoryPool: MemoryPool = new MemoryPool();
 
   constructor(metadata: ModelMetadata) {
     if (
@@ -42,7 +41,7 @@ export class BaseImageModel {
       this.metadata.preprocessorPath
     );
 
-    this.preprocessor = new Preprocessor(preprocessorConfig, this.memoryPool);
+    this.preprocessor = new Preprocessor(preprocessorConfig);
     // if (this.metadata.configPath) {
     //   this.config = await Config.fromFile(this.metadata.configPath);
     // }

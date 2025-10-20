@@ -129,8 +129,11 @@ export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, sel
       return;
     }
     // console.log("clicks", clicks);
-
-    if (click && clicks) setClicks([...clicks!, click]);
+    if (click && clicks.length <= 10 && clicks.length >= 0) setClicks([...clicks!, click]);
+    if (clicks && clicks.length >= 10) {
+      clicks.shift();
+      setClicks([...clicks, click]);
+    }
   };
 
   // Use useMemo to create the throttled function ONCE
@@ -139,31 +142,32 @@ export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, sel
   }, [nvRef.current, getClick, clicks, setClicks]); // Dependencies: nv, getClick, and state setters/getters
 
 
-  const doDragReleaseLogic = (info) => {
+  const doDragReleaseLogic = (info: any) => {
+    console.log("doDragReleaseLogic called", info);
     const nv = nvRef.current;
     if (!nv) return;
     nv.opts.dragMode = DRAG_MODE.callbackOnly;
     if (info.tileIdx < 0) console.log("Invalid drag");
     else if (info.voxStart[2] !== info.voxEnd[2]) return;
+    console.log("Drag released", bbox);
 
-    if (bbox) {
-      let topLeft: modelInputProps = {
-        x: info.voxStart[0],
-        y: info.voxEnd[1],
-        z: info.voxStart[2],
-        clickType: 2,
-      };
-      let bottomRight: modelInputProps = {
-        x: info.voxEnd[0],
-        y: info.voxStart[1],
-        z: info.voxEnd[2],
-        clickType: 3,
-      };
-      let box: boundingBox = { topLeft, bottomRight };
-      setBbox(box);
+    let topLeft: modelInputProps = {
+      x: info.voxStart[0],
+      y: info.voxEnd[1],
+      z: info.voxStart[2],
+      clickType: 2,
+    };
+    let bottomRight: modelInputProps = {
+      x: info.voxEnd[0],
+      y: info.voxStart[1],
+      z: info.voxEnd[2],
+      clickType: 3,
+    };
+    let box: boundingBox = { topLeft, bottomRight };
+    setBbox(box);
 
-      console.log("bbox", [topLeft, bottomRight]);
-    }
+    console.log("bbox", [topLeft, bottomRight]);
+
 
     // return [info.voxStart[0], info.voxEnd[0], info.voxStart[1], info.voxEnd[1], info.voxStart[2], info.voxEnd[2]]
   };
@@ -183,9 +187,7 @@ export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, sel
         .processDecoder(clicks[0].z, clicks, bbox)
         .then(() => {
           let result = selectedModel.getDecoderResultAsUint8Array()
-
-          drawMask(new Uint8Array(result), selectedModel.metadata.id);
-
+          drawMask(result, selectedModel.metadata.id);
         });
     } catch (error) {
       toast(`Decoder ${error}`);
@@ -194,11 +196,18 @@ export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, sel
   };
 
   useEffect(() => {
-    if (clicks) {
+    if (clicks || bbox) {
       runDecoder();
     }
     console.log("clicks", clicks);
-  }, [clicks]);
+  }, [clicks, bbox]);
+
+  useEffect(() => {
+    if (selectedModel) {
+      setClicks(null);
+      setBbox(null);
+    }
+  }, [selectedModel]);
 
   return (
     <div className="relative flex flex-col h-full">
