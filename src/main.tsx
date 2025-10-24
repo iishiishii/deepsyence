@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import MedicalImageProcessor from "@/components/segmentation-inference/image-processor";
+import MedicalImageProcessor from "@/image-processor";
 import { Toaster } from "@/components/shadcn-ui/sonner";
 
 // Use runtime config if available, fallback to build-time env var

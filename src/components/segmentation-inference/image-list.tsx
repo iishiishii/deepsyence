@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrollArea } from "@/components/shadcn-ui/scroll-area";
-import { ImageFile } from "@/components/segmentation-inference/image-processor";
+import { ImageFile } from "@/image-processor";
 import { cn } from "@/lib/utils";
 import { ImageIcon } from "lucide-react";
 

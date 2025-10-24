@@ -5,7 +5,7 @@ import { Card } from "@/components/shadcn-ui/card";
 import { Brain, Zap, GraduationCap } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn-ui/tabs";
 import InferencePanel from "@/components/segmentation-inference/inference-panel";
-
+import TrainingPanel from "@/components/classification-training/training-panel";
 export type ImageFile = {
   id: string;
   name: string;
@@ -83,13 +83,13 @@ export default function MedicalImageProcessor() {
               <InferencePanel />
             </Card>
           </TabsContent>
-          {/* 
+          
           <TabsContent value="training" className="space-y-6">
             <Card className="p-6">
               <h2 className="text-lg font-semibold mb-4">Model Training</h2>
-              <TrainingPanel selectedModel={selectedModel} />
+              <TrainingPanel />
             </Card>
-          </TabsContent> */}
+          </TabsContent>
         </Tabs>
       </main>
     </div>

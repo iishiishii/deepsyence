@@ -11,6 +11,7 @@ import { ImageModel } from "@/model/imageModel";
 import { toast } from "sonner";
 import { UnetModel } from "@/model/unetModel";
 import { SegmentAnythingModel } from "@/model/samModel";
+import { on } from "events";
 
 export enum ModelType {
   Unknown = 1,
@@ -164,10 +165,10 @@ export default function ModelSelector({
     }
   };
 
-  const handleSelectModel = async (selectedModel: ModelMetadata) => {
+  const handleSelectModel = useCallback(async (selectedModel: ModelMetadata) => {
     // Set visual selection immediately
     setVisuallySelectedModel(selectedModel);
-
+    onSetModelReady(false);
     try {
       // Initialize the model and wait for it to be ready
       await ImageModel.create(selectedModel.id).then(({ model, elapsed }) => {
@@ -184,7 +185,7 @@ export default function ModelSelector({
       // Reset visual selection on error
       setVisuallySelectedModel(null);
     }
-  };
+  }, [selectedModel]);
 
   return (
     <div className="space-y-6">

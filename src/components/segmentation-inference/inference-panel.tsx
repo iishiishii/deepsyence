@@ -342,7 +342,7 @@ export default function InferencePanel() {
                     {currentImageIndex === null && (
                       <Badge variant="destructive">No Image</Badge>
                     )}
-                    {modelMetadata && currentImageIndex !== null && (
+                    {modelMetadata && (
                       <Badge className="bg-green-500/20 text-green-400">
                         {modelReady ? "Ready" : "Loading..."}
                       </Badge>

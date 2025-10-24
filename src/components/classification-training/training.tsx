@@ -3,7 +3,7 @@ import React from 'react';
 import './App.css';
 import Plot from 'react-plotly.js';
 import * as ort from 'onnxruntime-web/training';
-import { NiivuePanel } from './Niivue';
+import { NiivuePanel } from '@/components/classification-training/Niivue';
 import { NVImage, Niivue } from "@niivue/niivue";
 import { MriData } from './mri';
 
@@ -31,7 +31,7 @@ const nvImage = new Niivue({
 //     crosshairColor: [244, 243, 238, 0.5],
 //   });
 
-function App() {
+export default function TrainingPanel() {
     // constants
     // const numRows = 28;
     // const numCols = 28;
@@ -42,7 +42,7 @@ function App() {
     const waitAfterLoggingMs = 500;
     let lastLogTime = 0;
 
-    let messagesQueue = [];
+    let messagesQueue: string[] = [];
 
     // React components
     const [maxNumTrainSamples, setMaxNumTrainSamples] = React.useState<number>(6);
@@ -209,7 +209,7 @@ function App() {
     async function updateLesionPredictions(session: ort.TrainingSession) {
         // console.log("updateLesionPredictions", lesions[0])
         // const input = new Float32Array(lesions[0].nvimage.dimsRAS[1] * lesions[0].nvimage.dimsRAS[2] * 3);
-        const batchSize = Math.floor(lesions[0].nvimage.dimsRAS[3]/10);
+        const batchSize = Math.floor(lesions[0].nvimage.dimsRAS![3]/10);
         const batchShape = [batchSize, 3, 224, 224];
         let tensors = [];
         let labels;
@@ -226,11 +226,11 @@ function App() {
             // labels.push(BigInt(lesions[i].label));
         }
 
-        let resultData = [];
+        let resultData: number[] = [];
         for (let i = 0; i < tensors.length; i++) {
             for (let j = 0; j < tensors[0].data.length; j++) {
             // resultData.push(...tensors[i+k].data);
-                resultData[i * tensors[0].data.length + j] = tensors[i].data[j];
+                resultData[i * tensors[0].data.length + j] = tensors[i].data[j] as number;
             }   
         }
         labels = new Array(batchSize).fill(lesions[0].label);
@@ -271,7 +271,7 @@ function App() {
                 console.log("Error in runTrainStep: ", err);
             }
             // updating UI with metrics
-            const loss = parseFloat((results[lossNodeName].data as string[])[0]);
+            const loss = parseFloat((results![lossNodeName].data as string[])[0]);
             setTrainingLosses(losses => losses.concat(loss));
             iterationsPerSecond = batchNum / ((Date.now() - epochStartTime) / 1000);
             const message = `TRAINING | Epoch: ${String(epoch + 1).padStart(2)} | Batch ${String(batchNum).padStart(3)} / ${totalNumBatches} | Loss: ${loss.toFixed(4)} | ${iterationsPerSecond.toFixed(2)} it/s`;
@@ -411,16 +411,16 @@ function App() {
     // }
 
 
-    async function addLayer(nv) {
+    async function addLayer(nv: Niivue) {
         let input = document.createElement("input");
         input.type = "file";
         input.multiple = true;
     
         input.onchange = async function () {
-            for (let i = 0; i < input.files.length; i++) {
+            for (let i = 0; i < input.files!.length; i++) {
                 try {
                     const nvimage = await NVImage.loadFromFile({
-                        file: input.files[i],
+                        file: input.files![i],
                     });
                     // console.log(`file imported ${input.files[i]}`);
                 
@@ -683,5 +683,3 @@ function App() {
         </Container>
     );
 }
-
-export default App;

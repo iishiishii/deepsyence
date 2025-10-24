@@ -3,7 +3,7 @@ import {
   createFileRoute,
   redirect,
 } from "@tanstack/react-router";
-import MedicalImageProcessor from "@/components/segmentation-inference/image-processor";
+import MedicalImageProcessor from "@/image-processor";
 import { isLoggedIn } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/")({
