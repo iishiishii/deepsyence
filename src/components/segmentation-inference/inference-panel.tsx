@@ -22,7 +22,7 @@ import ImageList from "@/components/segmentation-inference/image-list";
 import ModelSelector, {
   ModelMetadata,
 } from "@/components/segmentation-inference/model-selector";
-import SamDecoder from "@/components/segmentation-inference/interactive-segmentation";
+import SamDecoder from "@/components/segmentation-inference/prompt";
 import { toast } from "sonner";
 import { UnetModel } from "@/model/unetModel";
 import { SegmentAnythingModel } from "@/model/samModel";
