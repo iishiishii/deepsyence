@@ -30,18 +30,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Set Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 22.x
+          node-version: 22
       - name: Copy onnx wasm artifacts
         run: |
           mkdir -p public/js
           cp node_modules/onnxruntime-web/dist/*.js public/js
           cp node_modules/onnxruntime-web/dist/*.mjs public/js
           cp node_modules/onnxruntime-web/dist/*.wasm public/js
-      - name: Build 
+      - name: Build
         run: npm run build
       - name: Get package info
         shell: bash
@@ -63,14 +63,14 @@ jobs:
             return releaseWithTag ? 'true' : 'false'
           result-encoding: string
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v5
         if: steps.release-exists.outputs.result == 'true'
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v4
         with:
           path: "build"
         if: steps.release-exists.outputs.result == 'true'
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v3
         if: steps.release-exists.outputs.result == 'true'

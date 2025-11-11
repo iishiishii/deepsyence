@@ -233,7 +233,6 @@ export default function ClassificationTrainingPanel() {
                     id="training-upload"
                     type="file"
                     multiple
-                    accept="image/*,.json,.csv"
                     onChange={handleTrainingDataUpload}
                     className="hidden"
                   />
