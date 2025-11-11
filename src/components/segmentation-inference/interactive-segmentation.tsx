@@ -1,27 +1,22 @@
 "use client";
 
-import type React from "react";
-
-import { useCallback, useState, useEffect } from "react";
 import { Card } from "@/components/shadcn-ui/card";
-import { ModelMetadata, ModelType } from "@/components/segmentation-inference/model-selector";
-import { MousePointer2, Play } from "lucide-react";
+import { MousePointer2, Square } from "lucide-react";
 import { Button } from "@/components/shadcn-ui/button";
-import { toast } from "sonner";
-import { UnetModel } from "@/model/unetModel";
-import { SegmentAnythingModel } from "@/model/samModel";
-import { NVImage } from "@niivue/niivue";
-import { segmentationModeMap } from "./image-canvas";
 
 interface SamDecoderProps {
   // model: UnetModel | SegmentAnythingModel | null;
   segmentationMode: "foreground" | "background" | "box" | "none";
-  onSetSegmentationMode: (mode: "none" | "foreground" | "background" | "box") => void;
+  onSetSegmentationMode: (
+    mode: "none" | "foreground" | "background" | "box"
+  ) => void;
 }
 
-export default function SamDecoder({ segmentationMode, onSetSegmentationMode }: SamDecoderProps) {
+export default function SamDecoder({
+  segmentationMode,
+  onSetSegmentationMode,
+}: SamDecoderProps) {
   // const [isSamModel, setIsSamModel] = useState(false);
-
 
   // useEffect(() => {
   //   if (model instanceof SegmentAnythingModel) {
@@ -58,43 +53,54 @@ export default function SamDecoder({ segmentationMode, onSetSegmentationMode }: 
           size="sm"
           variant={segmentationMode === "foreground" ? "default" : "outline"}
           onClick={() => {
-            onSetSegmentationMode(
-              "foreground"
-            );
+            onSetSegmentationMode("foreground");
           }}
-          className="flex flex-1 flex-wrap"
+          className="flex flex-1"
         >
-          {/* <div className="w-2 h-2 rounded-full bg-green-500 mr-1" /> */}
-          ROI
+          <div className="w-2 h-2 rounded-full bg-green-500 mr-1 items-center" />
+          <div className="text-xs flex flex-col items-center">
+            Add
+            <br />
+            mask
+          </div>
         </Button>
         <Button
           size="sm"
           variant={segmentationMode === "background" ? "default" : "outline"}
           onClick={() => {
-            onSetSegmentationMode(
-              "background"
-            );
+            onSetSegmentationMode("background");
           }}
           className="flex flex-1"
         >
-          {/* <div className="w-2 h-2 rounded-full bg-red-500 mr-1" /> */}
-          Background
+          <div className="w-2 h-2 rounded-full bg-red-500 mr-1" />
+          <div className="text-xs">
+            Remove
+            <br />
+            area
+          </div>
         </Button>
+      </div>
+
+      <p className="text-sm text-muted-foreground mb-3">
+        Use right click to draw a box around the region for refined segmentation
+      </p>
+      <div className="flex flex-row items-center">
         <Button
           size="sm"
           variant={segmentationMode === "box" ? "default" : "outline"}
           onClick={() => {
-            onSetSegmentationMode(
-              "box"
-            );
+            onSetSegmentationMode("box");
           }}
           className="flex flex-1"
         >
-          {/* <div className="w-2 h-2 rounded-full bg-red-500 mr-1" /> */}
-          Bounding Box
+          <Square className="h-3 w-3 mr-1" />
+          <div className="text-xs">
+            Draw
+            <br />
+            Box
+          </div>
         </Button>
       </div>
-
     </Card>
   );
 }

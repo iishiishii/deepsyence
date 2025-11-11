@@ -7,14 +7,21 @@ import { Card } from "@/components/shadcn-ui/card";
 import { Download, Play, Square } from "lucide-react";
 import { Badge } from "@/components/shadcn-ui/badge";
 import { Progress } from "@/components/shadcn-ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn-ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/shadcn-ui/tabs";
 import { ScrollArea } from "@/components/shadcn-ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Niivue, NVImage } from "@niivue/niivue";
 import ImageUploader from "@/components/segmentation-inference/image-uploader";
 import ImageCanvas from "@/components/segmentation-inference/image-canvas";
 import ImageList from "@/components/segmentation-inference/image-list";
-import ModelSelector, { ModelMetadata } from "@/components/segmentation-inference/model-selector";
+import ModelSelector, {
+  ModelMetadata,
+} from "@/components/segmentation-inference/model-selector";
 import SamDecoder from "@/components/segmentation-inference/interactive-segmentation";
 import { toast } from "sonner";
 import { UnetModel } from "@/model/unetModel";
@@ -44,9 +51,8 @@ export default function InferencePanel() {
   const [progress, setProgress] = useState(0);
   const [modelReady, setModelReady] = useState(false);
   // const [results, setResults] = useState<Uint8Array>(new Uint8Array());
-  const [selectedModel, setSelectedModel] = useState<
-    SegmentAnythingModel | null
-  >(null);
+  const [selectedModel, setSelectedModel] =
+    useState<SegmentAnythingModel | null>(null);
   const [modelMetadata, setModelMetadata] = useState<ModelMetadata | null>(
     null
   );
@@ -91,7 +97,9 @@ export default function InferencePanel() {
         setImages((prev) => [...prev, ...[newImage]]);
       });
     } catch (error) {
-      toast.error("Error loading image file(s). Please ensure they are valid NIfTI files.");
+      toast.error(
+        "Error loading image file(s). Please ensure they are valid NIfTI files."
+      );
       console.error("Error loading image file(s):", error);
     }
     console.log("nv volumes", files.length);
@@ -211,7 +219,7 @@ export default function InferencePanel() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-5/6 md:h-5/6 lg:h-full flex-col">
       <header className="border-b bg-background px-6 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Model Selection & Inference</h1>
@@ -235,7 +243,7 @@ export default function InferencePanel() {
       </header>
 
       <div className="flex flex-1">
-        <main className="flex-1">
+        <main className="flex-1 width-auto">
           <div className="flex h-full flex-col">
             {currentImageIndex === null ? (
               <div className="flex h-full items-center justify-center">
@@ -243,19 +251,24 @@ export default function InferencePanel() {
               </div>
             ) : (
               <div className="flex flex-col h-full">
-                <ImageCanvas nvRef={nvRef} onFileUpload={handleFileUpload} segmentationMode={segmentationMode} selectedModel={selectedModel as SegmentAnythingModel} drawMask={drawMask} />
+                <ImageCanvas
+                  nvRef={nvRef}
+                  onFileUpload={handleFileUpload}
+                  segmentationMode={segmentationMode}
+                  selectedModel={selectedModel as SegmentAnythingModel}
+                  drawMask={drawMask}
+                />
               </div>
             )}
           </div>
         </main>
 
         {sidebarOpen && (
-          <aside
-            className={cn(
-              "border-l bg-background w-80 overflow-scroll flex flex-col"
-            )}
-          >
-            <Tabs defaultValue="images">
+          <aside className={cn("border-l bg-background w-80 flex flex-col")}>
+            <Tabs
+              defaultValue="images"
+              className="flex flex-col h-full min-h-0"
+            >
               <TabsList className="w-full justify-start border-b rounded-none px-2 h-12">
                 <TabsTrigger
                   value="images"
@@ -271,7 +284,7 @@ export default function InferencePanel() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="images" className="flex-1 p-0">
+              <TabsContent value="images" className="flex-none h-60 p-2">
                 <ImageList
                   images={images}
                   currentImageIndex={currentImageIndex}
@@ -279,16 +292,16 @@ export default function InferencePanel() {
                 />
               </TabsContent>
 
-              <TabsContent value="tools" className="flex-1 p-0">
-                <ScrollArea className="h-full">
-                  <div className="p-4">
-                    <ModelSelector
-                      selectedModel={modelMetadata}
-                      onSelectModel={handleModelSelection}
-                      onSetModelReady={setModelReady}
-                    />
-                  </div>
-                </ScrollArea>
+              <TabsContent value="tools" className="flex-none h-60 p-2">
+                {/* <ScrollArea className="h-full"> */}
+                {/* <div className="p-4"> */}
+                <ModelSelector
+                  selectedModel={modelMetadata}
+                  onSelectModel={handleModelSelection}
+                  onSetModelReady={setModelReady}
+                />
+                {/* </div> */}
+                {/* </ScrollArea> */}
               </TabsContent>
 
               {/* <TabsContent value="history" className="flex-1 p-0">
@@ -319,10 +332,10 @@ export default function InferencePanel() {
                       {images.length === 0 || currentImageIndex === null
                         ? null
                         : (
-                          images[currentImageIndex].file.size /
-                          1024 /
-                          1024
-                        ).toFixed(1)}{" "}
+                            images[currentImageIndex].file.size /
+                            1024 /
+                            1024
+                          ).toFixed(1)}{" "}
                       MB
                     </p>
                   </div>
@@ -387,7 +400,10 @@ export default function InferencePanel() {
                     )}
 
                     {!isProcessing && progress == 100 && (
-                      <SamDecoder segmentationMode={segmentationMode} onSetSegmentationMode={setSegmentationMode} />
+                      <SamDecoder
+                        segmentationMode={segmentationMode}
+                        onSetSegmentationMode={setSegmentationMode}
+                      />
                     )}
 
                     {/* {results.length > 0 && (

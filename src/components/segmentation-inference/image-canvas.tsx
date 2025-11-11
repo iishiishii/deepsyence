@@ -37,12 +37,19 @@ export const segmentationModeMap: { [mode: string]: number } = {
   boxBottomRight: 3,
 };
 
-
-export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, selectedModel, drawMask }: ImageCanvasProps) {
+export default function ImageCanvas({
+  nvRef,
+  onFileUpload,
+  segmentationMode,
+  selectedModel,
+  drawMask,
+}: ImageCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [annotateFunction, setAnnotateFunction] = useState<() => void>(() => { });
+  const [annotateFunction, setAnnotateFunction] = useState<() => void>(
+    () => {}
+  );
   const [viewMode, setViewMode] = useState<
     "axial" | "coronal" | "sagittal" | "multi" | "render"
   >("axial");
@@ -100,8 +107,11 @@ export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, sel
     );
   };
 
-
-  const getClick = (x: number, y: number, z: number): modelInputProps | null => {
+  const getClick = (
+    x: number,
+    y: number,
+    z: number
+  ): modelInputProps | null => {
     let clickType: number;
     if (segmentationMode === "none") return null;
     clickType = segmentationModeMap[segmentationMode];
@@ -129,7 +139,8 @@ export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, sel
       return;
     }
     // console.log("clicks", clicks);
-    if (click && clicks.length <= 10 && clicks.length >= 0) setClicks([...clicks!, click]);
+    if (click && clicks.length <= 10 && clicks.length >= 0)
+      setClicks([...clicks!, click]);
     if (clicks && clicks.length >= 10) {
       clicks.shift();
       setClicks([...clicks, click]);
@@ -140,7 +151,6 @@ export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, sel
   const handleMouseMove = useMemo(() => {
     return _.throttle(handleMouseMoveLogic, 15);
   }, [nvRef.current, getClick, clicks, setClicks]); // Dependencies: nv, getClick, and state setters/getters
-
 
   const doDragReleaseLogic = (info: any) => {
     console.log("doDragReleaseLogic called", info);
@@ -168,7 +178,6 @@ export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, sel
 
     console.log("bbox", [topLeft, bottomRight]);
 
-
     // return [info.voxStart[0], info.voxEnd[0], info.voxStart[1], info.voxEnd[1], info.voxStart[2], info.voxEnd[2]]
   };
 
@@ -179,16 +188,13 @@ export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, sel
   const runDecoder = async () => {
     console.log("runDecoder", clicks, bbox);
     try {
-      if (clicks === null || (clicks.length === 0 && !bbox))
-        return;
+      if (clicks === null || (clicks.length === 0 && !bbox)) return;
       if (!selectedModel) return;
       console.log("running decoder", clicks, bbox);
-      await selectedModel
-        .processDecoder(clicks[0].z, clicks, bbox)
-        .then(() => {
-          let result = selectedModel.getDecoderResultAsUint8Array()
-          drawMask(result, selectedModel.metadata.id);
-        });
+      await selectedModel.processDecoder(clicks[0].z, clicks, bbox).then(() => {
+        let result = selectedModel.getDecoderResultAsUint8Array();
+        drawMask(result, selectedModel.metadata.id);
+      });
     } catch (error) {
       toast(`Decoder ${error}`);
       console.log("error decoder", error);
@@ -214,13 +220,17 @@ export default function ImageCanvas({ nvRef, onFileUpload, segmentationMode, sel
       <div className="flex-1 overflow-hidden">
         <div
           ref={containerRef}
-          className="niivue-canvas w-full h-full relative bg-[#111]"
+          className="niivue-canvas w-full h-5/6 md:h-5/6 lg:h-full relative bg-[#111]"
         >
-          <canvas ref={canvasRef} onMouseMove={annotateFunction} onClick={handleMouseMove}
+          <canvas
+            ref={canvasRef}
+            onMouseMove={annotateFunction}
+            onClick={handleMouseMove}
             onContextMenu={() => {
               if (!nvRef.current) return;
               nvRef.current.onDragRelease = doDragRelease;
-            }}></canvas>
+            }}
+          ></canvas>
           {getViewLabel()}
           {renderMultiView()}
           {!imageLoaded && (
