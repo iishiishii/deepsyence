@@ -65,7 +65,6 @@ export default function ImageUploader({
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
-          multiple
           className="hidden"
         />
       </div>

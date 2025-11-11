@@ -13,7 +13,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/shadcn-ui/tabs";
-import { ScrollArea } from "@/components/shadcn-ui/scroll-area";
+import { Label } from "@/components/shadcn-ui/label";
 import { cn } from "@/lib/utils";
 import { Niivue, NVImage } from "@niivue/niivue";
 import ImageUploader from "@/components/segmentation-inference/image-uploader";
@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { UnetModel } from "@/model/unetModel";
 import { SegmentAnythingModel } from "@/model/samModel";
 import { nvDrawMask } from "@/helpers/niivueHandler";
+import { set } from "react-hook-form";
 
 export type ImageFile = {
   id: string;
@@ -44,10 +45,14 @@ export const nv = new Niivue({
 });
 
 export default function InferencePanel() {
+  const nvRef = useRef<Niivue | null>(nv);
   const [images, setImages] = useState<ImageFile[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(
     null
   );
+  const [totalSlices, setTotalSlices] = useState(1);
+  const [startSlice, setStartSlice] = useState(0);
+  const [endSlice, setEndSlice] = useState(1);
   const [progress, setProgress] = useState(0);
   const [modelReady, setModelReady] = useState(false);
   // const [results, setResults] = useState<Uint8Array>(new Uint8Array());
@@ -61,7 +66,6 @@ export default function InferencePanel() {
   const [segmentationMode, setSegmentationMode] = useState<
     "none" | "foreground" | "background" | "box"
   >("none");
-  const nvRef = useRef<Niivue | null>(nv);
 
   let handleIntensityChange = (data: any) => {
     document.getElementById("intensity")!.innerHTML =
@@ -84,7 +88,7 @@ export default function InferencePanel() {
         const nvimage = await NVImage.loadFromFile({
           file: file,
         });
-        console.log("nv", nv);
+        console.log("nv", nv, nvimage);
 
         nv.addVolume(nvimage);
 
@@ -95,6 +99,7 @@ export default function InferencePanel() {
           selected: false,
         };
         setImages((prev) => [...prev, ...[newImage]]);
+        setTotalSlices(nvimage.dims![3]);
       });
     } catch (error) {
       toast.error(
@@ -167,10 +172,8 @@ export default function InferencePanel() {
     // } else {
     // SamModel Encoder Loop
     // Use a single progress update at the start of the loop
-    // const start = 0;
-    // const end = image.dims![3];
-    const start = 100;
-    const end = 102;
+    const start = startSlice;
+    const end = endSlice;
     console.log("processing slices ", start, end);
     const totalSteps = end - start || 1; // Avoid division by zero
     const progressPerStep = 100 / totalSteps; // Reserve 10% for final cleanup
@@ -361,6 +364,68 @@ export default function InferencePanel() {
                       </Badge>
                     )}
                   </div>
+
+                  {currentImageIndex !== null && (
+                    <div className="space-y-3 p-3 bg-muted/30 rounded-lg border border-border/50">
+                      <Label className="text-sm font-medium">
+                        3D Volume Slice Selection
+                      </Label>
+
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Start Slice
+                            </Label>
+                            <input
+                              type="number"
+                              value={startSlice}
+                              onChange={(e) => {
+                                const value = Math.max(
+                                  0,
+                                  Math.min(
+                                    Number.parseInt(e.target.value) || 0,
+                                    endSlice
+                                  )
+                                );
+                                setStartSlice(value);
+                              }}
+                              min={0}
+                              max={endSlice}
+                              className="w-full px-2 py-1 text-sm border border-input rounded bg-background"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              End Slice
+                            </Label>
+                            <input
+                              type="number"
+                              value={endSlice}
+                              onChange={(e) => {
+                                const value = Math.max(
+                                  startSlice,
+                                  Math.min(
+                                    Number.parseInt(e.target.value) ||
+                                      totalSlices,
+                                    totalSlices
+                                  )
+                                );
+                                setEndSlice(value);
+                              }}
+                              min={startSlice}
+                              max={totalSlices}
+                              className="w-full px-2 py-1 text-sm border border-input rounded bg-background"
+                            />
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground text-center">
+                          Processing {endSlice - startSlice + 1} of{" "}
+                          {totalSlices} slices
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {isProcessing && (
                     <div className="space-y-2">
