@@ -17,6 +17,28 @@ export class SegmentAnythingModel extends BaseImageModel {
   private sliceAccessOrder: number[] = []; // For LRU tracking
   private volumeMask: Uint8Array | null = null;
   samScale: number = 1;
+
+  private slicesPerEmbedding: number = 5; // Number of slices sharing one embedding
+  private sliceToEmbeddingMap: Map<number, number> = new Map(); // Map sliceId to embeddingId
+
+  private getEmbeddingId(sliceId: number): number {
+    const embeddingId = Math.floor(sliceId / this.slicesPerEmbedding);
+    const centerOffset = Math.floor(this.slicesPerEmbedding / 2);
+    return embeddingId * this.slicesPerEmbedding + centerOffset;
+  }
+
+  private getEmbeddingForSlice(sliceId: number): ort.Tensor | null {
+    const embeddingId = this.getEmbeddingId(sliceId);
+    this.sliceToEmbeddingMap.set(sliceId, embeddingId);
+
+    return this.encoderResultCache.get(embeddingId) || null;
+  }
+
+  private hasEmbeddingForSlice(sliceId: number): boolean {
+    const embeddingId = this.getEmbeddingId(sliceId);
+    return this.encoderResultCache.has(embeddingId);
+  }
+
   process = async (
     volume: NVImage,
     sliceId: number
@@ -56,11 +78,12 @@ export class SegmentAnythingModel extends BaseImageModel {
     if (volume === undefined) {
       return undefined;
     }
+    const sliceEmbedding = this.getEmbeddingForSlice(sliceId);
 
     const end = new Date();
     const elapsed = (end.getTime() - start.getTime()) / 1000;
     const result: SAMResult = {
-      embedding: [this.encoderResultCache.get(sliceId)!],
+      embedding: sliceEmbedding ? [sliceEmbedding!] : [],
       elapsed: elapsed,
     };
     console.log("result ", result);
@@ -72,14 +95,17 @@ export class SegmentAnythingModel extends BaseImageModel {
       throw Error("the model is not initialized");
     }
 
-    if (this.encoderResultCache.has(sliceId)) {
+    const embeddingId = this.getEmbeddingId(sliceId);
+
+    if (this.encoderResultCache.has(embeddingId)) {
       console.log(`Using cached encoder result for slice ${sliceId}`);
-      this.updateLRU(sliceId);
+      this.updateLRU(embeddingId);
+      this.sliceToEmbeddingMap.set(sliceId, embeddingId);
       return;
     }
 
     const start = new Date();
-    const result = await this.preprocessor.process(sliceId);
+    const result = await this.preprocessor.process(embeddingId);
 
     const session = this.sessions.get("encoder");
     if (!session) {
@@ -107,13 +133,13 @@ export class SegmentAnythingModel extends BaseImageModel {
         outputData[outputNames[0]].cpuData as Float32Array,
         outputData[outputNames[0]].dims
       );
-      this.encoderResultCache.set(sliceId, output);
+      this.encoderResultCache.set(embeddingId, output);
       const end = new Date();
       const inferenceTime = end.getTime() - start.getTime();
       console.log("inference time ", inferenceTime);
 
-      console.log("output ", this.encoderResultCache.has(sliceId));
-      this.updateLRU(sliceId);
+      console.log("output ", this.encoderResultCache.has(embeddingId));
+      this.updateLRU(embeddingId);
       this.evictOldSlicesIfNeeded();
       console.log(
         "output sum ",
@@ -137,7 +163,9 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log("the model is not initialized");
       throw Error("the model is not initialized");
     }
-    if (!this.encoderResultCache.has(sliceId)) {
+
+    const embeddingId = this.getEmbeddingId(sliceId);
+    if (!this.encoderResultCache.has(embeddingId)) {
       throw Error(
         `Encoder result for slice ${sliceId} is not available. Run encoder first.`
       );
@@ -163,7 +191,8 @@ export class SegmentAnythingModel extends BaseImageModel {
     }
     const outputData = await session.outputNames();
     const modelName = this.metadata.id;
-    const originalTensor: ort.Tensor = this.encoderResultCache.get(sliceId)!;
+    const originalTensor: ort.Tensor =
+      this.encoderResultCache.get(embeddingId)!;
     const originalData = originalTensor.cpuData as Float32Array;
     const cloneData = new Float32Array(originalData);
     // Clone tensor to avoid detachment issues with Comlink
@@ -172,7 +201,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       "decoder tensor",
       originalTensor,
       tensor,
-      this.encoderResultCache.get(sliceId),
+      this.encoderResultCache.get(embeddingId),
       sliceId
     );
     // Check if tensor exists and has been processed
