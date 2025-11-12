@@ -1,7 +1,10 @@
 {
   "name": "@fullstack-niivue/frontend",
+  "author": "Thuy Dao",
+  "homepage": "https://iishiishii.github.io/deepsyence/",
+  "description": "Deep learning in the browser for medical images",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
