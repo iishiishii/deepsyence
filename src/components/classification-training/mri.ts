@@ -214,7 +214,7 @@ export class MriData {
     return results;
   };
 
-  public static process = (image): ort.Tensor => {
+  public static process = (image: any): ort.Tensor => {
     // console.log("Processing image", image);
     try {
       image = image.resize({ w: 224, h: 224 });
@@ -233,7 +233,7 @@ export class MriData {
    * @param dims target dimensions of the tensor
    * @returns ORT tensor
    */
-  private static imageDataToTensor = (image): ort.Tensor => {
+  private static imageDataToTensor = (image: any): ort.Tensor => {
     const [redArray, greenArray, blueArray] = [
       new Array<number>(),
       new Array<number>(),

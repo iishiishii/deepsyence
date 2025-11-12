@@ -7,15 +7,13 @@ import { useState, useCallback, useEffect } from "react"
 import { Card } from "@/components/shadcn-ui/card"
 import { Button } from "@/components/shadcn-ui/button"
 import { Progress } from "@/components/shadcn-ui/progress"
-import { Input } from "@/components/shadcn-ui/input"
 import { Label } from "@/components/shadcn-ui/label"
 import { Slider } from "@/components/shadcn-ui/slider"
-import { Switch } from "@/components/shadcn-ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shadcn-ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn-ui/tabs"
-import { Textarea } from "@/components/shadcn-ui/textarea"
 import { Play, Square, Upload, Settings, BarChart3, Database, AlertCircle, CheckCircle, Pause } from "lucide-react"
 import { LossVisualization } from "./loss-visualization"
+import { NVImage, Niivue } from "@niivue/niivue";
+import { MriData } from './mri';
 
 interface TrainingConfig {
   epochs: number
@@ -23,13 +21,8 @@ interface TrainingConfig {
   learningRate: number
   optimizer: "adam" | "sgd" | "rmsprop"
   lossFunction: "categorical_crossentropy" | "binary_crossentropy" | "focal_loss"
-  validationSplit: number
-  earlyStopping: boolean
-  patience: number
-  dataAugmentation: boolean
-  transferLearning: boolean
-  freezeLayers: number
   modelName: string
+  lossNodeName: string
   description: string
 }
 
@@ -55,6 +48,14 @@ interface TrainingSession {
   estimatedTimeRemaining: number
 }
 
+const nvTraining = new Niivue({
+    loadingText: "Add training images from the button above. Make sure your file names include 'yes-lesion' or 'no-lesion'.",
+    dragAndDropEnabled: false,
+    textHeight: 0.2,
+    backColor: [0, 0, 0, 1],
+    crosshairColor: [244, 243, 238, 0.5],
+  });
+
 export default function ClassificationTrainingPanel() {
   const [config, setConfig] = useState<TrainingConfig>({
     epochs: 50,
@@ -62,13 +63,8 @@ export default function ClassificationTrainingPanel() {
     learningRate: 0.001,
     optimizer: "adam",
     lossFunction: "categorical_crossentropy",
-    validationSplit: 0.2,
-    earlyStopping: true,
-    patience: 10,
-    dataAugmentation: true,
-    transferLearning: true,
-    freezeLayers: 5,
     modelName: "custom_classification_model",
+    lossNodeName: "onnx::loss::8",
     description: "Custom medical image classification model",
   })
 
@@ -376,6 +372,51 @@ export default function ClassificationTrainingPanel() {
                 </div>
               </div>
             )}
+            </Card>
+
+            
+            {/* Validation Data Upload Card  */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Database className="h-5 w-5" />
+                Validation Data
+              </h3>
+
+              <div className="space-y-4">
+                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                  <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-sm text-muted-foreground mb-4">Upload validation images and labels</p>
+                  <Button onClick={() => document.getElementById("validation-upload")?.click()}>
+                    Select Validation Data
+                  </Button>
+                  <input
+                    id="validation-upload"
+                    type="file"
+                    multiple
+                    accept="image/*,.json,.csv"
+                    onChange={handleValidationDataUpload}
+                    className="hidden"
+                  />
+                </div>
+
+                {validationData.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">{validationData.length} files selected</p>
+                    <div className="max-h-32 overflow-y-auto space-y-1">
+                      {validationData.slice(0, 10).map((file, index) => (
+                        <div key={index} className="text-xs text-muted-foreground truncate">
+                          {file.name} ({(file.size / 1024 / 1024).toFixed(1)} MB)
+                        </div>
+                      ))}
+                      {validationData.length > 10 && (
+                        <div className="text-xs text-muted-foreground">
+                          ... and {validationData.length - 10} more files
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </Card>
           </div>
         </TabsContent>

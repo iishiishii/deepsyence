@@ -615,14 +615,14 @@ export default function TrainingPanel() {
                         <TextField label="Number of epochs"
                             type="number"
                             value={numEpochs}
-                            onChange={(e) => setNumEpochs(Number(e.target.value))}
+                            onChange={(e: any) => setNumEpochs(Number(e.target.value))}
                         />
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <TextField label="Batch size"
                             type="number"
                             value={batchSize}
-                            onChange={(e) => setBatchSize(Number(e.target.value))}
+                            onChange={(e: any) => setBatchSize(Number(e.target.value))}
                         />
                     </Grid>
                 </Grid>
@@ -633,7 +633,7 @@ export default function TrainingPanel() {
                         <TextField type="number"
                             label="Max number of training samples"
                             value={maxNumTrainSamples}
-                            onChange={(e) => setMaxNumTrainSamples(Number(e.target.value))}
+                            onChange={(e: any) => setMaxNumTrainSamples(Number(e.target.value))}
                         />
                     </Grid>
                     {/* <Grid item xs={12} md={4}>
@@ -650,7 +650,7 @@ export default function TrainingPanel() {
                 <FormControlLabel
                     control={<Switch
                         checked={enableLiveLogging}
-                        onChange={(e) => setEnableLiveLogging(!enableLiveLogging)} />}
+                        onChange={() => setEnableLiveLogging(!enableLiveLogging)} />}
                     label='Log all batch results as they happen. Can slow down training.' />
             </div>
             <div className="section">

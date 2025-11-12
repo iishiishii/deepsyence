@@ -4,7 +4,6 @@ import {
   redirect,
 } from "@tanstack/react-router";
 import MedicalImageProcessor from "@/image-processor";
-import { isLoggedIn } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/")({
   component: MedicalImageProcessor,

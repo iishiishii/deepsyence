@@ -18,7 +18,7 @@ export class SegmentAnythingModel extends BaseImageModel {
   private volumeMask: Uint8Array | null = null;
   samScale: number = 1;
 
-  private slicesPerEmbedding: number = 5; // Number of slices sharing one embedding
+  private slicesPerEmbedding: number = 3; // Number of slices sharing one embedding
   private sliceToEmbeddingMap: Map<number, number> = new Map(); // Map sliceId to embeddingId
 
   private getEmbeddingId(sliceId: number): number {
@@ -130,7 +130,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       const outputNames = await session.outputNames();
       const output: ort.Tensor = new ort.Tensor(
         "float32",
-        outputData[outputNames[0]].cpuData as Float32Array,
+        (outputData[outputNames[0]] as any).cpuData as Float32Array,
         outputData[outputNames[0]].dims
       );
       this.encoderResultCache.set(embeddingId, output);
@@ -196,7 +196,7 @@ export class SegmentAnythingModel extends BaseImageModel {
     const modelName = this.metadata.id;
     const originalTensor: ort.Tensor =
       this.encoderResultCache.get(embeddingId)!;
-    const originalData = originalTensor.cpuData as Float32Array;
+    const originalData = (originalTensor as any).cpuData as Float32Array;
     const cloneData = new Float32Array(originalData);
     // Clone tensor to avoid detachment issues with Comlink
     const tensor = new ort.Tensor("float32", cloneData, originalTensor.dims);
@@ -242,7 +242,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       });
     }
 
-    // console.log("feeds ", feeds, modelScale, bbox);
+    // console.log("feeds ", feeds, modelScale, bbox, clicks);
     if (feeds === undefined) return;
 
     try {
@@ -253,7 +253,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       const inferenceTime = end.getTime() - start.getTime();
       console.log("inference time ", inferenceTime);
 
-      let output = results[outputData[0]].cpuData;
+      let output = (results[outputData[0]] as any).cpuData;
       // console.log("output data", results[outputData[0]], output);
       // console.log(
       //   "decoder output",

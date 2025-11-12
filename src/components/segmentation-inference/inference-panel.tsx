@@ -170,10 +170,11 @@ export default function InferencePanel() {
       return;
     }
     console.log("processing slices ", start, end);
-    const totalSteps = end - start + 1 || 1; // Avoid division by zero
+    const totalSteps = end - start + 2 || 1; // Avoid division by zero
     const progressPerStep = 100 / totalSteps; // Reserve 10% for final cleanup
 
     try {
+      setProgress(progressPerStep)
       // check getVolumeData()
       // https://github.com/niivue/niivue/blob/main/packages/niivue/src/nvimage/index.ts#L3597
       for (let i = start; i < end; i++) {
