@@ -65,10 +65,10 @@ jobs:
             return releaseWithTag ? 'true' : 'false'
           result-encoding: string
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v3
         if: steps.release-exists.outputs.result == 'true'
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
           path: "dist"
         if: steps.release-exists.outputs.result == 'true'
