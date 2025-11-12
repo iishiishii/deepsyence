@@ -52,8 +52,8 @@ export function imagedataToImage(
   }
 
   let dst = cv.matFromArray(dims[0], dims[1], cv.CV_8UC3, inputImage);
-  console.log(dst.data.slice(600, 610));
-  console.log(dst);
+  // console.log(dst.data.slice(600, 610));
+  // console.log(dst);
   new Jimp({
     width: dims[0],
     height: dims[1],
@@ -62,11 +62,11 @@ export function imagedataToImage(
 }
 
 export function imageDataToTensor(data: any, dims: number[]): any {
-  console.log(
-    "data in imageDataToTensor",
-    data.reduce((a: number, b: number) => a + b, 0),
-    dims
-  );
+  // console.log(
+  //   "data in imageDataToTensor",
+  //   data.reduce((a: number, b: number) => a + b, 0),
+  //   dims
+  // );
   const [batch, channels, height, width] = dims;
   const pixelCount = height * width;
 
@@ -84,14 +84,14 @@ export function imageDataToTensor(data: any, dims: number[]): any {
     float32Data[i + pixelCount * 2] = data[srcIdx + 2]; // B channel
   }
 
-  console.log(
-    "float32Data sum:",
-    float32Data.reduce((a, b) => a + b, 0),
-    float32Data
-  );
+  // console.log(
+  //   "float32Data sum:",
+  //   float32Data.reduce((a, b) => a + b, 0),
+  //   float32Data
+  // );
 
   const inputTensor = new Tensor("float32", float32Data, dims);
-  console.log("inputTensor:", inputTensor);
+  // console.log("inputTensor:", inputTensor);
 
   return inputTensor;
 }

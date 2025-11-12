@@ -60,14 +60,14 @@ export class Preprocessor {
       niiVolume.dimsRAS[3],
     ];
     this.maxVal = getMax(niiVolume.img2RAS() as TypedVoxelArray);
-    console.log(
-      "ori volume",
-      new Tensor("float32", [2.4]),
-      getMin(niiVolume.img2RAS() as TypedVoxelArray),
-      getMax(niiVolume.img2RAS() as TypedVoxelArray)
-    );
+    // console.log(
+    //   "ori volume",
+    //   new Tensor("float32", [2.4]),
+    //   getMin(niiVolume.img2RAS() as TypedVoxelArray),
+    //   getMax(niiVolume.img2RAS() as TypedVoxelArray)
+    // );
     if (this.config.resizeVolume) {
-      console.log("resizeVolume", this.config.volumeSize);
+      // console.log("resizeVolume", this.config.volumeSize);
       if (this.config.pad && this.config.padSize) {
         this.volume = padVolume(
           niiVolume.img2RAS() as TypedVoxelArray,
@@ -75,11 +75,11 @@ export class Preprocessor {
           [this.config.padSize, this.config.padSize, this.config.padSize]
         );
         // this.maxVal = getMax(this.volume);
-        console.log(
-          "resizeVolume",
-          this.volume.reduce((a: number, b: number) => a + b, 0),
-          this.volume.length
-        );
+        // console.log(
+        //   "resizeVolume",
+        //   this.volume.reduce((a: number, b: number) => a + b, 0),
+        //   this.volume.length
+        // );
       }
     } else {
       this.volume = niiVolume.img2RAS();
@@ -90,13 +90,13 @@ export class Preprocessor {
         this.maxVal,
         getMin(this.volume)
       );
-      console.log(
-        "normalize",
-        getMin(this.volume),
-        getMax(this.volume),
-        this.volume.reduce((a: number, b: number) => a + b, 0),
-        this.volume.length
-      );
+      // console.log(
+      //   "normalize",
+      //   getMin(this.volume),
+      //   getMax(this.volume),
+      //   this.volume.reduce((a: number, b: number) => a + b, 0),
+      //   this.volume.length
+      // );
     } else {
       this.volume = niiVolume.img2RAS();
     }
@@ -148,10 +148,10 @@ export class Preprocessor {
               let filteredImage = filterChannels(paddedImage.data, 3); // filter alpha channel
               const maxVal = getMax(filteredImage);
               let normalizedImage = normalizeArray(filteredImage, maxVal);
-              console.log(
-                "normalizedImage",
-                normalizedImage.reduce((a, b) => a + b, 0)
-              );
+              // console.log(
+              //   "normalizedImage",
+              //   normalizedImage.reduce((a, b) => a + b, 0)
+              // );
               inputTensor = new Tensor("float32", normalizedImage, [
                 1,
                 3,
@@ -190,11 +190,11 @@ export class Preprocessor {
         this.dims[1],
       ]);
     }
-    console.log(
-      "................ inputTensor",
-      inputTensor,
-      inputTensor.data.length
-    );
+    // console.log(
+    //   "................ inputTensor",
+    //   inputTensor,
+    //   inputTensor.data.length
+    // );
     let result: PreprocessorResult = {
       tensor: imageDataToTensor(inputTensor.data, [
         1,

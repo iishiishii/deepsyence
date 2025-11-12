@@ -67,28 +67,18 @@ export default function InferencePanel() {
     "none" | "foreground" | "background" | "box"
   >("none");
 
-  let handleIntensityChange = (data: any) => {
-    document.getElementById("intensity")!.innerHTML =
-      data.vox[0] +
-      "×" +
-      data.vox[1] +
-      "×" +
-      data.vox[2] +
-      " = " +
-      data.values[0].value.toFixed(2);
-  };
+
 
   // Add uploaded files to Niivue
   let handleFileUpload = async (files: File[]) => {
     if (!nvRef.current) return;
     const nv = nvRef.current;
-    nv.onLocationChange = handleIntensityChange;
     try {
       files.forEach(async (file) => {
         const nvimage = await NVImage.loadFromFile({
           file: file,
         });
-        console.log("nv", nv, nvimage);
+        // console.log("nv", nv, nvimage);
 
         nv.addVolume(nvimage);
 
@@ -174,8 +164,13 @@ export default function InferencePanel() {
     // Use a single progress update at the start of the loop
     const start = startSlice;
     const end = endSlice;
+    if (start < 0 || end >= totalSlices || start > end) {
+      toast.error("Invalid slice range for inference.");
+      setIsProcessing(false);
+      return;
+    }
     console.log("processing slices ", start, end);
-    const totalSteps = end - start || 1; // Avoid division by zero
+    const totalSteps = end - start + 1 || 1; // Avoid division by zero
     const progressPerStep = 100 / totalSteps; // Reserve 10% for final cleanup
 
     try {
@@ -203,7 +198,7 @@ export default function InferencePanel() {
     setProgress(100);
 
     setIsProcessing(false);
-  }, [modelMetadata, currentImageIndex, setIsProcessing]);
+  }, [modelMetadata, currentImageIndex, startSlice, endSlice, setIsProcessing]);
 
   const stopInference = useCallback(() => {
     setIsProcessing(false);
@@ -383,15 +378,12 @@ export default function InferencePanel() {
                               onChange={(e) => {
                                 const value = Math.max(
                                   0,
-                                  Math.min(
-                                    Number.parseInt(e.target.value) || 0,
-                                    endSlice
-                                  )
+                                  Number.parseInt(e.target.value)
                                 );
                                 setStartSlice(value);
                               }}
                               min={0}
-                              max={endSlice}
+                              max={totalSlices}
                               className="w-full px-2 py-1 text-sm border border-input rounded bg-background"
                             />
                           </div>
@@ -404,16 +396,12 @@ export default function InferencePanel() {
                               value={endSlice}
                               onChange={(e) => {
                                 const value = Math.max(
-                                  startSlice,
-                                  Math.min(
-                                    Number.parseInt(e.target.value) ||
-                                      totalSlices,
-                                    totalSlices
-                                  )
+                                  0,
+                                  Number.parseInt(e.target.value)
                                 );
                                 setEndSlice(value);
                               }}
-                              min={startSlice}
+                              min={0}
                               max={totalSlices}
                               className="w-full px-2 py-1 text-sm border border-input rounded bg-background"
                             />

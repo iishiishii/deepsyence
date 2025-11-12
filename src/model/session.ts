@@ -84,10 +84,10 @@ export class Session {
       if (value && typeof value === "object" && (value as any)._isTensor) {
         // Reconstruct tensor from serialized data
         const serializedTensor = value as any;
-        console.log(`Reconstructing tensor ${key} from serialized data`);
-        console.log(`Data:`, serializedTensor.data);
-        console.log(`Dims:`, serializedTensor.dims);
-        console.log(`Type:`, serializedTensor.type);
+        // console.log(`Reconstructing tensor ${key} from serialized data`);
+        // console.log(`Data:`, serializedTensor.data);
+        // console.log(`Dims:`, serializedTensor.dims);
+        // console.log(`Type:`, serializedTensor.type);
 
         const tensor = new ort.Tensor(
           serializedTensor.type,
@@ -96,9 +96,9 @@ export class Session {
         );
         processedInput[key] = tensor;
       } else if (value instanceof ort.Tensor) {
-        console.log(`Checking tensor ${key}:`, value);
-        console.log(`Tensor data for ${key}:`, value.data);
-        console.log(`Tensor dims for ${key}:`, value.dims);
+        // console.log(`Checking tensor ${key}:`, value);
+        // console.log(`Tensor data for ${key}:`, value.data);
+        // console.log(`Tensor dims for ${key}:`, value.dims);
 
         // Check if the tensor data is undefined or corrupted
         if (!value.data || value.data.length === 0) {
@@ -108,10 +108,10 @@ export class Session {
         }
         processedInput[key] = value;
       } else {
-        console.log(`Input ${key} is not a tensor, passing as is.`);
-        console.log(`Data:`, value.data);
-        console.log(`Dims:`, value.dims);
-        console.log(`Type:`, value.type);
+        // console.log(`Input ${key} is not a tensor, passing as is.`);
+        // console.log(`Data:`, value.data);
+        // console.log(`Dims:`, value.dims);
+        // console.log(`Type:`, value.type);
         processedInput[key] = value as ort.OnnxValue;
       }
     }

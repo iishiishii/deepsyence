@@ -16,7 +16,7 @@ const modelData = ({
   bbox,
 }: modelDataProps) => {
   // const imageEmbedding = new Tensor("float32", tensor.data, tensor.dims);
-  console.log("image embedding", tensor);
+  // console.log("image embedding", tensor);
   let pointCoordsTensor;
   let pointLabelsTensor;
   let pointCoords;
@@ -63,7 +63,7 @@ const modelData = ({
       // pointCoords[2 * clickLength + 1] = 0.0;
       // pointLabels[clickLength] = -1.0;
     }
-    console.log("bbox length", pointCoords, pointLabels);
+    // console.log("bbox length", pointCoords, pointLabels);
 
     // Create the coord tensor
     if (modelName === "efficient-sam") {

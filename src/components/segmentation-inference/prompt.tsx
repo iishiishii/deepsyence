@@ -95,9 +95,7 @@ export default function SamDecoder({
         >
           <Square className="h-3 w-3 mr-1" />
           <div className="text-xs">
-            Draw
-            <br />
-            Box
+            Draw Box
           </div>
         </Button>
       </div>

@@ -13,8 +13,8 @@ export class SegmentAnythingModel extends BaseImageModel {
 
   // ✅ Use Maps for sparse storage (only store processed slices)
   private encoderResultCache: Map<number, ort.Tensor> = new Map();
-  private maxCachedSlices: number = 32; // LRU cache limit
-  private sliceAccessOrder: number[] = []; // For LRU tracking
+  // private maxCachedSlices: number = 32; // LRU cache limit
+  // private sliceAccessOrder: number[] = []; // For LRU tracking
   private volumeMask: Uint8Array | null = null;
   samScale: number = 1;
 
@@ -49,7 +49,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       throw Error("the model is not initialized");
     }
     if (volume !== undefined) {
-      console.log("input ", volume);
+      // console.log("input ", volume);
       const volumeId = volume.id || volume.name;
       if (this.lastProcessedVolumeId !== volumeId) {
         // Clear old data before processing new volume
@@ -69,7 +69,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       }
       await this.processEncoder(sliceId);
     } else {
-      console.log("didnt run encoder ", volume);
+      toast("didnt run encoder ");
     }
 
     if (this.encoderResultCache.size === 0 && volume === undefined) {
@@ -86,7 +86,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       embedding: sliceEmbedding ? [sliceEmbedding!] : [],
       elapsed: elapsed,
     };
-    console.log("result ", result);
+    // console.log("result ", result);
     return result;
   };
 
@@ -94,17 +94,17 @@ export class SegmentAnythingModel extends BaseImageModel {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
       throw Error("the model is not initialized");
     }
+    const start = new Date();
 
     const embeddingId = this.getEmbeddingId(sliceId);
 
     if (this.encoderResultCache.has(embeddingId)) {
-      console.log(`Using cached encoder result for slice ${sliceId}`);
-      this.updateLRU(embeddingId);
+      // console.log(`Using cached encoder result for slice ${sliceId}`);
+      // this.updateLRU(embeddingId);
       this.sliceToEmbeddingMap.set(sliceId, embeddingId);
       return;
     }
 
-    const start = new Date();
     const result = await this.preprocessor.process(embeddingId);
 
     const session = this.sessions.get("encoder");
@@ -112,14 +112,14 @@ export class SegmentAnythingModel extends BaseImageModel {
       throw Error("the encoder is absent in the sessions map");
     }
     const inputData = await session.inputNames();
-    console.log("session ", session);
+    // console.log("session ", session);
     const inputName = inputData[0];
 
     const feeds = {
       [inputName]: result.tensor,
     };
     // feeds[inputData[0]] = result.tensor;
-    console.log("feeds ", feeds);
+    // console.log("feeds ", feeds);
     this.samScale =
       result.newHeight /
       Math.max(this.preprocessor.dims[0], this.preprocessor.dims[1]);
@@ -138,18 +138,19 @@ export class SegmentAnythingModel extends BaseImageModel {
       const inferenceTime = end.getTime() - start.getTime();
       console.log("inference time ", inferenceTime);
 
-      console.log("output ", this.encoderResultCache.has(embeddingId));
-      this.updateLRU(embeddingId);
-      this.evictOldSlicesIfNeeded();
-      console.log(
-        "output sum ",
-        (output.cpuData as Float32Array).reduce(
-          (a: number, b: number) => a + b,
-          0
-        )
-      );
+      // console.log("output ", this.encoderResultCache.has(embeddingId));
+      // this.updateLRU(embeddingId);
+      // this.evictOldSlicesIfNeeded();
+      // console.log(
+      //   "output sum ",
+      //   (output.cpuData as Float32Array).reduce(
+      //     (a: number, b: number) => a + b,
+      //     0
+      //   )
+      // );
     } catch (e) {
-      console.log(`failed to inference ONNX model: ${e}. `);
+      toast(`failed to inference ONNX model: ${e}. `);
+      throw Error(`failed to inference ONNX model: ${e}. `);
     }
   };
 
@@ -160,12 +161,11 @@ export class SegmentAnythingModel extends BaseImageModel {
     bbox: boundingBox | null
   ) => {
     if (!this.initialized || !this.preprocessor || !this.sessions) {
-      console.log("the model is not initialized");
+      toast("the model is not initialized");
       throw Error("the model is not initialized");
     }
 
-    const embeddingId = this.getEmbeddingId(sliceId);
-    if (!this.encoderResultCache.has(embeddingId)) {
+    if (!this.hasEmbeddingForSlice(sliceId)) {
       throw Error(
         `Encoder result for slice ${sliceId} is not available. Run encoder first.`
       );
@@ -177,6 +177,8 @@ export class SegmentAnythingModel extends BaseImageModel {
 
     const start = new Date();
 
+    const embeddingId = this.getEmbeddingId(sliceId);
+
     // const LONG_SIDE_LENGTH = 1024;
     const [height, width, depth] = this.volumeDimensions!;
     const modelScale = {
@@ -186,7 +188,8 @@ export class SegmentAnythingModel extends BaseImageModel {
     };
     const session = this.sessions.get("decoder");
     if (!session) {
-      console.log("the decoder is absent in the sessions map");
+      // console.log("the decoder is absent in the sessions map");
+      toast("the decoder is absent in the sessions map");
       throw Error("the decoder is absent in the sessions map");
     }
     const outputData = await session.outputNames();
@@ -197,13 +200,13 @@ export class SegmentAnythingModel extends BaseImageModel {
     const cloneData = new Float32Array(originalData);
     // Clone tensor to avoid detachment issues with Comlink
     const tensor = new ort.Tensor("float32", cloneData, originalTensor.dims);
-    console.log(
-      "decoder tensor",
-      originalTensor,
-      tensor,
-      this.encoderResultCache.get(embeddingId),
-      sliceId
-    );
+    // console.log(
+    //   "decoder tensor",
+    //   originalTensor,
+    //   tensor,
+    //   this.encoderResultCache.get(embeddingId),
+    //   sliceId
+    // );
     // Check if tensor exists and has been processed
     if (!tensor || tensor.size === 1) {
       throw Error(
@@ -239,7 +242,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       });
     }
 
-    console.log("feeds ", feeds, modelScale, bbox);
+    // console.log("feeds ", feeds, modelScale, bbox);
     if (feeds === undefined) return;
 
     try {
@@ -251,7 +254,7 @@ export class SegmentAnythingModel extends BaseImageModel {
       console.log("inference time ", inferenceTime);
 
       let output = results[outputData[0]].cpuData;
-      console.log("output data", results[outputData[0]], output);
+      // console.log("output data", results[outputData[0]], output);
       // console.log(
       //   "decoder output",
       //   (output as Float32Array).reduce((a, b) => a + b, 0)
@@ -267,13 +270,13 @@ export class SegmentAnythingModel extends BaseImageModel {
       );
 
       // this.decoderResultCache.set(sliceId, this.volumeMask);
-      console.log(
-        "decoder mask sum ",
-        this.volumeMask.reduce((a: number, b: number) => a + b, 0)
-      );
+      // console.log(
+      //   "decoder mask sum ",
+      //   this.volumeMask.reduce((a: number, b: number) => a + b, 0)
+      // );
       // return rasImage;
     } catch (e) {
-      console.log(`failed to inference ONNX model: ${e}. `);
+      toast(`failed to inference ONNX model: ${e}. `);
       throw Error(`failed to inference ONNX model: ${e}. `);
     }
   };
@@ -309,31 +312,31 @@ export class SegmentAnythingModel extends BaseImageModel {
   /**
    * ✅ LRU cache management
    */
-  private updateLRU(sliceId: number): void {
-    // Remove if exists
-    const index = this.sliceAccessOrder.indexOf(sliceId);
-    if (index > -1) {
-      this.sliceAccessOrder.splice(index, 1);
-    }
-    // Add to end (most recently used)
-    this.sliceAccessOrder.push(sliceId);
-  }
+  // private updateLRU(sliceId: number): void {
+  //   // Remove if exists
+  //   const index = this.sliceAccessOrder.indexOf(sliceId);
+  //   if (index > -1) {
+  //     this.sliceAccessOrder.splice(index, 1);
+  //   }
+  //   // Add to end (most recently used)
+  //   this.sliceAccessOrder.push(sliceId);
+  // }
 
-  private evictOldSlicesIfNeeded(): void {
-    while (this.encoderResultCache.size > this.maxCachedSlices) {
-      const oldestSlice = this.sliceAccessOrder.shift();
-      if (oldestSlice !== undefined) {
-        // Clean up tensor
-        const tensor = this.encoderResultCache.get(oldestSlice);
-        if (tensor) {
-          // Force cleanup
-          (tensor as any).cpuData = null;
-        }
-        this.encoderResultCache.delete(oldestSlice);
-        console.log(`Evicted encoder cache for slice ${oldestSlice}`);
-      }
-    }
-  }
+  // private evictOldSlicesIfNeeded(): void {
+  //   while (this.encoderResultCache.size > this.maxCachedSlices) {
+  //     const oldestSlice = this.sliceAccessOrder.shift();
+  //     if (oldestSlice !== undefined) {
+  //       // Clean up tensor
+  //       const tensor = this.encoderResultCache.get(oldestSlice);
+  //       if (tensor) {
+  //         // Force cleanup
+  //         (tensor as any).cpuData = null;
+  //       }
+  //       this.encoderResultCache.delete(oldestSlice);
+  //       // console.log(`Evicted encoder cache for slice ${oldestSlice}`);
+  //     }
+  //   }
+  // }
 
   /**
    * ✅ Clear all caches
@@ -346,7 +349,8 @@ export class SegmentAnythingModel extends BaseImageModel {
     this.encoderResultCache.clear();
 
     // Reset LRU tracking
-    this.sliceAccessOrder = [];
+    // this.sliceAccessOrder = [];
+    this.sliceToEmbeddingMap.clear();
 
     // Clear volume mask
     if (this.volumeMask) {

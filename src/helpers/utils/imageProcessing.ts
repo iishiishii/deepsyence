@@ -14,7 +14,7 @@ export function getMax(arr: TypedVoxelArray) {
 }
 
 export function getMin(arr: TypedVoxelArray) {
-  console.log("getMin arr", arr);
+  // console.log("getMin arr", arr);
   let len = arr.length;
   let min = Infinity;
 
@@ -99,7 +99,7 @@ export function resizeTypedArray(image: any, target: number | number[]) {
     newh = oldh * scale;
     neww = oldw * scale;
   }
-  console.log("neww, newh ", neww, newh);
+  // console.log("neww, newh ", neww, newh);
   // if (image.type() !== cv.CV_32FC4) {
   //   image4Channels = addChannel(image.data);
   // }
@@ -120,7 +120,7 @@ export function resizeTypedArray(image: any, target: number | number[]) {
   } catch (error) {
     console.log("error", error);
   }
-  console.log("dstResized ", dstResized.size(), dstResized.type());
+  // console.log("dstResized ", dstResized.size(), dstResized.type());
 
   return dstResized;
 }
@@ -132,7 +132,7 @@ export function pad(image: any, target_size: number) {
   let w = image.size().width;
   let padh = target_size - h;
   let padw = target_size - w;
-  console.log("padh, padw ", padh, padw);
+  // console.log("padh, padw ", padh, padw);
   if (image.type() !== cv.CV_8UC4) {
     image4Channels = addChannel(image.data);
   }
@@ -211,15 +211,15 @@ export function resizeVolume(
       // console.log("alpha", alpha);
       slice = interpolateSlices(sliceLowMat, sliceHighMat, alpha);
     }
-    console.log("slice", slice);
+    // console.log("slice", slice);
 
     let stackMask = stackSliceToRGB(slice.data);
-    console.log("stackImage", stackMask, destDim[0], destDim[1]);
+    // console.log("stackImage", stackMask, destDim[0], destDim[1]);
     let save = downloadImage(stackMask, srcDim[0], srcDim[1]);
 
     let resizedSlice = resizeTypedArray(slice, destDim);
     let stackImage = stackSliceToRGB(resizedSlice.data);
-    console.log("stackImage", stackImage, destDim[0], destDim[1]);
+    // console.log("stackImage", stackImage, destDim[0], destDim[1]);
     let saved = downloadImage(stackImage, destDim[0], destDim[1]);
 
     for (let j = 0; j < destDim[0] * destDim[1]; j++) {

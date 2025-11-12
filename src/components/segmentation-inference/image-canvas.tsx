@@ -58,16 +58,42 @@ export default function ImageCanvas({
   const [clicks, setClicks] = useState<modelInputProps[] | null>(null);
   const [bbox, setBbox] = useState<boundingBox | null>(null);
 
+  let handleIntensityChange = (data: any) => {
+    switch (viewMode) {
+      case "axial":
+        document.getElementById("intensity")!.innerHTML =
+          "Slice: " + data.vox[2] +
+          " | Voxel: " + data.vox[0] + "×" + data.vox[1] + "= " +
+          data.values[0].value.toFixed(2);
+        break;
+      case "coronal":
+        document.getElementById("intensity")!.innerHTML =
+          "Slice: " + data.vox[1] +
+          " | Voxel: " + data.vox[0] + "×" + data.vox[2] + "= " +
+          data.values[0].value.toFixed(2);
+        break;
+      case "sagittal":
+        document.getElementById("intensity")!.innerHTML =
+          "Slice: " + data.vox[0] +
+          " | Voxel: " + data.vox[1] + "×" + data.vox[1] + "= " +
+          data.values[0].value.toFixed(2);
+        break;
+      default:
+        document.getElementById("intensity")!.innerHTML =
+          "Intensity: " + data.values[0].value.toFixed(2);
+    }
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const nv = nvRef.current;
-    console.log("Niivue attached to canvas", nv);
     if (!canvas) return;
     if (!nv) return;
     nv.attachToCanvas(canvas);
     nv.setSliceType(sliceTypeMap[viewMode] || 0); // Default to axial if viewMode is invalid;
+    nv.onLocationChange = handleIntensityChange;
     setImageLoaded(true);
-  }, []);
+  }, [viewMode]);
 
   const handleViewMode = (mode: ViewMode) => {
     setViewMode(mode);
@@ -153,13 +179,13 @@ export default function ImageCanvas({
   }, [nvRef.current, getClick, clicks, setClicks]); // Dependencies: nv, getClick, and state setters/getters
 
   const doDragReleaseLogic = (info: any) => {
-    console.log("doDragReleaseLogic called", info);
+    // console.log("doDragReleaseLogic called", info);
     const nv = nvRef.current;
     if (!nv) return;
     nv.opts.dragMode = DRAG_MODE.callbackOnly;
     if (info.tileIdx < 0) console.log("Invalid drag");
     else if (info.voxStart[2] !== info.voxEnd[2]) return;
-    console.log("Drag released", bbox);
+    // console.log("Drag released", bbox);
 
     let topLeft: modelInputProps = {
       x: info.voxStart[0],
@@ -175,8 +201,10 @@ export default function ImageCanvas({
     };
     let box: boundingBox = { topLeft, bottomRight };
     setBbox(box);
-
-    console.log("bbox", [topLeft, bottomRight]);
+    if (clicks && info.voxStart[2] !== clicks[0].z) {
+      setClicks(null);
+    }
+    // console.log("bbox", [topLeft, bottomRight]);
 
     // return [info.voxStart[0], info.voxEnd[0], info.voxStart[1], info.voxEnd[1], info.voxStart[2], info.voxEnd[2]]
   };
@@ -186,11 +214,11 @@ export default function ImageCanvas({
   }, [nvRef.current, setBbox, bbox]);
 
   const runDecoder = async () => {
-    console.log("runDecoder", clicks, bbox);
+    // console.log("runDecoder", clicks, bbox);
     try {
       if (clicks === null || (clicks.length === 0 && !bbox)) return;
       if (!selectedModel) return;
-      console.log("running decoder", clicks, bbox);
+      // console.log("running decoder", clicks, bbox);
       await selectedModel.processDecoder(clicks[0].z, clicks, bbox).then(() => {
         let result = selectedModel.getDecoderResultAsUint8Array();
         drawMask(result, selectedModel.metadata.id);
@@ -205,7 +233,7 @@ export default function ImageCanvas({
     if (clicks || bbox) {
       runDecoder();
     }
-    console.log("clicks", clicks);
+    // console.log("clicks", clicks);
   }, [clicks, bbox]);
 
   useEffect(() => {
