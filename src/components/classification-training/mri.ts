@@ -1,297 +1,498 @@
-// The following is modified from Justin Harris's project:
-// https://github.com/juharris/train-pytorch-in-js
+import * as ortTrain from "onnxruntime-web/training";
+import { NVImage } from "@niivue/niivue";
+import {
+  APHASIA_ENCODING_MAP,
+  PATTERN_TO_APHASIA,
+} from "@/model/classificationModel";
+import { toast } from "sonner";
+import { StandardScaler } from "@/helpers//utils/standardScaler";
+export interface SubjectData {
+  lesionMask: NVImage;
+  aphasiaType: string;
+}
 
-// Modified from https://github.com/cazala/mnist/blob/master/src/mnist.js
-// so that we can place the data in a specific folder and avoid out of memory errors
-// and use TypeScript.
-import * as ort from "onnxruntime-web/training";
-import { Jimp, JimpConstructorOptions, JimpInstance, intToRGBA } from "jimp";
-import { NVImage, Niivue } from "@niivue/niivue";
+export interface ExtractedFeatures {
+  lesionSize: number; // Count of non-zero voxels
+}
+
+export interface LesionBatch {
+  features: ortTrain.Tensor; // Shape: [batchSize, 1] - [lesionSize]
+  labels: ortTrain.Tensor; // Shape: [batchSize, 4] - [N, F, C, R]
+}
 
 export class MriData {
-  static readonly BATCH_SIZE = 1;
+  static readonly BATCH_SIZE = 32;
   static readonly MAX_NUM_TRAIN_SAMPLES = 200;
-  static readonly MAX_NUM_TEST_SAMPLES = 1;
+  static readonly MAX_NUM_TEST_SAMPLES = 50;
+  static readonly NUM_FEATURES = 1; // lesionSize
+  static readonly NUM_OUTPUTS = 4; // Naming, Fluency, Comprehension, Repetition
 
-  static readonly pixelMax = 255;
-  static readonly pixelMean = [0.485, 0.456, 0.406];
-  static readonly pixelStd = [0.229, 0.224, 0.225];
+  private trainingData: SubjectData[] = [];
+  private testingData: SubjectData[] = [];
+  private extractedTrainingFeatures: ExtractedFeatures[] = [];
+  private extractedTestingFeatures: ExtractedFeatures[] = [];
+
+  // Standard scaler for normalization
+  public scaler: StandardScaler;
+  private scalerFitted: boolean = false;
 
   constructor(
     public batchSize = MriData.BATCH_SIZE,
-    public trainingData: NVImage[] = [],
-    public testingData: NVImage[] = [],
     public maxNumTrainSamples = MriData.MAX_NUM_TRAIN_SAMPLES,
     public maxNumTestSamples = MriData.MAX_NUM_TEST_SAMPLES
   ) {
     if (batchSize <= 0) {
       throw new Error("batchSize must be > 0");
     }
+    this.scaler = new StandardScaler();
   }
 
-  // inputs = [new URL("./data/images/elephant/elephant01.jpeg", document.baseURI).href];
-  // input_paths = [new URL("./data/lesion/sub-M2001_ses-1076_acq-tfl3_run-4_T1w.nii.gz", document.baseURI).href];
-  public static label_dict: { [key: number]: string } = {
-    0: "no-lesion",
-    1: "lesion",
-  };
+  static parseAphasiaTypeFromFilename(filename: string): string | undefined {
+    // Remove file extensions
+    const nameWithoutExt = filename.replace(/\.(nii|nii\.gz)$/i, "");
 
-  public getNumTrainingBatches(): number {
-    return Math.floor(this.maxNumTrainSamples / this.batchSize);
+    // Split by underscore
+    const parts = nameWithoutExt.split("_");
+
+    if (parts.length < 2) {
+      toast(
+        `Invalid filename format: "${filename}". Expected pattern: {subjectName}_{aphasiaType}`
+      );
+    }
+
+    // Last part is aphasia type
+    let aphasiaType = parts[parts.length - 1];
+    // Validate aphasia type
+    if (!APHASIA_ENCODING_MAP[aphasiaType]) {
+      toast(
+        `Unknown aphasia type "${aphasiaType}" in filename "${filename}". ` +
+          `Valid types: ${Object.keys(APHASIA_ENCODING_MAP).join(", ")}`
+      );
+      return undefined;
+    }
+
+    return aphasiaType;
   }
 
-  public getNumTestBatches(): number {
-    return Math.floor(this.maxNumTestSamples / this.batchSize);
+  // ============================================================================
+  // SUBJECT DATA CREATION
+  // ============================================================================
+  /**
+   * Create SubjectData from NVImage (extracts info from filename)
+   */
+  static createSubjectFromImage(lesionMask: NVImage): SubjectData {
+    const filename = lesionMask.name || lesionMask.url || "";
+
+    if (!filename) {
+      toast("NVImage must have a name or url property");
+    }
+
+    // Extract subject ID and aphasia type from filename
+    const aphasiaType = this.parseAphasiaTypeFromFilename(filename);
+
+    if (!aphasiaType) {
+      throw new Error(
+        `Failed to parse aphasia type from filename: ${filename}`
+      );
+    }
+    return {
+      lesionMask,
+      aphasiaType,
+    };
   }
 
-  private *batches(data: ort.Tensor[], labels: ort.Tensor[]) {
-    for (let batchIndex = 0; batchIndex < data.length; ++batchIndex) {
-      yield {
-        data: data[batchIndex],
-        labels: labels[batchIndex],
-      };
-    }
-  }
+  // ============================================================================
+  // DATA LOADING
+  // ============================================================================
 
-  public async *trainingBatches() {
-    // Avoid keeping data in memory.
-    const trainingImages = await this.prepareImagesTensor(this.trainingData);
-    const trainingLabels = await this.prepareLabelsTensor(this.trainingData);
-    if (!trainingImages || !trainingLabels) {
-      throw new Error("No training data available");
-    }
-    yield* this.batches(trainingImages, trainingLabels);
-  }
-
-  public async *testingBatches() {
-    // Avoid keeping data in memory.
-    const testingImages = await this.prepareImagesTensor(this.testingData);
-    const testingLabels = await this.prepareLabelsTensor(this.testingData);
-    if (!testingImages || !testingLabels) {
-      throw new Error("No testing data available");
-    }
-    yield* this.batches(testingImages, testingLabels);
-  }
-
-  private getNumberOfSubjects(data: NVImage[]): number {
-    for (let i = 0; i < data.length; i++) {
-      if (!data[i].name.includes("lesion")) {
-        throw new Error("Name your data to include 'lesion' or 'no-lesion'");
-      }
-    }
-    return this.trainingData.length;
-  }
-
-  public static getSlice = (image: NVImage, idx: number): ort.Tensor => {
-    if (!image.img || !image.dimsRAS) {
-      throw new Error("Image data not loaded in getSlice");
-    }
-    // let slices: ort.Tensor[] = new Array();
-    if (idx < 0 || idx >= image.dimsRAS[3]) {
-      throw new Error("Index out of bounds in getSlice");
-    }
-
-    const slice = image.img.slice(
-      idx * image.dimsRAS[1] * image.dimsRAS[2],
-      (idx + 1) * image.dimsRAS[1] * image.dimsRAS[2]
-    );
-
-    let slice_rgb = MriData.stackSliceToRGB(slice);
-    // console.log("slice_rgb", slice_rgb);
-    let jimp = new Jimp({
-      data: Buffer.from(slice_rgb),
-      width: image.dimsRAS[1],
-      height: image.dimsRAS[2],
-    });
-    // console.log("jimp", jimp);
-    // slices[i-startId] = this.process(jimp);
-
-    return MriData.process(jimp);
-  };
-
-  prepareLabelsTensor = async (data: NVImage[]): Promise<ort.Tensor[]> => {
-    if (data.length === 0) {
-      throw new Error("No data provided to prepareLabelsTensor");
-    }
-    const results: ort.Tensor[] = [];
-    const numSubs = this.getNumberOfSubjects(data); // number of subjects counted from the zipfile
-
-    // const labels = new Array(this.inputs.length);
-    for (let i = 0; i < numSubs; i++) {
-      // let nii = await NVImage.loadFromUrl({url: this.input_paths[i]});
-      for (let j = 0; j < data[i].dimsRAS![3]; j += this.batchSize) {
-        let batch: ort.Tensor | undefined;
-        for (const [key, value] of Object.entries(MriData.label_dict)) {
-          if (data[i].name.includes(value)) {
-            let label = new Array(this.batchSize).fill(parseInt(key));
-            batch = new ort.Tensor("int64", label, [this.batchSize]);
-            // console.log("label shape", this.batchSize, label, batch);
-          }
-        }
-        if (!batch) {
-          throw new Error(`Could not determine label for ${data[i].name}`);
-        }
-        results.push(batch);
-      }
-      console.log("labels results", results);
-    }
-    return results;
-  };
-
-  prepareImagesTensor = async (
-    data: NVImage[]
-  ): Promise<ort.Tensor[] | undefined> => {
-    const results = [];
-    const numSubs = this.getNumberOfSubjects(data); // number of subjects counted from the zipfile
-    let tensors: ort.Tensor[] = [];
-
-    for (let i = 0; i < numSubs; i++) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      for (let j = 0; j < data[i].dimsRAS[3]; j++) {
-        // for (let j = 100; j < 110; j++) {
-
-        let slice = MriData.getSlice(data[i], j);
-        // console.log("slices", slice);
-        tensors.push(slice);
-      }
-      //   console.log("inputs[i]", inputs[i]);
-      //   const image = await Jimp.read(inputs[i]);
-
-      //   tensors[i] = this.process(image);
-    }
-    console.log("tensors", tensors);
-    if (tensors.length === 0) {
-      console.log("No data found");
+  /**
+   * Add training subject data
+   */
+  addTrainingSubject(lesionMask: NVImage): void {
+    if (this.trainingData.length >= this.maxNumTrainSamples) {
+      console.warn(
+        `Max training samples (${this.maxNumTrainSamples}) reached. Skipping.`
+      );
       return;
     }
 
-    for (let i = 0; i < tensors.length; i += this.batchSize) {
-      if (i + this.batchSize > this.maxNumTrainSamples) {
-        console.log(
-          "i, batchsize, max sample",
-          i,
-          this.batchSize,
-          this.maxNumTestSamples
-        );
-        break;
-      }
-      let resultData: number[] = [];
-      for (let k = 0; k < this.batchSize; k++) {
-        for (let j = 0; j < tensors[0].data.length; j++) {
-          // resultData.push(...tensors[i+k].data);
-          resultData[k * tensors[0].data.length + j] = tensors[k + i].data[
-            j
-          ] as number;
-        }
-      }
-      // console.log("resultData", resultData)
-      // for (let j = 0; j < tensors[0].data.length*this.batchSize, k < this.batchSize; j++, k++) {
-      //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //     // @ts-ignore
-      //     // console.log(i, "tensors[k].data[j]", k, j);
-      //     resultData[k * tensors[0].data.length + j] = tensors[k].data[j];
-      // }
-      let batch = new ort.Tensor("float32", resultData as number[], [
-        this.batchSize,
-        tensors[0].dims[1],
-        tensors[0].dims[2],
-        tensors[0].dims[3],
-      ]);
-      results.push(batch);
-    }
-    console.log(
-      "image tensor",
-      [
-        this.batchSize,
-        tensors[0].dims[1],
-        tensors[0].dims[2],
-        tensors[0].dims[3],
-      ],
-      " results",
-      results
-    );
-    return results;
-  };
-
-  public static process = (image: any): ort.Tensor => {
-    // console.log("Processing image", image);
     try {
-      image = image.resize({ w: 224, h: 224 });
-      // console.log("process", image.bitmap.data)
-    } catch (error) {
-      console.error("Error resizing image", error);
+      const subject = MriData.createSubjectFromImage(lesionMask);
+      this.trainingData.push(subject);
+      console.log(`Added training subject: (${subject.aphasiaType})`);
+    } catch (err) {
+      console.error(`Failed to add training subject: ${err}`);
     }
-    // console.log("Resized image", image);
-    const tensor = MriData.imageDataToTensor(image);
-    return tensor;
-  };
+  }
 
   /**
-   * imageDataToTensor converts Jimp image to ORT tensor
-   * @param image instance of Jimp image
-   * @param dims target dimensions of the tensor
-   * @returns ORT tensor
+   * Add testing subject data
    */
-  private static imageDataToTensor = (image: any): ort.Tensor => {
-    const [redArray, greenArray, blueArray] = [
-      new Array<number>(),
-      new Array<number>(),
-      new Array<number>(),
-    ];
-    const width = image.bitmap.width;
-    const height = image.bitmap.height;
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        if (x >= image.bitmap.width || y >= image.bitmap.height) {
-          redArray.push(0.0);
-          greenArray.push(0.0);
-          blueArray.push(0.0);
-          continue;
-        }
-        const color = image.getPixelColor(x, y);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const rgba = intToRGBA(color);
-        // console.log("color", color, "rgb", rgba)
+  addTestingSubject(lesionMask: NVImage): void {
+    if (this.testingData.length >= this.maxNumTestSamples) {
+      console.warn(
+        `Max testing samples (${this.maxNumTestSamples}) reached. Skipping.`
+      );
+      return;
+    }
 
-        let value = this.getValue(rgba.r, 0);
-        redArray.push(value);
-        value = this.getValue(rgba.g, 1);
-        greenArray.push(value);
-        value = this.getValue(rgba.b, 2);
-        blueArray.push(value);
+    try {
+      const subject = MriData.createSubjectFromImage(lesionMask);
+      this.testingData.push(subject);
+      console.log(`Added testing subject: (${subject.aphasiaType})`);
+    } catch (err) {
+      console.error(`Failed to add testing subject: ${err}`);
+    }
+  }
+
+  /**
+   * Load subjects from arrays
+   */
+  loadImages(trainingImages: NVImage[], testingImages: NVImage[]): void {
+    console.log(`Loading ${trainingImages.length} training images...`);
+    trainingImages.slice(0, this.maxNumTrainSamples).forEach((img) => {
+      try {
+        const subject = MriData.createSubjectFromImage(img);
+        this.trainingData.push(subject);
+      } catch (err) {
+        console.error(`Skipping image: ${err}`);
+      }
+    });
+
+    console.log(`Loading ${testingImages.length} testing images...`);
+    testingImages.slice(0, this.maxNumTestSamples).forEach((img) => {
+      try {
+        const subject = MriData.createSubjectFromImage(img);
+        this.testingData.push(subject);
+      } catch (err) {
+        console.error(`Skipping image: ${err}`);
+      }
+    });
+
+    // Extract features immediately
+    this.extractedTrainingFeatures = this.trainingData.map((s) =>
+      this.extractFeatures(s)
+    );
+    this.extractedTestingFeatures = this.testingData.map((s) =>
+      this.extractFeatures(s)
+    );
+
+    // Fit scaler on training data
+    this.fitScaler();
+
+    console.log(
+      `Successfully loaded ${this.trainingData.length} training subjects`
+    );
+    console.log(
+      `Successfully loaded ${this.testingData.length} testing subjects`
+    );
+  }
+
+  // ============================================================================
+  // LESION SIZE EXTRACTION
+  // ============================================================================
+
+  /**
+   * Count non-zero voxels in the lesion mask (lesion size)
+   */
+  static countLesionVoxels(image: NVImage): number {
+    if (!image.img) {
+      throw new Error("Image data not loaded");
+    }
+
+    let count = 0;
+    const data = image.img;
+
+    for (let i = 0; i < data.length; i++) {
+      if (data[i] !== 0) {
+        count++;
       }
     }
-    let transposedData: number[] = [];
 
-    transposedData = redArray.concat(greenArray).concat(blueArray);
-    // console.log("redArray", redArray, "greenArray", greenArray, "blueArray", blueArray)
-    const float32Data = new Float32Array(transposedData);
-    const dims = [1, 3, height, width];
-    const inputTensor = new ort.Tensor("float32", float32Data, dims);
-    // console.log("inputTensor", inputTensor)
-    return inputTensor;
-  };
+    return count;
+  }
 
-  private static getValue = (value: number, colorIdx: number): number => {
-    value =
-      (value / this.pixelMax - this.pixelMean[colorIdx]) /
-      this.pixelStd[colorIdx];
-    return value;
-  };
+  /**
+   * Calculate lesion volume in mm³ (accounting for voxel dimensions)
+   */
+  static calculateLesionVolume(image: NVImage): number {
+    const voxelCount = this.countLesionVoxels(image);
 
-  public static stackSliceToRGB(
-    buffer: Float32Array | Uint8Array | Uint16Array | Int16Array | Float64Array
-  ): Float32Array {
-    let bufferLength = buffer.length,
-      result = new Float32Array(bufferLength * 3);
+    // Get voxel dimensions from the image header
+    const pixDims = image.pixDims || [1, 1, 1, 1];
+    const voxelVolume = pixDims[1] * pixDims[2] * pixDims[3]; // mm³
 
-    for (let i = 0; i < bufferLength; i++) {
-      result[3 * i] = buffer[i] * 255;
-      result[3 * i + 1] = buffer[i] * 255;
-      result[3 * i + 2] = buffer[i] * 255;
+    return voxelCount * voxelVolume;
+  }
+
+  /**
+   * Get lesion statistics from an NVImage
+   */
+  static getLesionStats(image: NVImage): {
+    voxelCount: number;
+    volumeMm3: number;
+    totalVoxels: number;
+    percentageAffected: number;
+  } {
+    console.log("getting lesion stats for image", image);
+    if (!image.img2RAS() || !image.dimsRAS) {
+      throw new Error("Image data not loaded");
     }
-    return result;
+
+    const voxelCount = this.countLesionVoxels(image);
+    const volumeMm3 = this.calculateLesionVolume(image);
+    const totalVoxels = image.dimsRAS[1] * image.dimsRAS[2] * image.dimsRAS[3];
+    const percentageAffected = (voxelCount / totalVoxels) * 100;
+
+    return {
+      voxelCount,
+      volumeMm3,
+      totalVoxels,
+      percentageAffected,
+    };
+  }
+
+  /**
+   * Extract all features from a subject
+   */
+  extractFeatures(subject: SubjectData): ExtractedFeatures {
+    console.log("extracting features for subject", subject);
+    const lesionStats = MriData.getLesionStats(subject.lesionMask);
+
+    return {
+      lesionSize: lesionStats.voxelCount,
+    };
+  }
+  // ============================================================================
+  // LABEL ENCODING
+  // ============================================================================
+
+  /**
+   * Encode aphasia type to [N, F, C, R] binary array
+   */
+  static encodeAphasiaType(aphasiaType: string): number[] {
+    const encoding = APHASIA_ENCODING_MAP[aphasiaType];
+    if (!encoding) {
+      console.warn(
+        `Unknown aphasia type: ${aphasiaType}. Defaulting to 'None'.`
+      );
+      return APHASIA_ENCODING_MAP["None"];
+    }
+    return encoding;
+  }
+
+  /**
+   * Decode [N, F, C, R] binary array to aphasia type
+   */
+  static decodeAphasiaType(predictions: number[]): string {
+    const key = predictions.join(",");
+    return PATTERN_TO_APHASIA[key] || "Unknown";
+  }
+
+  // ============================================================================
+  // BATCH CREATION
+  // ============================================================================
+
+  fitScaler(): void {
+    if (this.extractedTrainingFeatures.length === 0) {
+      throw new Error("Cannot fit scaler: no training data available");
+    }
+
+    const lesionSizes = this.extractedTrainingFeatures.map((f) => f.lesionSize);
+    this.scaler.fit(lesionSizes);
+    this.scalerFitted = true;
+  }
+
+  /**
+   * Create a single batch from extracted features
+   */
+  private createBatch(
+    features: ExtractedFeatures[],
+    subjects: SubjectData[],
+    startIdx: number,
+    batchSize: number
+  ): LesionBatch {
+    const actualBatchSize = Math.min(batchSize, features.length - startIdx);
+
+    // Create features tensor: [batchSize, 1] - only lesionSize
+    const featureData = new Float32Array(
+      actualBatchSize * MriData.NUM_FEATURES
+    );
+
+    // Create labels tensor: [batchSize, 4]
+    const labelData = new Float32Array(actualBatchSize * MriData.NUM_OUTPUTS);
+
+    for (let i = 0; i < actualBatchSize; i++) {
+      const idx = startIdx + i;
+      const feat = features[idx];
+      const subj = subjects[idx];
+
+      // Features: [lesionSize]
+      featureData[i] = feat.lesionSize;
+
+      // Labels: [N, F, C, R]
+      const encoding = MriData.encodeAphasiaType(subj.aphasiaType);
+      for (let j = 0; j < MriData.NUM_OUTPUTS; j++) {
+        labelData[i * MriData.NUM_OUTPUTS + j] = encoding[j];
+      }
+    }
+
+    // Apply scaling if enabled and scaler is fitted
+    let scaledFeatureData = featureData;
+    if (this.scalerFitted) {
+      scaledFeatureData = this.scaler.transform(featureData);
+    }
+
+    return {
+      features: new ortTrain.Tensor("float32", scaledFeatureData, [
+        actualBatchSize,
+        MriData.NUM_FEATURES,
+      ]),
+      labels: new ortTrain.Tensor("float32", labelData, [
+        actualBatchSize,
+        MriData.NUM_OUTPUTS,
+      ]),
+    };
+  }
+
+  // ============================================================================
+  // BATCH GENERATORS
+  // ============================================================================
+
+  getNumTrainingBatches(): number {
+    return Math.ceil(this.trainingData.length / this.batchSize);
+  }
+
+  getNumTestBatches(): number {
+    return Math.ceil(this.testingData.length / this.batchSize);
+  }
+
+  /**
+   * Generator for training batches
+   */
+  *trainingBatches(): Generator<LesionBatch> {
+    if (this.extractedTrainingFeatures.length === 0) {
+      this.extractedTrainingFeatures = this.trainingData.map((s) =>
+        this.extractFeatures(s)
+      );
+    }
+
+    for (let i = 0; i < this.trainingData.length; i += this.batchSize) {
+      yield this.createBatch(
+        this.extractedTrainingFeatures,
+        this.trainingData,
+        i,
+        this.batchSize
+      );
+    }
+  }
+
+  /**
+   * Generator for testing batches
+   */
+  *testingBatches(): Generator<LesionBatch> {
+    if (this.extractedTestingFeatures.length === 0) {
+      this.extractedTestingFeatures = this.testingData.map((s) =>
+        this.extractFeatures(s)
+      );
+    }
+
+    for (let i = 0; i < this.testingData.length; i += this.batchSize) {
+      yield this.createBatch(
+        this.extractedTestingFeatures,
+        this.testingData,
+        i,
+        this.batchSize
+      );
+    }
+  }
+
+  /**
+   * Get all training data as a single batch (useful for small datasets)
+   */
+  getAllTrainingData(): LesionBatch {
+    if (this.extractedTrainingFeatures.length === 0) {
+      this.extractedTrainingFeatures = this.trainingData.map((s) =>
+        this.extractFeatures(s)
+      );
+    }
+    return this.createBatch(
+      this.extractedTrainingFeatures,
+      this.trainingData,
+      0,
+      this.trainingData.length
+    );
+  }
+
+  /**
+   * Get all testing data as a single batch
+   */
+  getAllTestingData(): LesionBatch {
+    if (this.extractedTestingFeatures.length === 0) {
+      this.extractedTestingFeatures = this.testingData.map((s) =>
+        this.extractFeatures(s)
+      );
+    }
+    return this.createBatch(
+      this.extractedTestingFeatures,
+      this.testingData,
+      0,
+      this.testingData.length
+    );
+  }
+
+  /**
+   * Get feature statistics for normalization
+   */
+  getFeatureStatistics(): {
+    mean: number[];
+    std: number[];
+    min: number[];
+    max: number[];
+  } {
+    const features = this.extractedTrainingFeatures;
+    if (features.length === 0) {
+      throw new Error("No training data available for statistics");
+    }
+
+    const lesionSizes = features.map((f) => f.lesionSize);
+
+    const mean = lesionSizes.reduce((a, b) => a + b, 0) / lesionSizes.length;
+    const std = Math.sqrt(
+      lesionSizes.reduce((a, b) => a + (b - mean) ** 2, 0) / lesionSizes.length
+    );
+    const min = Math.min(...lesionSizes);
+    const max = Math.max(...lesionSizes);
+
+    return {
+      mean: [mean],
+      std: [std],
+      min: [min],
+      max: [max],
+    };
+  }
+
+  /**
+   * Get label distribution
+   */
+  getLabelDistribution(): Record<string, number> {
+    const distribution: Record<string, number> = {};
+
+    for (const subject of this.trainingData) {
+      distribution[subject.aphasiaType] =
+        (distribution[subject.aphasiaType] || 0) + 1;
+    }
+
+    return distribution;
+  }
+
+  /**
+   * Clear all loaded data
+   */
+  clear(): void {
+    this.trainingData = [];
+    this.testingData = [];
+    this.extractedTrainingFeatures = [];
+    this.extractedTestingFeatures = [];
   }
 }

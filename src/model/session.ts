@@ -1,5 +1,6 @@
 import * as ort from "onnxruntime-web";
-import { SessionParameters } from "@/helpers/Interfaces";
+
+import { SessionParameters, SessionType } from "@/helpers/Interfaces";
 import localforage from "localforage";
 
 export const clearCache = async () => {
@@ -8,10 +9,12 @@ export const clearCache = async () => {
 
 export class Session {
   ortSession: ort.InferenceSession | undefined;
+  sessionType: SessionType;
   cacheSize: number;
   params: SessionParameters;
 
-  constructor(params: SessionParameters) {
+  constructor(sessionType: SessionType, params: SessionParameters) {
+    this.sessionType = sessionType;
     this.params = params;
     const cacheSize = params.cacheSizeMB * 1e6;
     this.cacheSize = cacheSize;
@@ -23,9 +26,24 @@ export class Session {
     });
   }
 
-  init = async (modelPath: string) => {
+  // Factory methods for clean instantiation
+  static createInferenceSession(params: SessionParameters): Session {
+    return new Session("inference", params);
+  }
+
+  init = async (modelPath?: string) => {
+    // Common configuration
     ort.env.wasm.numThreads = this.params.numThreads;
     ort.env.wasm.wasmPaths = this.params.wasmRoot;
+
+    if (modelPath) {
+      await this.initInferenceSession(modelPath);
+    } else {
+      throw new Error("Model path is required for inference sessions");
+    }
+  };
+
+  private initInferenceSession = async (modelPath: string) => {
     const modelData = await this.fetchData(modelPath);
     const session = await ort.InferenceSession.create(modelData, {
       executionProviders: this.params.executionProviders,
@@ -69,6 +87,7 @@ export class Session {
     }
   };
 
+  // Enhanced run method that works for both session types
   run = async (
     input: ort.InferenceSession.OnnxValueMapType
   ): Promise<ort.InferenceSession.OnnxValueMapType> => {
@@ -78,17 +97,20 @@ export class Session {
       );
     }
 
-    // Reconstruct tensors from serialized data if needed
+    const processedInput = this.processInputs(input);
+    return await this.ortSession.run(processedInput);
+  };
+
+  // Extract input processing logic
+  private processInputs(input: ort.InferenceSession.OnnxValueMapType): {
+    [name: string]: ort.OnnxValue;
+  } {
     const processedInput: { [name: string]: ort.OnnxValue } = {};
+
     for (const [key, value] of Object.entries(input)) {
       if (value && typeof value === "object" && (value as any)._isTensor) {
         // Reconstruct tensor from serialized data
         const serializedTensor = value as any;
-        // console.log(`Reconstructing tensor ${key} from serialized data`);
-        // console.log(`Data:`, serializedTensor.data);
-        // console.log(`Dims:`, serializedTensor.dims);
-        // console.log(`Type:`, serializedTensor.type);
-
         const tensor = new ort.Tensor(
           serializedTensor.type,
           serializedTensor.data,
@@ -96,28 +118,19 @@ export class Session {
         );
         processedInput[key] = tensor;
       } else if (value instanceof ort.Tensor) {
-        // console.log(`Checking tensor ${key}:`, value);
-        // console.log(`Tensor data for ${key}:`, value.data);
-        // console.log(`Tensor dims for ${key}:`, value.dims);
-
-        // Check if the tensor data is undefined or corrupted
         if (!value.data || value.data.length === 0) {
           throw new Error(
-            `Tensor data for input "${key}" is undefined or empty. This usually happens when tensors are transferred through Comlink without proper handling.`
+            `Tensor data for input "${key}" is undefined or empty.`
           );
         }
         processedInput[key] = value;
       } else {
-        // console.log(`Input ${key} is not a tensor, passing as is.`);
-        // console.log(`Data:`, value.data);
-        // console.log(`Dims:`, value.dims);
-        // console.log(`Type:`, value.type);
         processedInput[key] = value as ort.OnnxValue;
       }
     }
 
-    return await this.ortSession.run(processedInput);
-  };
+    return processedInput;
+  }
 
   inputNames = (): readonly string[] => {
     if (!this.ortSession) {

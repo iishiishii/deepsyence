@@ -25,14 +25,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface TrainingMetrics {
+export interface TrainingMetrics {
   epoch: number;
   loss: number;
   accuracy: number;
   valLoss: number;
   valAccuracy: number;
-  learningRate: number;
-  timestamp: string;
 }
 
 interface LossVisualizationProps {
@@ -47,7 +45,6 @@ export function LossVisualization({ metrics }: LossVisualizationProps) {
       "Validation Loss": metric.valLoss,
       "Training Accuracy": metric.accuracy * 100,
       "Validation Accuracy": metric.valAccuracy * 100,
-      "Learning Rate": metric.learningRate * 1000, // Scale for visibility
     }));
   }, [metrics]);
 
@@ -337,37 +334,6 @@ export function LossVisualization({ metrics }: LossVisualizationProps) {
           </ResponsiveContainer>
         </div>
       </Card>
-
-      {/* Learning Rate Chart */}
-      {/* <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Learning Rate Schedule</h3>
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
-              Current: {(latestMetrics?.learningRate || 0).toExponential(2)}
-            </span>
-          </div>
-        </div>
-
-        <div className="h-60">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="epoch" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} scale="log" domain={["dataMin", "dataMax"]} />
-              <Tooltip content={<CustomTooltip />} />
-              <Line
-                type="monotone"
-                dataKey="Learning Rate"
-                stroke="hsl(var(--chart-3))"
-                strokeWidth={2}
-                dot={{ fill: "hsl(var(--chart-3))", strokeWidth: 2, r: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </Card> */}
 
       {/* Training Summary */}
       <Card className="p-6">

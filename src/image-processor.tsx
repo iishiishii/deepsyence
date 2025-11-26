@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/shadcn-ui/card";
 import { Brain, Zap, GraduationCap } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn-ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/shadcn-ui/tabs";
 import InferencePanel from "@/components/segmentation-inference/inference-panel";
 import TrainingPanel from "@/components/classification-training/training-panel";
 export type ImageFile = {
@@ -63,7 +68,11 @@ export default function MedicalImageProcessor() {
 
       {/* Main Content */}
       <main className="container mx-auto px-2 py-3">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
           <TabsList className="grid w-full grid-cols-2 bg-card">
             <TabsTrigger value="inference" className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
@@ -75,7 +84,11 @@ export default function MedicalImageProcessor() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="inference" forceMount className={activeTab !== "inference" ? "hidden" : "space-y-6"}>
+          <TabsContent
+            value="inference"
+            forceMount
+            className={activeTab !== "inference" ? "hidden" : "space-y-6"}
+          >
             <Card className="p-6">
               {/* <h2 className="text-lg font-semibold mb-4">
                 Model Selection & Inference
@@ -83,8 +96,12 @@ export default function MedicalImageProcessor() {
               <InferencePanel />
             </Card>
           </TabsContent>
-          
-          <TabsContent value="training" className="space-y-6">
+
+          <TabsContent
+            value="training"
+            forceMount
+            className={activeTab !== "training" ? "hidden" : "space-y-6"}
+          >
             <Card className="p-6">
               <h2 className="text-lg font-semibold mb-4">Model Training</h2>
               <TrainingPanel />

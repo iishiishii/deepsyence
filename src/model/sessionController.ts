@@ -6,12 +6,14 @@ import { SessionParams } from "@/model/sessionParams";
 // Wrapper class to handle tensor serialization for Comlink
 export class SessionWrapper {
   private session: Comlink.Remote<Session>;
-  
+
   constructor(session: Comlink.Remote<Session>) {
     this.session = session;
   }
 
-  async run(input: ort.InferenceSession.OnnxValueMapType): Promise<ort.InferenceSession.OnnxValueMapType> {
+  async run(
+    input: ort.InferenceSession.OnnxValueMapType
+  ): Promise<ort.InferenceSession.OnnxValueMapType> {
     // Serialize tensors to plain objects for Comlink transfer
     const serializedInput: any = {};
     for (const [key, value] of Object.entries(input)) {
@@ -20,7 +22,7 @@ export class SessionWrapper {
           data: value.data,
           dims: value.dims,
           type: value.type,
-          _isTensor: true
+          _isTensor: true,
         };
       } else {
         serializedInput[key] = value;
@@ -32,7 +34,7 @@ export class SessionWrapper {
       Comlink.transfer(serializedInput, [
         ...Object.values(serializedInput)
           .filter((v: any) => v._isTensor)
-          .map((v: any) => v.data.buffer)
+          .map((v: any) => v.data.buffer),
       ])
     );
   }
@@ -68,13 +70,16 @@ export const createSession = async (
       type: "module",
     });
     const Channel = Comlink.wrap<typeof Session>(worker);
-    const session: Comlink.Remote<Session> = await new Channel(SessionParams);
+    const session: Comlink.Remote<Session> = await new Channel(
+      "inference",
+      SessionParams
+    );
     await session.init(modelPath);
     return new SessionWrapper(session);
   } else {
     console.log("create session without proxy");
     ort.env.wasm.proxy = false;
-    const session = new Session(SessionParams);
+    const session = new Session("inference", SessionParams);
     await session.init(modelPath);
     return session;
   }

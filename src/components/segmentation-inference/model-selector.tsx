@@ -16,6 +16,7 @@ export enum ModelType {
   Unknown = 1,
   Unet,
   SegmentAnything,
+  Classification,
 }
 
 export type ModelMetadata = {
@@ -28,9 +29,9 @@ export type ModelMetadata = {
   referenceURL?: string;
   type?: ModelType;
   modelPaths: Map<string, string>;
-  configPath?: string;
   preprocessorPath: string;
   examples?: string[];
+  lossNodeName?: string;
 };
 
 export const segmentationModels: ModelMetadata[] = [
@@ -41,9 +42,7 @@ export const segmentationModels: ModelMetadata[] = [
       "Interactive image segmentation model optimized for efficiency.",
     memEstimateMB: 2600,
     type: ModelType.SegmentAnything,
-    sizeMB: 45,
-    configPath:
-      "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
+    sizeMB: 40,
     modelPaths: new Map<string, string>([
       [
         "encoder",
@@ -57,7 +56,6 @@ export const segmentationModels: ModelMetadata[] = [
     preprocessorPath:
       "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/efficient-sam-preprocess.json",
     tags: ["efficient-sam"],
-    referenceURL: "https://github.com/yformer/EfficientSAM",
   },
   {
     id: "litemed-sam",
@@ -65,9 +63,7 @@ export const segmentationModels: ModelMetadata[] = [
     description: "Lightweight segmentation model finetuned on medical images.",
     memEstimateMB: 2600,
     type: ModelType.SegmentAnything,
-    sizeMB: 45,
-    configPath:
-      "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
+    sizeMB: 42,
     modelPaths: new Map<string, string>([
       [
         "encoder",
@@ -89,9 +85,7 @@ export const segmentationModels: ModelMetadata[] = [
     description: "Interactive image segmentation model with less parameters.",
     memEstimateMB: 2600,
     type: ModelType.SegmentAnything,
-    sizeMB: 105,
-    configPath:
-      "https://web-ai-models.org/image/feature-extraction/EfficientFormer/config.json",
+    sizeMB: 100,
     modelPaths: new Map<string, string>([
       [
         "encoder",
@@ -106,6 +100,29 @@ export const segmentationModels: ModelMetadata[] = [
       "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/segmen-anything-preprocess.json",
     tags: ["sam-quantized"],
     referenceURL: "https://huggingface.co/visheratin/segment-anything-vit-b",
+  },
+];
+
+export const classificationModels: ModelMetadata[] = [
+  {
+    id: "aphasia-classifier",
+    title: "Aphasia Classifier",
+    description:
+      "MLP classifier trained to predict aphasia type from lesion masks.",
+    memEstimateMB: 2600,
+    type: ModelType.Classification,
+    sizeMB: 0.08,
+    modelPaths: new Map<string, string>([
+      ["inference", "./model/aphasia_classifier.onnx"],
+      ["checkpoint", "./model/aphasia_classifier/checkpoint"],
+      ["training", "./model/aphasia_classifier/training_model.onnx"],
+      ["optimizer", "./model/aphasia_classifier/optimizer_model.onnx"],
+      ["eval", "./model/aphasia_classifier/eval_model.onnx"],
+    ]),
+    preprocessorPath:
+      "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/efficient-sam-preprocess.json",
+    tags: ["aphasia-classifier"],
+    lossNodeName: "onnx::reducemean_output::23",
   },
 ];
 

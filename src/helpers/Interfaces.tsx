@@ -55,3 +55,17 @@ export interface SessionParameters {
   cacheSizeMB: number;
   wasmRoot: string;
 }
+
+export interface TrainSessionParameters extends SessionParameters {
+  chkptPath: string;
+  trainingPath: string;
+  optimizerPath: string;
+  evalPath: string;
+}
+
+export type SessionType = "inference" | "training";
+
+export interface SessionConfig {
+  type: SessionType;
+  params: SessionParameters | TrainSessionParameters;
+}
