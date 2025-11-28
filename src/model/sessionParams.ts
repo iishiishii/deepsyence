@@ -17,18 +17,20 @@ export const TrainSessionParams: TrainSessionParameters = {
   memoryLimitMB: 0,
   cacheSizeMB: 2500,
   wasmRoot: new URL("./js/", document.baseURI).href,
-  chkptPath: new URL("./model/aphasia_classifier/checkpoint", document.baseURI)
-    .href,
+  chkptPath: new URL(
+    "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/checkpoint",
+    document.baseURI
+  ).href,
   trainingPath: new URL(
-    "./model/aphasia_classifier/training_model.onnx",
+    "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/training_model.onnx",
     document.baseURI
   ).href,
   optimizerPath: new URL(
-    "./model/aphasia_classifier/optimizer_model.onnx",
+    "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/optimizer_model.onnx",
     document.baseURI
   ).href,
   evalPath: new URL(
-    "./model/aphasia_classifier/eval_model.onnx",
+    "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/eval_model.onnx",
     document.baseURI
   ).href,
 };
