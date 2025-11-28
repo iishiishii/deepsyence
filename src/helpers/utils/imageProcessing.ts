@@ -31,7 +31,11 @@ export function normalizeArray(
 ): Float32Array {
   let normalizedArray = new Float32Array(array.length);
   for (let i = 0; i < array.length; i++) {
-    normalizedArray[i] = (array[i] - min) / (max - min);
+    if (array[i] === 0) {
+      normalizedArray[i] = 0;
+    } else {
+      normalizedArray[i] = (array[i] - min) / (max - min);
+    }
   }
   return normalizedArray;
 }
@@ -43,7 +47,11 @@ export function standardizeArray(
 ): Float32Array {
   let standardizedArray = new Float32Array(array.length);
   for (let i = 0; i < array.length; i++) {
-    standardizedArray[i] = (array[i] - mean) / std;
+    if (array[i] === 0) {
+      standardizedArray[i] = 0;
+    } else {
+      standardizedArray[i] = (array[i] - mean) / std;
+    }
   }
   return standardizedArray;
 }
@@ -58,6 +66,7 @@ export function resize(image: any, target: number | number[]) {
     let neww, newh;
     // console.log("resize ", target, oldw, oldh);
     if (Array.isArray(target)) {
+      console.log("target array ", target);
       neww = target[0];
       newh = target[1];
     } else {
@@ -127,17 +136,30 @@ export function resizeTypedArray(image: any, target: number | number[]) {
 
 export function pad(image: any, target_size: number) {
   let dstPadded = new cv.Mat();
-  let image4Channels;
   let h = image.size().height;
   let w = image.size().width;
   let padh = target_size - h;
   let padw = target_size - w;
-  // console.log("padh, padw ", padh, padw);
-  if (image.type() !== cv.CV_8UC4) {
-    image4Channels = addChannel(image.data);
+
+  // Determine the image type and create appropriate padding value
+  const imageType = image.type();
+  let paddingValue;
+
+  // Check if image is floating point or integer
+  if (imageType === cv.CV_32FC3 || imageType === cv.CV_32FC4) {
+    // Float image - use float padding value
+    paddingValue = new cv.Scalar(0.0, 0.0, 0.0, 0.0);
+  } else if (imageType === cv.CV_8UC3 || imageType === cv.CV_8UC4) {
+    // Integer image - use integer padding value
+    paddingValue = new cv.Scalar(0, 0, 0, 0);
+  } else {
+    console.warn(`Unexpected image type: ${imageType}, converting to CV_8UC3`);
+    let converted = new cv.Mat();
+    cv.cvtColor(image, converted, cv.COLOR_GRAY2RGB);
+    image = converted;
+    paddingValue = new cv.Scalar(0, 0, 0, 0);
   }
-  // const value: Scalar = new cv.Scalar(0, 0, 0, 0);
-  //  copyMakeBorder( src, dst, top, bottom, left, right, borderType, value );
+
   cv.copyMakeBorder(
     image,
     dstPadded,
@@ -146,7 +168,7 @@ export function pad(image: any, target_size: number) {
     0,
     padw,
     cv.BORDER_CONSTANT,
-    new cv.Scalar(0, 0, 0, 0)
+    paddingValue
   );
 
   return dstPadded;

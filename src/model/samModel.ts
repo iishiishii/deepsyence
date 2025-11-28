@@ -16,7 +16,8 @@ export class SegmentAnythingModel extends BaseImageModel {
   // private maxCachedSlices: number = 32; // LRU cache limit
   // private sliceAccessOrder: number[] = []; // For LRU tracking
   private volumeMask: Uint8Array | null = null;
-  samScale: number = 1;
+  // samScale: number = 1;
+  private finalSize: number = 1024; // Final size after resize + padding
 
   private slicesPerEmbedding: number = 3; // Number of slices sharing one embedding
   private sliceToEmbeddingMap: Map<number, number> = new Map(); // Map sliceId to embeddingId
@@ -120,10 +121,10 @@ export class SegmentAnythingModel extends BaseImageModel {
     };
     // feeds[inputData[0]] = result.tensor;
     // console.log("feeds ", feeds);
-    this.samScale =
-      result.newHeight /
-      Math.max(this.preprocessor.dims[0], this.preprocessor.dims[1]);
-
+    // this.samScale =
+    //   result.newHeight /
+    //   Math.max(this.preprocessor.dims[0], this.preprocessor.dims[1]);
+    this.finalSize = result.newWidth;
     try {
       const outputData: ort.InferenceSession.OnnxValueMapType =
         await session.run(feeds);
@@ -182,8 +183,10 @@ export class SegmentAnythingModel extends BaseImageModel {
     // const LONG_SIDE_LENGTH = 1024;
     const [height, width, depth] = this.volumeDimensions!;
     const modelScale = {
-      samScale: this.samScale,
-      height: height, // swap height and width to get row major order from npy arrayt to column order ?
+      finalSize: this.finalSize,
+      originalWidth: width,
+      originalHeight: height,
+      height: height,
       width: width,
     };
     const session = this.sessions.get("decoder");
@@ -242,7 +245,13 @@ export class SegmentAnythingModel extends BaseImageModel {
       });
     }
 
-    // console.log("feeds ", feeds, modelScale, bbox, clicks);
+    // console.log(
+    //   "feeds ",
+    //   feeds?.batched_point_coords.cpuData,
+    //   modelScale,
+    //   bbox,
+    //   clicks
+    // );
     if (feeds === undefined) return;
 
     try {
@@ -374,6 +383,6 @@ export class SegmentAnythingModel extends BaseImageModel {
     this.initialized = false;
     this.lastProcessedVolumeId = null;
     this.volumeDimensions = null;
-    this.samScale = 1;
+    this.finalSize = 1;
   };
 }

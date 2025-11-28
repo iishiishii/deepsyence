@@ -200,7 +200,7 @@ export default function InferencePanel() {
     setProgress(100);
 
     setIsProcessing(false);
-  }, [modelMetadata, currentImageIndex, startSlice, endSlice, setIsProcessing]);
+  }, [modelReady, currentImageIndex, startSlice, endSlice, setIsProcessing]);
 
   const stopInference = useCallback(() => {
     setIsProcessing(false);
@@ -431,10 +431,9 @@ export default function InferencePanel() {
                     <Button
                       onClick={runInference}
                       disabled={
-                        !modelMetadata ||
+                        !modelReady ||
                         currentImageIndex === null ||
-                        isProcessing ||
-                        !modelReady
+                        isProcessing
                       }
                       className="w-full flex items-center gap-2"
                       size="lg"

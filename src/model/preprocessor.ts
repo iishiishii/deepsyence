@@ -104,7 +104,10 @@ export class Preprocessor {
     if (
       this.config.standardize.enabled &&
       this.config.standardize.mean &&
-      this.config.standardize.std
+      this.config.standardize.std &&
+      !this.config.resize &&
+      !this.config.resizeLonger &&
+      !this.config.pad
     ) {
       this.volume = standardizeArray(
         niiVolume.img2RAS() as TypedVoxelArray,
@@ -119,10 +122,13 @@ export class Preprocessor {
   process = (sliceId: number): PreprocessorResult => {
     let inputTensor: Tensor;
 
+    // 1. Extract slice from volume
     let sliceArray = this.volume.slice(
       this.dims[0] * this.dims[1] * sliceId,
       this.dims[0] * this.dims[1] * (sliceId + 1)
     );
+
+    // 2. Stack to RGB channels
     let image3Channels = stackSliceToRGB(sliceArray);
 
     if (this.config.resizeLonger) {
@@ -207,7 +213,6 @@ export class Preprocessor {
     };
     return result;
   };
-
   dispose = () => {
     this.volume = null;
     this.dims = [0, 0, 0];

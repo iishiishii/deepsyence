@@ -7,9 +7,11 @@
 import { Tensor } from "onnxruntime-web";
 
 export interface modelScaleProps {
-  samScale: number;
+  finalSize: number;
   height: number;
   width: number;
+  originalWidth?: number;
+  originalHeight?: number;
 }
 
 export interface modelInputProps {
