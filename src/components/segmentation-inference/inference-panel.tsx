@@ -51,8 +51,8 @@ export default function InferencePanel() {
     null
   );
   const [totalSlices, setTotalSlices] = useState(1);
-  const [startSlice, setStartSlice] = useState(0);
-  const [endSlice, setEndSlice] = useState(1);
+  const [startSlice, setStartSlice] = useState(100);
+  const [endSlice, setEndSlice] = useState(101);
   const [progress, setProgress] = useState(0);
   const [modelReady, setModelReady] = useState(false);
   // const [results, setResults] = useState<Uint8Array>(new Uint8Array());
@@ -65,9 +65,7 @@ export default function InferencePanel() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [segmentationMode, setSegmentationMode] = useState<
     "none" | "foreground" | "background" | "box"
-  >("none");
-
-
+  >("foreground");
 
   // Add uploaded files to Niivue
   let handleFileUpload = async (files: File[]) => {
@@ -165,7 +163,10 @@ export default function InferencePanel() {
     const start = startSlice;
     const end = endSlice;
     if (start < 0 || end >= totalSlices || start > end) {
-      toast.error("Invalid slice range for inference.");
+      // console.log("invalid slice range ", start, end, totalSlices);
+      toast.error(
+        `Invalid slice range (${start}, ${end}, ${totalSlices}) for inference.`
+      );
       setIsProcessing(false);
       return;
     }
@@ -174,7 +175,7 @@ export default function InferencePanel() {
     const progressPerStep = 100 / totalSteps; // Reserve 10% for final cleanup
 
     try {
-      setProgress(progressPerStep)
+      setProgress(progressPerStep);
       // check getVolumeData()
       // https://github.com/niivue/niivue/blob/main/packages/niivue/src/nvimage/index.ts#L3597
       for (let i = start; i < end; i++) {
@@ -348,16 +349,16 @@ export default function InferencePanel() {
 
                 <div className="space-y-4">
                   <div className="flex flex-row flex-wrap items-center gap-2 mb-3">
-                    {!modelMetadata && !modelReady && (
+                    {!modelMetadata && (
                       <Badge variant="destructive">No Model</Badge>
-                    )}
-                    {currentImageIndex === null && (
-                      <Badge variant="destructive">No Image</Badge>
                     )}
                     {modelMetadata && (
                       <Badge className="bg-green-500/20 text-green-400">
                         {modelReady ? "Ready" : "Loading..."}
                       </Badge>
+                    )}
+                    {currentImageIndex === null && (
+                      <Badge variant="destructive">No Image</Badge>
                     )}
                   </div>
 

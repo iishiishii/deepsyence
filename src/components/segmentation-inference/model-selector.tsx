@@ -80,6 +80,29 @@ export const segmentationModels: ModelMetadata[] = [
     referenceURL: "https://github.com/bowang-lab/MedSAM/tree/LiteMedSAM",
   },
   {
+    id: "samri-quantized",
+    title: "SAMRI quantized",
+    description:
+      "Interactive image segmentation model optimized for medical images.",
+    memEstimateMB: 2600,
+    type: ModelType.SegmentAnything,
+    sizeMB: 101,
+    modelPaths: new Map<string, string>([
+      [
+        "encoder",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/samri_encoder.opt.quant.onnx",
+      ],
+      [
+        "decoder",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/samri_decoder.opt.quant.onnx",
+      ],
+    ]),
+    preprocessorPath:
+      "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/samri.json",
+    tags: ["samri-quantized"],
+    referenceURL: "https://github.com/wangzhaomxy/SAMRI",
+  },
+  {
     id: "sam-quantized",
     title: "SAM quantized",
     description: "Interactive image segmentation model with less parameters.",
@@ -113,11 +136,26 @@ export const classificationModels: ModelMetadata[] = [
     type: ModelType.Classification,
     sizeMB: 0.08,
     modelPaths: new Map<string, string>([
-      ["inference", "./model/aphasia_classifier.onnx"],
-      ["checkpoint", "./model/aphasia_classifier/checkpoint"],
-      ["training", "./model/aphasia_classifier/training_model.onnx"],
-      ["optimizer", "./model/aphasia_classifier/optimizer_model.onnx"],
-      ["eval", "./model/aphasia_classifier/eval_model.onnx"],
+      [
+        "inference",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/aphasia_classifier.onnx",
+      ],
+      [
+        "checkpoint",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/checkpoint",
+      ],
+      [
+        "training",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/training_model.onnx",
+      ],
+      [
+        "optimizer",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/optimizer_model.onnx",
+      ],
+      [
+        "eval",
+        "https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/deepsyence/onnx/eval_model.onnx",
+      ],
     ]),
     preprocessorPath:
       "https://object-store.rc.nectar.org.au/v1/AUTH_bdf528c1856c401b9a6fcfc700260330/deepsyence/efficient-sam-preprocess.json",
@@ -165,6 +203,10 @@ export default function ModelSelector({
       setVisuallySelectedModel(selectedModel);
       onSetModelReady(false);
       try {
+        onSelectModel({
+          metadata: selectedModel,
+          instance: null,
+        });
         // Initialize the model and wait for it to be ready
         await ImageModel.create(selectedModel.id).then(({ model, elapsed }) => {
           console.log(`Model ${model} initialized in ${elapsed} ms`);
