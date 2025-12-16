@@ -37,13 +37,13 @@ export interface ClassificationOutput {
   probabilities?: number[][]; // Optional probabilities for each test
 }
 
-export interface TrainingMetrics {
-  epoch: number;
-  batchNum: number;
-  loss: number;
-  accuracy?: number;
-  iterationsPerSecond: number;
-}
+// export interface TrainingMetrics {
+//   epoch: number;
+//   batchNum: number;
+//   loss: number;
+//   accuracy?: number;
+//   iterationsPerSecond: number;
+// }
 
 export class ClassificationModel extends BaseImageModel {
   /**
@@ -154,6 +154,10 @@ export class ClassificationModel extends BaseImageModel {
       input: batch.features,
       target: batch.labels,
     };
+    const labelsArray = new Float32Array((batch.labels as any).cpuData);
+    const labelsArray1 = new Float32Array((batch.labels as any).cpuData);
+
+    console.log("labels for training step:", labelsArray);
     console.log("feeds prepared for training step:", feeds);
     let results;
     // Run training step
@@ -175,14 +179,14 @@ export class ClassificationModel extends BaseImageModel {
       results["output"],
       batch.features.dims[0]
     );
+    console.log("predictions:", predictions);
+    const accuracy = this.computeAccuracy(predictions, labelsArray);
+    console.log("labels:", labelsArray1);
 
-    const accuracy = this.computeAccuracy(predictions, batch.labels);
     const perTestAccuracies = this.computePerTestAccuracy(
       predictions,
-      Array.from({ length: batch.labels.dims[0] }, (_, i) =>
-        Array.from({ length: 4 }, (_, j) =>
-          Number((batch.labels as any).cpuData[i * 4 + j])
-        )
+      Array.from({ length: labelsArray1.length / 4 }, (_, i) =>
+        Array.from({ length: 4 }, (_, j) => Number(labelsArray1[i * 4 + j]))
       )
     );
     console.log(
@@ -195,9 +199,12 @@ export class ClassificationModel extends BaseImageModel {
   /**
    * Run evaluation step
    */
-  async evalStep(
-    batch: LesionBatch
-  ): Promise<{ loss: number; predictions: number[][]; accuracy: number }> {
+  async evalStep(batch: LesionBatch): Promise<{
+    loss: number;
+    predictions: number[][];
+    accuracy: number;
+    perTestAccuracies: Record<string, number>;
+  }> {
     if (!this.initialized || !this.trainSession) {
       throw new Error("Model not initialized. Call init() first.");
     }
@@ -206,23 +213,37 @@ export class ClassificationModel extends BaseImageModel {
       toast("Training session not available.");
       throw new Error("No training session available.");
     }
+
     const feeds = {
-      float_input: batch.features,
-      labels: batch.labels,
+      input: batch.features,
+      target: batch.labels,
     };
-
+    const labelsArray = new Float32Array((batch.labels as any).cpuData);
+    const labelsArray1 = new Float32Array((batch.labels as any).cpuData);
+    console.log("feeds prepared for eval step:", feeds);
     const results = await session.runEvalStep(feeds);
-
-    const loss = parseFloat(
-      (results[this.metadata.lossNodeName!].data as string[])[0]
+    console.log(
+      "Evaluation step loss:",
+      (results[this.metadata.lossNodeName!] as any).cpuData
     );
+    const loss = (results[this.metadata.lossNodeName!] as any).cpuData[0];
+
     const predictions = this.extractPredictions(
       results["output"],
       batch.features.dims[0]
     );
-    const accuracy = this.computeAccuracy(predictions, batch.labels);
-
-    return { loss, predictions, accuracy };
+    const accuracy = this.computeAccuracy(predictions, labelsArray);
+    const perTestAccuracies = this.computePerTestAccuracy(
+      predictions,
+      Array.from({ length: labelsArray1.length / 4 }, (_, i) =>
+        Array.from({ length: 4 }, (_, j) => Number(labelsArray1[i * 4 + j]))
+      )
+    );
+    console.log(
+      `Evaluation Step - Loss: ${loss.toFixed(4)}, Accuracy: ${(accuracy * 100).toFixed(2)}%`
+    );
+    console.log("Per-test accuracies:", perTestAccuracies);
+    return { loss, predictions, accuracy, perTestAccuracies };
   }
 
   /**
@@ -250,16 +271,21 @@ export class ClassificationModel extends BaseImageModel {
    */
   private computeAccuracy(
     predictions: number[][],
-    labels: ortTrain.Tensor
+    labels: Float32Array
   ): number {
     let correct = 0;
     const batchSize = predictions.length;
-
+    console.log(
+      "labels in computeAccuracy:",
+      labels,
+      "predictions:",
+      predictions
+    );
     for (let i = 0; i < batchSize; i++) {
       let allMatch = true;
       for (let j = 0; j < 4; j++) {
         const pred = predictions[i][j] > 0 ? 1 : 0;
-        if (pred !== Number((labels as any).cpuData[i * 4 + j])) {
+        if (pred !== Number(labels[i * 4 + j])) {
           allMatch = false;
           break;
         }
@@ -278,11 +304,15 @@ export class ClassificationModel extends BaseImageModel {
     allLabels: number[][]
   ): Record<string, number> {
     const accuracies: Record<string, number> = {};
+    const threshold = 0;
 
     TEST_NAMES.forEach((testName, testIdx) => {
       let correct = 0;
       for (let i = 0; i < allPredictions.length; i++) {
-        if (allPredictions[i][testIdx] === allLabels[i][testIdx]) {
+        const predVal = allPredictions[i][testIdx] >= threshold ? 1 : 0;
+        const labelVal = allLabels[i][testIdx];
+
+        if (predVal === labelVal) {
           correct++;
         }
       }

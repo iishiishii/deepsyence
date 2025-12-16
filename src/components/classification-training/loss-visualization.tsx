@@ -31,6 +31,7 @@ export interface TrainingMetrics {
   accuracy: number;
   valLoss: number;
   valAccuracy: number;
+  perTestAccuracy?: Record<string, number>;
 }
 
 interface LossVisualizationProps {
@@ -38,15 +39,26 @@ interface LossVisualizationProps {
 }
 
 export function LossVisualization({ metrics }: LossVisualizationProps) {
-  const chartData = useMemo(() => {
-    return metrics.map((metric) => ({
+  // console.log("Rendering LossVisualization with metrics:", metrics);
+  const allTestNames = Array.from(
+    new Set(metrics.flatMap((m) => Object.keys(m.perTestAccuracy || {})))
+  );
+
+  // build chartData with explicit keys for every test
+  const chartData = metrics.map((metric) => {
+    const base: Record<string, number> = {
       epoch: metric.epoch,
       "Training Loss": metric.loss,
       "Validation Loss": metric.valLoss,
       "Training Accuracy": metric.accuracy * 100,
-      "Validation Accuracy": metric.valAccuracy * 100,
-    }));
-  }, [metrics]);
+      "Aphasia Type": metric.valAccuracy * 100,
+    };
+    allTestNames.forEach((test) => {
+      base[`${test}`] = (metric.perTestAccuracy?.[test] ?? 0) * 100;
+    });
+    // console.log("Chart data point:", base);
+    return base;
+  });
 
   const latestMetrics = useMemo(() => {
     if (metrics.length === 0) return null;
@@ -243,32 +255,33 @@ export function LossVisualization({ metrics }: LossVisualizationProps) {
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="epoch"
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
               />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <YAxis
+                stroke="hsl(var(--muted-foreground))"
+                fontSize={12}
+                domain={["dataMin", "auto"]}
+              />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Line
                 type="monotone"
                 dataKey="Training Loss"
-                stroke="hsl(var(--primary))"
+                stroke="var(--chart-1)"
                 strokeWidth={2}
-                dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 3 }}
+                dot={{ fill: "var(--chart-1)", strokeWidth: 2, r: 3 }}
                 activeDot={{ r: 5 }}
               />
               <Line
                 type="monotone"
                 dataKey="Validation Loss"
-                stroke="hsl(var(--accent))"
+                stroke="var(--chart-3)"
                 strokeWidth={2}
-                dot={{ fill: "hsl(var(--accent))", strokeWidth: 2, r: 3 }}
+                dot={{ fill: "var(--chart-3)", strokeWidth: 2, r: 3 }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
@@ -279,29 +292,13 @@ export function LossVisualization({ metrics }: LossVisualizationProps) {
       {/* Accuracy Chart */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">
-            Training & Validation Accuracy
-          </h3>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">
-              Current Gap:{" "}
-              {Math.abs(
-                ((latestMetrics?.accuracy || 0) -
-                  (latestMetrics?.valAccuracy || 0)) *
-                  100
-              ).toFixed(1)}
-              %
-            </Badge>
-          </div>
+          <h3 className="text-lg font-semibold">Accuracy on Validation set</h3>
         </div>
 
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="epoch"
                 stroke="hsl(var(--muted-foreground))"
@@ -314,23 +311,36 @@ export function LossVisualization({ metrics }: LossVisualizationProps) {
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              <Area
+              {/* <Area
                 type="monotone"
                 dataKey="Training Accuracy"
                 stackId="1"
                 stroke="hsl(var(--chart-5))"
                 fill="var(--chart-5)"
                 fillOpacity={0.7}
-              />
-              <Area
+              /> */}
+              {allTestNames.map((test, i) => (
+                <Line
+                  key={test}
+                  type="monotone"
+                  dataKey={`${test}`}
+                  // stackId={`test-${i}`}
+                  stroke={`var(--chart-${(i % 6) + 1})`}
+                  fill={`var(--chart-${(i % 6) + 1})`}
+                  fillOpacity={0.7}
+                />
+              ))}
+
+              <Line
+                key={"overall"}
                 type="monotone"
-                dataKey="Validation Accuracy"
-                stackId="2"
-                stroke="hsl(var(--chart-2))"
-                fill="var(--chart-2)"
-                fillOpacity={0.7}
+                dataKey="Aphasia Type"
+                // stackId="2"
+                stroke="var(--chart-5)"
+                fill="var(--chart-5)"
+                fillOpacity={0.5}
               />
-            </AreaChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </Card>

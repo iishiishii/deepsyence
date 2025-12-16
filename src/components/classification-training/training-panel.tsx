@@ -70,10 +70,23 @@ const nvTraining = new Niivue({
   multiplanarForceRender: false,
 });
 
+const nvValidation = new Niivue({
+  loadingText:
+    "Add training images from the button above. Make sure your file names include 'yes-lesion' or 'no-lesion'.",
+  dragAndDropEnabled: false,
+  textHeight: 0.2,
+  backColor: [0, 0, 0, 1],
+  crosshairColor: [244, 243, 238, 0.5],
+  multiplanarForceRender: false,
+});
+
 export default function ClassificationTrainingPanel() {
   const nvRef = useRef<Niivue | null>(nvTraining);
+  const nvValidationRef = useRef<Niivue | null>(nvValidation);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const validationCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const validationContainerRef = useRef<HTMLDivElement>(null);
   const [config, setConfig] = useState<TrainingConfig>({
     epochs: 50,
     batchSize: 32,
@@ -143,6 +156,15 @@ export default function ClassificationTrainingPanel() {
     nv.setSliceType(0); // Default to axial if viewMode is invalid;
   }, [numberOfTrainSamples]);
 
+  useEffect(() => {
+    const canvas = validationCanvasRef.current;
+    const nv = nvValidationRef.current;
+    if (!canvas) return;
+    if (!nv) return;
+    nv.attachToCanvas(canvas);
+    nv.setSliceType(0); // Default to axial if viewMode is invalid;
+  }, [numberOfValidationSamples]);
+
   const startTraining = useCallback(async () => {
     if (
       !session ||
@@ -157,6 +179,8 @@ export default function ClassificationTrainingPanel() {
       );
       return;
     }
+    const startTrainingTime = Date.now();
+
     setSession((prev) => ({
       id: prev ? prev.id : crypto.randomUUID(),
       model: prev.model,
@@ -168,15 +192,20 @@ export default function ClassificationTrainingPanel() {
       totalEpochs: config.epochs,
     }));
 
+    const numberOfBatches = Math.ceil(trainingData.length / config.batchSize);
+    // console.log("Number of batches per epoch:", numberOfBatches);
     const trainingNVImage: NVImage[] =
       nvRef.current?.volumes.filter((nvimage) =>
         trainingData.some((imageFile) => imageFile.id === nvimage.id)
       ) || [];
     const validationNVImage: NVImage[] =
-      nvRef.current?.volumes.filter((nvimage) =>
+      nvValidationRef.current?.volumes.filter((nvimage) =>
         validationData.some((imageFile) => imageFile.id === nvimage.id)
       ) || [];
-
+    // console.log("NV validation images:", nvValidationRef.current?.volumes);
+    // console.log("validation data files:", validationData);
+    // console.log("Starting training with images:", trainingNVImage);
+    // console.log("Validation images:", validationNVImage);
     const dataset = new MriData(
       config.batchSize,
       config.maxSample,
@@ -186,17 +215,15 @@ export default function ClassificationTrainingPanel() {
 
     // Get lesion stats for a specific image
     const stats = MriData.getLesionStats(trainingNVImage[0]);
-    console.log("Lesion voxel count:", stats.voxelCount);
-    console.log("Lesion volume (mm³):", stats.volumeMm3);
-    console.log(
-      "Percentage affected:",
-      stats.percentageAffected.toFixed(2) + "%"
-    );
+    // console.log("Lesion voxel count:", stats.voxelCount);
+    // console.log("Lesion volume (mm³):", stats.volumeMm3);
+    // console.log(
+    //   "Percentage affected:",
+    //   stats.percentageAffected.toFixed(2) + "%"
+    // );
 
-    const startTrainingTime = Date.now();
     const numEpochs = config.epochs;
-    let itersPerSecCumulative = 0;
-    let testAcc = 0;
+
     setSession((prev) => ({
       ...prev,
       status: "running",
@@ -206,26 +233,46 @@ export default function ClassificationTrainingPanel() {
       let epochAccuracy = 0;
       let epochValLoss = 0;
       let epochValAccuracy = 0;
+      let epochPerTestAccuracies: Record<string, number> = {};
+
       // Get batches
       for (const batch of dataset.trainingBatches()) {
-        console.log(batch.features.dims); // [32, 1]
-        console.log(batch.labels.dims); // [32, 4]
+        // console.log(batch.features.dims); // [32, 1]
+        // console.log(batch.labels.dims); // [32, 4]
         const { loss, predictions, accuracy, perTestAccuracies } =
           await session.model!.trainStep(batch);
-        console.log(`Epoch ${epoch + 1}, Loss: ${loss.toFixed(4)}`);
+        // console.log(`Epoch ${epoch + 1}, Loss: ${loss.toFixed(4)}`);
         epochLoss += loss;
         epochAccuracy += accuracy;
       }
       // Run testing epoch
       for (const batch of dataset.testingBatches()) {
-        const { loss, predictions, accuracy } =
+        // console.log("Running eval batch...");
+        const { loss, predictions, accuracy, perTestAccuracies } =
           await session.model!.evalStep(batch);
         epochValLoss += loss;
         epochValAccuracy += accuracy;
+        // Accumulate per-test accuracies
+        for (const [test, acc] of Object.entries(perTestAccuracies)) {
+          epochPerTestAccuracies[test] =
+            (epochPerTestAccuracies[test] || 0) + acc;
+        }
       }
       // Update session metrics
-      epochLoss /= config.batchSize;
-      epochAccuracy /= config.batchSize;
+      epochLoss /= numberOfBatches;
+      epochAccuracy /= numberOfBatches;
+      epochValLoss /= numberOfBatches;
+      epochValAccuracy /= numberOfBatches;
+      epochPerTestAccuracies = Object.fromEntries(
+        Object.entries(epochPerTestAccuracies).map(([test, acc]) => [
+          test,
+          acc / numberOfBatches,
+        ])
+      );
+      // console.log(
+      //   `Epoch ${epoch + 1} completed. Loss: ${epochLoss.toFixed(4)}, Accuracy: ${(epochAccuracy * 100).toFixed(2)}%, Val Loss: ${epochValLoss.toFixed(4)}, Val Accuracy: ${(epochValAccuracy * 100).toFixed(2)}%, Per-test Accuracies:`,
+      //   epochPerTestAccuracies
+      // );
       setSession((prev) => {
         const newMetrics: TrainingMetrics[] = [
           ...prev.metrics,
@@ -235,6 +282,7 @@ export default function ClassificationTrainingPanel() {
             accuracy: epochAccuracy,
             valLoss: epochValLoss,
             valAccuracy: epochValAccuracy,
+            perTestAccuracy: epochPerTestAccuracies,
           },
         ];
         return {
@@ -245,6 +293,7 @@ export default function ClassificationTrainingPanel() {
       });
     }
     const trainingTimeMs = Date.now() - startTrainingTime;
+    console.log(`Training completed in ${formatTime(trainingTimeMs)}`);
   }, [trainingData, config]);
 
   const pauseTraining = useCallback(() => {
@@ -266,9 +315,15 @@ export default function ClassificationTrainingPanel() {
   const handleFileUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>, type = "training") => {
       const files = Array.from(event.target.files || []);
-      if (!nvRef.current) return;
-      const nv = nvRef.current;
-      console.log("Uploading training data files:", files);
+      let nv;
+      if (!nvRef.current || !nvValidationRef.current) return;
+      if (type === "training") {
+        nv = nvRef.current;
+      } else {
+        // console.log("Using validation NV", nvValidationRef.current);
+        nv = nvValidationRef.current;
+      }
+      // console.log("Uploading training data files:", files, nv);
       try {
         files.forEach(async (file) => {
           const nvimage = await NVImage.loadFromFile({
@@ -286,6 +341,7 @@ export default function ClassificationTrainingPanel() {
           if (type === "training") {
             setTrainingData((prev) => [...prev, ...[newImage]]);
           } else {
+            // console.log("Adding validation image:", newImage);
             setValidationData((prev) => [...prev, ...[newImage]]);
           }
         });
@@ -295,7 +351,11 @@ export default function ClassificationTrainingPanel() {
         );
         console.error("Error loading image file(s):", error);
       }
-      setNumberOfTrainSamples(files.length);
+      if (type === "training") {
+        setNumberOfTrainSamples(files.length);
+      } else {
+        setNumberOfValidationSamples(files.length);
+      }
     },
     []
   );
@@ -468,7 +528,7 @@ export default function ClassificationTrainingPanel() {
                       onValueChange={([value]) =>
                         setConfig((prev) => ({ ...prev, epochs: value }))
                       }
-                      max={200}
+                      max={500}
                       min={1}
                       step={1}
                       className="mt-2"
@@ -496,7 +556,7 @@ export default function ClassificationTrainingPanel() {
                       onValueChange={([value]) =>
                         setConfig((prev) => ({ ...prev, maxSample: value }))
                       }
-                      max={1000}
+                      max={400}
                       min={1}
                       step={1}
                       className="mt-2"
@@ -505,7 +565,11 @@ export default function ClassificationTrainingPanel() {
 
                   <Button
                     onClick={startTraining}
-                    disabled={trainingData.length === 0 || !session.model}
+                    disabled={
+                      trainingData.length === 0 ||
+                      validationData.length === 0 ||
+                      !session.model
+                    }
                     className="w-full"
                   >
                     <Play className="h-4 w-4 mr-2" />
@@ -619,16 +683,27 @@ export default function ClassificationTrainingPanel() {
                   />
                 </div>
 
-                {validationData.length > 0 && (
+                {numberOfValidationSamples > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium">
-                      {validationData.length} files selected
-                    </p>
-                    <div className="max-h-32 overflow-y-auto space-y-1">
-                      {validationData.length > 10 && (
-                        <div className="text-xs text-muted-foreground">
-                          ... and {validationData.length - 10} more files
-                        </div>
+                    <div className="flex-1 overflow-hidden">
+                      <div
+                        ref={validationContainerRef}
+                        className="niivue-canvas w-full relative bg-[#111]"
+                      >
+                        <canvas ref={validationCanvasRef}></canvas>
+                      </div>
+                    </div>
+                    <div className="overflow-y-scroll space-y-1">
+                      {validationData.map(
+                        (file, index) =>
+                          index < 10 && (
+                            <div
+                              key={file.id}
+                              className="text-md text-black/80"
+                            >
+                              {file.name}
+                            </div>
+                          )
                       )}
                     </div>
                   </div>
